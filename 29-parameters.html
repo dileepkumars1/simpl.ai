@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Module 8.2 — zoom from billions of dials down to one, and watch training turn it.">
+<meta name="color-scheme" content="dark">
+<style>:root{color-scheme:dark}html{background:#100e1a}</style>
+<title>A Wall Of Dials</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;600&family=Manrope:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>:root{
+  --ground:#100e1a; --ground-2:#0b0913;
+  --surface:#181428; --surface-2:#1e1934;
+  --line:#2a2340; --line-soft:#221c36;
+  --ink:#ECE9F5; --ink-dim:#9a92b6; --ink-faint:#6b6389;
+  --violet:#9b6bff; --teal:#45e0c4; --coral:#ff6f8f;
+  --violet-soft:rgba(155,107,255,.16); --teal-soft:rgba(69,224,196,.14); --coral-soft:rgba(255,111,143,.14);
+  --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px; --s7:48px; --s8:64px; --s9:96px;
+  --r-sm:6px; --r-md:12px; --r-lg:20px;
+  --display:'Unbounded',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --body:'Manrope',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,'SFMono-Regular',Menlo,monospace;
+  --wrap:1080px;
+}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0; background:var(--ground); color:var(--ink); font-family:var(--body); font-size:clamp(15px,.55vw + 13.6px,17px); line-height:1.65; -webkit-font-smoothing:antialiased; overflow-x:hidden}
+h1,h2,h3{font-family:var(--display); font-weight:600; line-height:1.12; text-wrap:balance; margin:0}
+h1{font-size:clamp(30px,5.2vw,52px); letter-spacing:-.02em}
+h2{font-size:clamp(21px,2.7vw,30px); letter-spacing:-.01em}
+h3{font-size:clamp(16px,1.5vw,19px); letter-spacing:-.005em}
+p{margin:0; max-width:65ch; overflow-wrap:break-word}
+h1,h2,h3{overflow-wrap:break-word}
+.stack>*,.steps>*,.split>*,.two>*,.hero>*,.machine>*{min-width:0}
+.eyebrow{font-family:var(--mono); font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-faint); margin:0}
+.dim{color:var(--ink-dim)}
+.lede{font-size:clamp(17px,1.5vw,21px); line-height:1.5; color:var(--ink-dim)}
+.wrap{width:min(100% - 2*var(--s5), var(--wrap)); margin-inline:auto}
+@media (max-width:520px){ .wrap{width:min(100% - 2*var(--s4), var(--wrap))} }
+.stack{display:flex; flex-direction:column}
+.g2{gap:var(--s2)} .g3{gap:var(--s3)} .g4{gap:var(--s4)} .g5{gap:var(--s5)} .g6{gap:var(--s6)} .g7{gap:var(--s7)}
+section{padding-block:var(--s7)}
+section + section{border-top:1px solid var(--line-soft)}
+figure{margin:0}
+figcaption{font-size:13.5px; color:var(--ink-dim); margin-top:var(--s3); max-width:62ch}
+svg{max-width:100%; height:auto; display:block}
+.scroll-x{overflow-x:auto; -webkit-overflow-scrolling:touch}
+.card{background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); padding:var(--s5)}
+.tag{font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-faint)}
+.topbar{display:flex; flex-wrap:wrap; align-items:baseline; gap:var(--s3) var(--s4); padding-block:var(--s5) 0}
+.topbar .num{font-family:var(--mono); font-size:11px; letter-spacing:.16em; color:var(--violet)}
+.foot{padding-block:var(--s6); border-top:1px solid var(--line-soft); color:var(--ink-faint); font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase}
+button{font-family:inherit; font-size:inherit; color:inherit}
+.btn{display:inline-flex; align-items:center; justify-content:center; gap:var(--s2); min-height:44px; padding:0 var(--s4); border-radius:999px; background:var(--surface-2); border:1px solid var(--line); color:var(--ink); font-family:var(--mono); font-size:12.5px; letter-spacing:.04em; cursor:pointer; transition:background .18s, border-color .18s, color .18s}
+.btn:hover{background:#262046; border-color:#3a3160}
+.btn[aria-pressed="true"], .btn.on{background:var(--violet-soft); border-color:var(--violet); color:#d9c9ff}
+.btn:disabled{opacity:.4; cursor:not-allowed}
+.btn:focus-visible, [tabindex]:focus-visible, input:focus-visible{outline:2px solid var(--teal); outline-offset:3px}
+.controls{display:flex; flex-wrap:wrap; gap:var(--s3); align-items:center}
+.sr{position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0}
+@media (prefers-reduced-motion: reduce){ *,*::before,*::after{animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important} }
+.wide-art{background:var(--ground-2); border:1px solid var(--line-soft); border-radius:var(--r-md); padding:var(--s5); color:var(--ink-faint)}
+.wide-art svg{width:100%; height:auto}
+.sowhat{font-family:var(--display); font-size:clamp(19px,2.4vw,27px); line-height:1.35; letter-spacing:-.01em; max-width:28ch}
+.sowhat em{font-style:normal; color:var(--violet)}
+</style>
+<style>
+.dials{display:grid; grid-template-columns:repeat(auto-fill,minmax(20px,1fr)); gap:6px; width:100%}
+.dials i{aspect-ratio:1; border-radius:50%; border:1.5px solid #3a3160; background:rgba(155,107,255,.05); position:relative; cursor:pointer; border-width:1.5px}
+.dials i::after{content:''; position:absolute; left:50%; top:16%; width:2px; height:34%; border-radius:1px; background:var(--violet); transform-origin:bottom center; transform:translateX(-50%) rotate(var(--a)); transition:transform .3s}
+.dials i.sel{border-color:var(--teal); background:rgba(69,224,196,.12)}
+.dials i.frozen::after{background:var(--ink-faint)}
+.zoomrig{display:grid; gap:var(--s5)}
+@media (min-width:760px){ .zoomrig{grid-template-columns:220px 1fr} }
+.bigdial{width:180px; height:180px; margin-inline:auto; border-radius:50%; border:3px solid #3a3160; background:rgba(155,107,255,.05); position:relative}
+.bigdial::after{content:''; position:absolute; left:50%; top:10%; width:5px; height:38%; border-radius:3px; background:var(--violet); transform-origin:bottom center; transform:translateX(-50%) rotate(var(--a)); transition:transform .35s}
+.bigdial.frozen::after{background:var(--ink-faint)}
+.bigdial .target{position:absolute; left:50%; top:8%; width:2px; height:20%; background:var(--teal); opacity:.5; transform-origin:bottom center; transform:translateX(-50%) rotate(var(--ta))}
+.readout2{display:flex; flex-direction:column; gap:var(--s4)}
+.errbar{height:10px; border-radius:5px; background:var(--ground-2); overflow:hidden}
+.errbar i{display:block; height:100%; background:var(--coral); transition:width .35s}
+</style>
+</head>
+<body>
+
+<style>
+.pagenav{display:flex; flex-wrap:wrap; gap:var(--s4); justify-content:space-between; align-items:center; padding-block:var(--s6); border-top:1px solid var(--line-soft)}
+.pnbtn{display:flex; flex-direction:column; gap:2px; min-height:44px; justify-content:center; padding:var(--s2) var(--s4); border-radius:var(--r-md); text-decoration:none; color:inherit; transition:background .18s; max-width:280px}
+.pnbtn:hover{background:var(--surface-2)}
+.pnbtn.hub{flex-direction:row; align-items:center; background:var(--surface-2); border:1px solid var(--line); border-radius:999px; font-family:var(--mono); font-size:12.5px; letter-spacing:.04em; padding:0 var(--s4); flex:none}
+.pnbtn.next{text-align:right; align-items:flex-end; margin-left:auto}
+.pnk{font-family:var(--mono); font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--violet)}
+.pnt{font-size:14px; color:var(--ink-dim)}
+@media (max-width:640px){ .pagenav{flex-direction:column; align-items:stretch} .pnbtn{max-width:none} .pnbtn.hub{order:-1; justify-content:center} .pnbtn.next{text-align:left; align-items:flex-start; margin-left:0} }
+</style>
+<header class="wrap topbar">
+  <span class="num">MODULE 08 — GOING DEEPER · 29</span>
+  <span class="tag dim">AI Concepts</span>
+</header>
+
+<section class="wrap stack g6">
+  <div class="stack g4">
+    <h1>Parameters &amp; weights, really</h1>
+    <p class="lede"><a href="03-what-is-an-llm.html" title="What is an LLM?" style="color:var(--violet); text-decoration:underline; text-decoration-style:dotted; text-underline-offset:3px">Page 3</a> showed you forty-eight of these dials standing in for the model's parameters. A real model has billions — click one to zoom in and watch it actually get set.</p>
+  </div>
+
+  <div class="dials" id="dials" role="img" aria-label="A grid of dials, each turned to a different setting, standing in for a fraction of the model's billions of parameters. Click one to zoom in."></div>
+  <figcaption>Same grid as <a href="03-what-is-an-llm.html" title="What is an LLM?" style="color:var(--violet); text-decoration:underline; text-decoration-style:dotted; text-underline-offset:3px">page 3</a>, just more of it — click any dial below to zoom in.</figcaption>
+
+  <div class="zoomrig card">
+    <div class="stack g4" style="align-items:center">
+      <p class="eyebrow" id="dialLabel">Dial #1, zoomed in</p>
+      <div class="bigdial" id="bigDial" role="img" aria-label="One parameter, shown as a large dial with a faint target mark showing where training is nudging it.">
+        <div class="target" id="target"></div>
+      </div>
+    </div>
+    <div class="readout2">
+      <div>
+        <p class="eyebrow">Error on the training example</p>
+        <div class="errbar"><i id="errFill" style="width:70%"></i></div>
+      </div>
+      <p class="dim" id="stateNote" style="font-size:14px">Training nudges this dial toward the target — a little at a time, across millions of examples.</p>
+      <div class="controls">
+        <button class="btn" id="nudgeBtn" type="button">Nudge toward target</button>
+        <button class="btn" id="freezeBtn" type="button">Freeze (release the model)</button>
+        <button class="btn" id="resetDialBtn" type="button">Reset this dial</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="wrap stack g4">
+  <p class="eyebrow">So what</p>
+  <p class="sowhat">Every one of billions of dials went through this same nudge, over and over — then <em>froze the moment the model was released</em>, exactly like <a href="05-training-vs-using.html" title="Training vs. using" style="color:var(--violet); text-decoration:underline; text-decoration-style:dotted; text-underline-offset:3px">page 5</a>'s cutoff.</p>
+</section>
+
+<nav class="wrap pagenav" aria-label="Series navigation">
+  <a class="pnbtn prev" href="28-attention.html"><span class="pnk">← Prev</span><span class="pnt">Glowing threads between words</span></a>
+  <a class="pnbtn hub" href="00-atlas.html">All topics</a>
+  <a class="pnbtn next" href="30-token-math.html"><span class="pnk">Next →</span><span class="pnt">Tokens, cost &amp; context math</span></a>
+</nav>
+<footer class="wrap foot">Part of the AI Concepts series</footer>
+
+<script>
+(function(){
+  var dials = document.getElementById('dials'), N = 180;
+  var angles = [];
+  for(var i=0;i<N;i++){
+    var a = Math.round((i*137.5) % 300 - 150);
+    angles.push(a);
+    var d = document.createElement('i');
+    d.style.setProperty('--a', a + 'deg');
+    d.dataset.i = i;
+    dials.appendChild(d);
+  }
+
+  var bigDial = document.getElementById('bigDial'), target = document.getElementById('target');
+  var errFill = document.getElementById('errFill'), stateNote = document.getElementById('stateNote'), dialLabel = document.getElementById('dialLabel');
+  var nudgeBtn = document.getElementById('nudgeBtn'), freezeBtn = document.getElementById('freezeBtn'), resetBtn = document.getElementById('resetDialBtn');
+  var selected = 0, targetAngle = -60, frozen = false;
+
+  function angleOf(sel){ return angles[sel]; }
+  function errorFor(sel){
+    var diff = Math.abs(((angleOf(sel) - targetAngle + 540) % 360) - 180);
+    return Math.round(diff / 180 * 100);
+  }
+
+  function render(){
+    Array.prototype.forEach.call(dials.children, function(el, idx){
+      el.classList.toggle('sel', idx === selected);
+      el.classList.toggle('frozen', frozen && idx === selected);
+    });
+    bigDial.style.setProperty('--a', angleOf(selected) + 'deg');
+    target.style.setProperty('--ta', targetAngle + 'deg');
+    bigDial.classList.toggle('frozen', frozen);
+    var err = errorFor(selected);
+    errFill.style.width = err + '%';
+    dialLabel.textContent = 'Dial #' + (selected+1) + ', zoomed in' + (frozen ? ' — frozen' : '');
+    nudgeBtn.disabled = frozen;
+    stateNote.innerHTML = frozen
+      ? 'Frozen. Exactly like <a href="05-training-vs-using.html" title="Training vs. using" style="color:var(--violet); text-decoration:underline; text-decoration-style:dotted; text-underline-offset:3px">page 5</a>’s cutoff — nothing about this dial moves again, no matter what anyone asks it.'
+      : (err < 12 ? 'Close to the target — a well-trained dial for this example.' : 'Training nudges this dial toward the target — a little at a time, across millions of examples.');
+  }
+
+  dials.addEventListener('click', function(e){
+    if(e.target.tagName !== 'I') return;
+    selected = parseInt(e.target.dataset.i, 10);
+    frozen = false;
+    render();
+  });
+
+  nudgeBtn.addEventListener('click', function(){
+    var cur = angleOf(selected);
+    var diff = targetAngle - cur;
+    while(diff > 180) diff -= 360; while(diff < -180) diff += 360;
+    angles[selected] = Math.round(cur + diff * 0.35);
+    dials.children[selected].style.setProperty('--a', angles[selected] + 'deg');
+    render();
+  });
+
+  freezeBtn.addEventListener('click', function(){ frozen = true; render(); });
+  resetBtn.addEventListener('click', function(){
+    angles[selected] = Math.round((selected*137.5) % 300 - 150);
+    dials.children[selected].style.setProperty('--a', angles[selected] + 'deg');
+    frozen = false;
+    render();
+  });
+
+  render();
+})();
+</script>
+
+</body>
+</html>

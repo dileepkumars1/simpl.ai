@@ -1,0 +1,404 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Module 4.3 — one model roleplaying a meeting, and paying for every seat.">
+<meta name="color-scheme" content="dark">
+<style>:root{color-scheme:dark}html{background:#100e1a}</style>
+<title>An Org Chart That Runs</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;600&family=Manrope:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>:root{
+  --ground:#100e1a; --ground-2:#0b0913;
+  --surface:#181428; --surface-2:#1e1934;
+  --line:#2a2340; --line-soft:#221c36;
+  --ink:#ECE9F5; --ink-dim:#9a92b6; --ink-faint:#6b6389;
+  --violet:#9b6bff; --teal:#45e0c4; --coral:#ff6f8f;
+  --violet-soft:rgba(155,107,255,.16); --teal-soft:rgba(69,224,196,.14); --coral-soft:rgba(255,111,143,.14);
+  --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px; --s7:48px; --s8:64px; --s9:96px;
+  --r-sm:6px; --r-md:12px; --r-lg:20px;
+  --display:'Unbounded',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --body:'Manrope',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,'SFMono-Regular',Menlo,monospace;
+  --wrap:1080px;
+}
+*,*::before,*::after{box-sizing:border-box}
+body{
+  margin:0; background:var(--ground); color:var(--ink);
+  font-family:var(--body); font-size:clamp(15px,.55vw + 13.6px,17px);
+  line-height:1.65; -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+h1,h2,h3{font-family:var(--display); font-weight:600; line-height:1.12; text-wrap:balance; margin:0}
+h1{font-size:clamp(30px,5.2vw,52px); letter-spacing:-.02em}
+h2{font-size:clamp(21px,2.7vw,30px); letter-spacing:-.01em}
+h3{font-size:clamp(16px,1.5vw,19px); letter-spacing:-.005em}
+p{margin:0; max-width:65ch; overflow-wrap:break-word}
+h1,h2,h3{overflow-wrap:break-word}
+.stack>*,.steps>*,.split>*,.two>*,.hero>*,.machine>*{min-width:0}
+.eyebrow{font-family:var(--mono); font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-faint); margin:0}
+.dim{color:var(--ink-dim)}
+.lede{font-size:clamp(17px,1.5vw,21px); line-height:1.5; color:var(--ink-dim)}
+.wrap{width:min(100% - 2*var(--s5), var(--wrap)); margin-inline:auto}
+@media (max-width:520px){ .wrap{width:min(100% - 2*var(--s4), var(--wrap))} }
+.stack{display:flex; flex-direction:column}
+.g2{gap:var(--s2)} .g3{gap:var(--s3)} .g4{gap:var(--s4)} .g5{gap:var(--s5)} .g6{gap:var(--s6)} .g7{gap:var(--s7)}
+section{padding-block:var(--s7)}
+section + section{border-top:1px solid var(--line-soft)}
+figure{margin:0}
+figcaption{font-size:13.5px; color:var(--ink-dim); margin-top:var(--s3); max-width:62ch}
+svg{max-width:100%; height:auto; display:block}
+.scroll-x{overflow-x:auto; -webkit-overflow-scrolling:touch}
+.card{background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); padding:var(--s5)}
+.tag{font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-faint)}
+/* site header / footer */
+.topbar{display:flex; flex-wrap:wrap; align-items:baseline; gap:var(--s3) var(--s4); padding-block:var(--s5) 0}
+.topbar .num{font-family:var(--mono); font-size:11px; letter-spacing:.16em; color:var(--violet)}
+.foot{padding-block:var(--s6); border-top:1px solid var(--line-soft); color:var(--ink-faint); font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase}
+/* controls */
+button{font-family:inherit; font-size:inherit; color:inherit}
+.btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:var(--s2);
+  min-height:44px; padding:0 var(--s4); border-radius:999px;
+  background:var(--surface-2); border:1px solid var(--line); color:var(--ink);
+  font-family:var(--mono); font-size:12.5px; letter-spacing:.04em;
+  cursor:pointer; transition:background .18s, border-color .18s, color .18s;
+}
+.btn:hover{background:#262046; border-color:#3a3160}
+.btn[aria-pressed="true"], .btn.on{background:var(--violet-soft); border-color:var(--violet); color:#d9c9ff}
+.btn:focus-visible, [tabindex]:focus-visible, input:focus-visible{outline:2px solid var(--teal); outline-offset:3px}
+.controls{display:flex; flex-wrap:wrap; gap:var(--s3); align-items:center}
+input[type="text"]{
+  min-height:44px; width:100%; padding:0 var(--s4); border-radius:999px;
+  background:var(--ground-2); border:1px solid var(--line); color:var(--ink);
+  font-family:var(--body); font-size:16px;
+}
+input[type="range"]{ -webkit-appearance:none; appearance:none; width:100%; height:44px; background:transparent; cursor:pointer }
+input[type="range"]::-webkit-slider-runnable-track{height:4px; border-radius:2px; background:linear-gradient(90deg,var(--teal),var(--violet),var(--coral))}
+input[type="range"]::-moz-range-track{height:4px; border-radius:2px; background:linear-gradient(90deg,var(--teal),var(--violet),var(--coral))}
+input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none; width:22px; height:22px; margin-top:-9px; border-radius:50%; background:var(--ink); border:3px solid var(--ground)}
+input[type="range"]::-moz-range-thumb{width:22px; height:22px; border-radius:50%; background:var(--ink); border:3px solid var(--ground); border-width:3px}
+.sr{position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0}
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important}
+}
+/* mechanism strip — a concept gets a drawing, not a paragraph */
+.mech{display:grid; gap:var(--s5)}
+@media (min-width:720px){ .mech.n2{grid-template-columns:repeat(2,1fr)} }
+@media (min-width:820px){ .mech.n3{grid-template-columns:repeat(3,1fr)} }
+.mech figure{display:flex; flex-direction:column; gap:var(--s3); min-width:0}
+.mech .art{
+  background:var(--ground-2); border:1px solid var(--line-soft); border-radius:var(--r-md);
+  padding:var(--s4); color:var(--ink-faint);
+}
+.mech .art svg{width:100%; height:auto}
+.mech .lab{font-family:var(--mono); font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:var(--violet)}
+.mech figcaption{font-size:14px; line-height:1.55; color:var(--ink-dim); margin-top:0}
+.mech figcaption b{color:var(--ink); font-weight:500; display:block; font-size:15px; margin-bottom:2px}
+.wide-art{background:var(--ground-2); border:1px solid var(--line-soft); border-radius:var(--r-md); padding:var(--s5); color:var(--ink-faint)}
+.wide-art svg{width:100%; height:auto}
+</style>
+<style>
+.rig{background:linear-gradient(165deg,#151125,#0c0a16); border:1px solid var(--line); border-radius:var(--r-lg); padding:var(--s5); display:flex; flex-direction:column; gap:var(--s5)}
+.orgwrap{position:relative}
+.org{width:100%}
+.org .box{transition:fill .3s, stroke .3s}
+.org .blab{font-family:var(--mono); transition:fill .3s}
+.msg{opacity:0}
+.msg.on{opacity:1; animation:travel .7s ease-in-out both}
+@keyframes travel{from{opacity:0} 15%{opacity:1} 85%{opacity:1} to{opacity:0}}
+.feed{display:flex; flex-direction:column; gap:var(--s2); min-height:150px}
+.fitem{display:grid; grid-template-columns:96px minmax(0,1fr); gap:var(--s3); align-items:baseline; padding:8px var(--s3);
+       border-radius:var(--r-sm); border:1px solid var(--line-soft); background:var(--ground-2); animation:pop .3s ease-out both}
+@keyframes pop{from{opacity:0; transform:translateX(-6px)} to{opacity:1; transform:none}}
+.fitem .w{font-family:var(--mono); font-size:9.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-faint)}
+.fitem .t{font-size:14px; line-height:1.5; min-width:0}
+.fitem.coord .w{color:var(--violet)}
+.fitem.res .w{color:var(--teal)}
+.fitem.chk .w{color:var(--coral)}
+.meta{display:flex; flex-wrap:wrap; gap:var(--s5); font-family:var(--mono); font-size:10.5px; letter-spacing:.13em; text-transform:uppercase; color:var(--ink-faint)}
+.meta b{display:block; margin-top:2px; color:var(--ink); font-weight:500; font-size:17px; letter-spacing:0; font-variant-numeric:tabular-nums}
+.mech .art{color:var(--ink-faint)}
+.sowhat{font-family:var(--display); font-size:clamp(19px,2.4vw,27px); line-height:1.35; letter-spacing:-.01em; max-width:28ch}
+.sowhat em{font-style:normal; color:var(--violet)}
+</style>
+</head>
+<body>
+
+
+<style>
+.pagenav{display:flex; flex-wrap:wrap; gap:var(--s4); justify-content:space-between; align-items:center; padding-block:var(--s6); border-top:1px solid var(--line-soft)}
+.pnbtn{display:flex; flex-direction:column; gap:2px; min-height:44px; justify-content:center; padding:var(--s2) var(--s4); border-radius:var(--r-md); text-decoration:none; color:inherit; transition:background .18s; max-width:280px}
+.pnbtn:hover{background:var(--surface-2)}
+.pnbtn.hub{flex-direction:row; align-items:center; background:var(--surface-2); border:1px solid var(--line); border-radius:999px; font-family:var(--mono); font-size:12.5px; letter-spacing:.04em; padding:0 var(--s4); flex:none}
+.pnbtn.next{text-align:right; align-items:flex-end; margin-left:auto}
+.pnk{font-family:var(--mono); font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--violet)}
+.pnt{font-size:14px; color:var(--ink-dim)}
+@media (max-width:640px){ .pagenav{flex-direction:column; align-items:stretch} .pnbtn{max-width:none} .pnbtn.hub{order:-1; justify-content:center} .pnbtn.next{text-align:left; align-items:flex-start; margin-left:0} }
+</style>
+<header class="wrap topbar">
+  <span class="num">MODULE 04 — AGENTIC AI · 15</span>
+  <span class="tag dim">AI Concepts</span>
+</header>
+
+<section class="wrap stack g6">
+  <div class="stack g4">
+    <h1>Multi-agent systems</h1>
+    <p class="lede">One agent given several roles, several desks, and a postal service between them. There is no second intelligence — only more copies of the same one.</p>
+  </div>
+
+  <div class="rig">
+    <div class="orgwrap">
+      <svg class="org" id="org" viewBox="0 0 900 300" role="img"
+           aria-label="A coordinator splits a goal into sub-tasks, sends them to a researcher, a writer and a checker, and reconciles what comes back into one answer."></svg>
+    </div>
+    <div class="feed" id="feed" aria-live="polite"></div>
+    <div class="meta">
+      <span>Messages<b id="mMsg">0</b></span>
+      <span>Model calls<b id="mCalls">0</b></span>
+      <span>Desks in play<b id="mDesks">1</b></span>
+    </div>
+    <div class="controls">
+      <button class="btn" id="step" type="button">Step</button>
+      <button class="btn" id="run" type="button">Run</button>
+      <button class="btn" id="reset" type="button">Reset</button>
+    </div>
+  </div>
+</section>
+
+<section class="wrap stack g5">
+  <p class="eyebrow">The problem it solves</p>
+  <h2>One desk, too many jobs</h2>
+  <div class="wide-art">
+    <svg viewBox="0 0 900 200" role="img" aria-label="A single agent doing research, drafting and checking on one desk fills it with mixed material and re-reads all of it every turn. Splitting the work gives each role a small clean desk containing only what that role needs.">
+      <text x="0" y="18" font-family="JetBrains Mono, monospace" font-size="10" letter-spacing="1.4" fill="currentColor">ONE AGENT, ONE DESK</text>
+      <rect x="0" y="32" width="360" height="94" rx="9" fill="#ff6f8f" fill-opacity=".06" stroke="#ff6f8f" stroke-opacity=".45"/>
+      <rect x="16" y="46" width="140" height="14" rx="3" fill="#45e0c4" fill-opacity=".5"/>
+      <rect x="164" y="46" width="180" height="14" rx="3" fill="#9b6bff" fill-opacity=".5"/>
+      <rect x="16" y="66" width="230" height="14" rx="3" fill="#ff6f8f" fill-opacity=".5"/>
+      <rect x="16" y="86" width="300" height="14" rx="3" fill="#45e0c4" fill-opacity=".5"/>
+      <rect x="16" y="106" width="200" height="14" rx="3" fill="#9b6bff" fill-opacity=".5"/>
+      <text x="180" y="150" text-anchor="middle" font-family="Manrope, sans-serif" font-size="13" fill="#ffb3c4">sources, drafts and critiques all mixed</text>
+      <text x="180" y="172" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="currentColor">re-read in full, every single turn</text>
+
+      <text x="520" y="18" font-family="JetBrains Mono, monospace" font-size="10" letter-spacing="1.4" fill="#8ff0dd">THREE ROLES, THREE DESKS</text>
+      <g>
+        <rect x="520" y="32" width="118" height="42" rx="7" fill="#45e0c4" fill-opacity=".08" stroke="#45e0c4" stroke-opacity=".5"/>
+        <rect x="532" y="46" width="80" height="12" rx="3" fill="#45e0c4" fill-opacity=".6"/>
+        <text x="579" y="88" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="currentColor">sources only</text>
+        <rect x="652" y="32" width="118" height="42" rx="7" fill="#9b6bff" fill-opacity=".08" stroke="#9b6bff" stroke-opacity=".5"/>
+        <rect x="664" y="46" width="94" height="12" rx="3" fill="#9b6bff" fill-opacity=".6"/>
+        <text x="711" y="88" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="currentColor">draft only</text>
+        <rect x="784" y="32" width="116" height="42" rx="7" fill="#ff6f8f" fill-opacity=".08" stroke="#ff6f8f" stroke-opacity=".5"/>
+        <rect x="796" y="46" width="70" height="12" rx="3" fill="#ff6f8f" fill-opacity=".6"/>
+        <text x="842" y="88" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="currentColor">checks only</text>
+      </g>
+      <text x="710" y="150" text-anchor="middle" font-family="Manrope, sans-serif" font-size="13" fill="#8ff0dd">each role re-reads only what it needs</text>
+      <text x="710" y="172" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="currentColor">smaller desks · sharper instructions</text>
+    </svg>
+  </div>
+</section>
+
+<section class="wrap stack g5">
+  <p class="eyebrow">How it works</p>
+  <h2>Split, specialise, reconcile</h2>
+  <div class="mech n3">
+    <figure>
+      <div class="art">
+        <svg viewBox="0 0 240 112" role="img" aria-label="The coordinator turns one goal into separate sub-tasks addressed to different roles.">
+          <rect x="72" y="14" width="96" height="26" rx="6" fill="#9b6bff" fill-opacity=".18" stroke="#9b6bff"/>
+          <text x="120" y="31" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="#d3bcff">one goal</text>
+          <path d="M120 44 L46 68" stroke="currentColor" stroke-width="1.2" fill="none"/><polygon points="40,71 48,70 45,64" fill="currentColor"/>
+          <path d="M120 44 L120 68" stroke="currentColor" stroke-width="1.2" fill="none"/><polygon points="120,74 116.5,68 123.5,68" fill="currentColor"/>
+          <path d="M120 44 L194 68" stroke="currentColor" stroke-width="1.2" fill="none"/><polygon points="200,71 192,64 189,70" fill="currentColor"/>
+          <g font-family="JetBrains Mono, monospace" font-size="9">
+            <rect x="14" y="76" width="58" height="20" rx="4" fill="currentColor" fill-opacity=".14"/><text x="43" y="89" text-anchor="middle" fill="#ECE9F5">find</text>
+            <rect x="91" y="76" width="58" height="20" rx="4" fill="currentColor" fill-opacity=".14"/><text x="120" y="89" text-anchor="middle" fill="#ECE9F5">write</text>
+            <rect x="168" y="76" width="58" height="20" rx="4" fill="currentColor" fill-opacity=".14"/><text x="197" y="89" text-anchor="middle" fill="#ECE9F5">check</text>
+          </g>
+        </svg>
+      </div>
+      <figcaption><b>Split</b>A coordinator writes sub-tasks — which is, again, just writing text.</figcaption>
+    </figure>
+    <figure>
+      <div class="art">
+        <svg viewBox="0 0 240 112" role="img" aria-label="Each role is the same model started fresh with a different instruction and its own desk.">
+          <g font-family="JetBrains Mono, monospace" font-size="9">
+            <rect x="16" y="18" width="208" height="24" rx="5" fill="#9b6bff" fill-opacity=".14" stroke="#9b6bff" stroke-opacity=".5"/>
+            <text x="26" y="34" fill="#d3bcff">“you find sources, nothing else”</text>
+            <rect x="16" y="48" width="208" height="24" rx="5" fill="#9b6bff" fill-opacity=".14" stroke="#9b6bff" stroke-opacity=".5"/>
+            <text x="26" y="64" fill="#d3bcff">“you draft, using only these”</text>
+            <rect x="16" y="78" width="208" height="24" rx="5" fill="#9b6bff" fill-opacity=".14" stroke="#9b6bff" stroke-opacity=".5"/>
+            <text x="26" y="94" fill="#d3bcff">“you check claims against sources”</text>
+          </g>
+        </svg>
+      </div>
+      <figcaption><b>Specialise</b>Same model each time. The “specialist” is one line of instruction.</figcaption>
+    </figure>
+    <figure>
+      <div class="art">
+        <svg viewBox="0 0 240 112" role="img" aria-label="Results come back to the coordinator, which resolves disagreement and produces one answer.">
+          <g>
+            <rect x="14" y="16" width="52" height="20" rx="4" fill="#45e0c4" fill-opacity=".3"/>
+            <rect x="14" y="44" width="52" height="20" rx="4" fill="#45e0c4" fill-opacity=".3"/>
+            <rect x="14" y="72" width="52" height="20" rx="4" fill="#ff6f8f" fill-opacity=".35"/>
+          </g>
+          <path d="M72 26 L112 48" stroke="currentColor" stroke-width="1.2" fill="none"/>
+          <path d="M72 54 L112 54" stroke="currentColor" stroke-width="1.2" fill="none"/>
+          <path d="M72 82 L112 60" stroke="currentColor" stroke-width="1.2" fill="none"/>
+          <rect x="118" y="38" width="106" height="34" rx="6" fill="#9b6bff" fill-opacity=".18" stroke="#9b6bff"/>
+          <text x="171" y="59" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="#d3bcff">one answer</text>
+          <text x="171" y="94" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#ffb3c4">disagreement resolved by… the model</text>
+        </svg>
+      </div>
+      <figcaption><b>Reconcile</b>When two roles disagree, the coordinator decides — with no better access to truth.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section class="wrap stack g5">
+  <p class="eyebrow">Before you build one</p>
+  <h2>What splitting actually costs</h2>
+  <div class="wide-art">
+    <svg viewBox="0 0 900 210" role="img" aria-label="Going from one agent to four multiplies model calls and latency, and every handoff is a place for a small misunderstanding to become the next role's starting assumption.">
+      <text x="0" y="18" font-family="JetBrains Mono, monospace" font-size="10" letter-spacing="1.4" fill="currentColor">FOR THE SAME TASK</text>
+      <text x="0" y="48" font-family="JetBrains Mono, monospace" font-size="11" fill="#ECE9F5">one agent</text>
+      <rect x="120" y="36" width="96" height="16" rx="4" fill="#45e0c4" fill-opacity=".7"/>
+      <text x="228" y="48" font-family="JetBrains Mono, monospace" font-size="10" fill="currentColor">6 model calls</text>
+      <text x="0" y="82" font-family="JetBrains Mono, monospace" font-size="11" fill="#ECE9F5">four roles</text>
+      <rect x="120" y="70" width="384" height="16" rx="4" fill="#ff6f8f" fill-opacity=".7"/>
+      <text x="516" y="82" font-family="JetBrains Mono, monospace" font-size="10" fill="#ffb3c4">24 model calls · plus the handoffs</text>
+      <text x="0" y="112" font-family="JetBrains Mono, monospace" font-size="9.5" fill="currentColor">illustrative — the shape is what matters, not the numbers</text>
+      <line x1="0" y1="132" x2="900" y2="132" stroke="currentColor" stroke-opacity=".2"/>
+      <text x="0" y="158" font-family="Manrope, sans-serif" font-size="14" fill="#ECE9F5">And every handoff is a fresh desk that only gets what the last role remembered to write down.</text>
+      <text x="0" y="186" font-family="Manrope, sans-serif" font-size="13.5" fill="#ffb3c4">Reach for one agent with good tools first. Split only when the roles genuinely need different instructions.</text>
+    </svg>
+  </div>
+</section>
+
+<section class="wrap stack g4">
+  <p class="eyebrow">So what</p>
+  <p class="sowhat">Five agents is not five minds. It is <em>one model, roleplaying a meeting, and paying for every seat.</em></p>
+</section>
+
+<nav class="wrap pagenav" aria-label="Series navigation">
+  <a class="pnbtn prev" href="14-agent-memory.html"><span class="pnk">← Prev</span><span class="pnt">Memory in AI agents</span></a>
+  <a class="pnbtn hub" href="00-atlas.html">All topics</a>
+  <a class="pnbtn next" href="16-guardrails.html"><span class="pnk">Next →</span><span class="pnt">Guardrails &amp; human-in-the-loop</span></a>
+</nav>
+<footer class="wrap foot">Part of the AI Concepts series</footer>
+
+<script>
+(function(){
+  var NS = 'http://www.w3.org/2000/svg';
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var BOXES = {
+    coord:    { x:352, y:18,  w:196, h:56, label:'coordinator', sub:'splits and reconciles', hue:'#9b6bff' },
+    research: { x:20,  y:172, w:200, h:56, label:'researcher',  sub:'finds sources',        hue:'#45e0c4' },
+    writer:   { x:350, y:172, w:200, h:56, label:'writer',      sub:'drafts from sources',  hue:'#45e0c4' },
+    checker:  { x:680, y:172, w:200, h:56, label:'checker',     sub:'verifies claims',      hue:'#ff6f8f' }
+  };
+  var STEPS = [
+    { from:'coord', to:'research', who:'Coordinator', cls:'coord', t:'“Find three sources on our Q3 refund rate.”' },
+    { from:'research', to:'coord', who:'Researcher', cls:'res', t:'Returns three documents with figures.' },
+    { from:'coord', to:'writer', who:'Coordinator', cls:'coord', t:'“Draft a short summary using only these three.”' },
+    { from:'writer', to:'coord', who:'Writer', cls:'res', t:'Returns a four-sentence draft.' },
+    { from:'coord', to:'checker', who:'Coordinator', cls:'coord', t:'“Check every claim against the sources.”' },
+    { from:'checker', to:'coord', who:'Checker', cls:'chk', t:'Flags one figure that appears in no source.' },
+    { from:'coord', to:'writer', who:'Coordinator', cls:'coord', t:'“Remove the unsupported figure and resend.”' },
+    { from:'writer', to:'coord', who:'Writer', cls:'res', t:'Returns the corrected draft.' },
+    { from:'coord', to:null, who:'Coordinator', cls:'coord', t:'Reconciled. One answer goes back to the person who asked.' }
+  ];
+
+  var org = document.getElementById('org'), feed = document.getElementById('feed');
+  var mMsg = document.getElementById('mMsg'), mCalls = document.getElementById('mCalls'), mDesks = document.getElementById('mDesks');
+  var i = 0, timer = null, boxEls = {}, msgLayer;
+
+  function el(n, a){ var e = document.createElementNS(NS, n); for(var k in a) e.setAttribute(k, a[k]); return e; }
+  (function build(){
+    var edges = el('g', {});
+    org.appendChild(edges);
+    Object.keys(BOXES).forEach(function(k){
+      if(k === 'coord') return;
+      var b = BOXES[k], c = BOXES.coord;
+      edges.appendChild(el('line', {
+        x1: c.x + c.w / 2, y1: c.y + c.h,
+        x2: b.x + b.w / 2, y2: b.y,
+        stroke: '#2a2340', 'stroke-width': 1.5
+      }));
+    });
+    msgLayer = el('g', {}); org.appendChild(msgLayer);
+    Object.keys(BOXES).forEach(function(k){
+      var b = BOXES[k];
+      var r = el('rect', { x:b.x, y:b.y, width:b.w, height:b.h, rx:9, fill:'#181428', stroke:'#2a2340', 'stroke-width':1.5, class:'box' });
+      var t1 = el('text', { x:b.x + b.w/2, y:b.y + 26, 'text-anchor':'middle', 'font-family':'Manrope, sans-serif', 'font-size':14, fill:'#ECE9F5', class:'blab' });
+      t1.textContent = b.label;
+      var t2 = el('text', { x:b.x + b.w/2, y:b.y + 44, 'text-anchor':'middle', 'font-family':'JetBrains Mono, monospace', 'font-size':10, fill:'#6b6389' });
+      t2.textContent = b.sub;
+      org.appendChild(r); org.appendChild(t1); org.appendChild(t2);
+      boxEls[k] = { r: r, t: t1, b: b };
+    });
+  })();
+
+  function highlight(from, to){
+    Object.keys(boxEls).forEach(function(k){
+      var on = k === from || k === to;
+      boxEls[k].r.setAttribute('stroke', on ? BOXES[k].hue : '#2a2340');
+      boxEls[k].r.setAttribute('fill', on ? 'rgba(255,255,255,.035)' : '#181428');
+    });
+  }
+
+  function fly(from, to){
+    if(!from || !to) return;
+    var a = BOXES[from], b = BOXES[to];
+    var x1 = a.x + a.w / 2, y1 = a.y + a.h / 2;
+    var x2 = b.x + b.w / 2, y2 = b.y + b.h / 2;
+    var dot = el('circle', { cx:x1, cy:y1, r:6, fill:b.hue });
+    msgLayer.appendChild(dot);
+    if(reduce){ setTimeout(function(){ dot.remove(); }, 400); return; }
+    var t0 = performance.now(), dur = 700;
+    function tick(now){
+      var p = Math.min(1, (now - t0) / dur);
+      dot.setAttribute('cx', x1 + (x2 - x1) * p);
+      dot.setAttribute('cy', y1 + (y2 - y1) * p);
+      dot.setAttribute('opacity', p < 0.85 ? 1 : (1 - p) / 0.15);
+      if(p < 1) requestAnimationFrame(tick); else dot.remove();
+    }
+    requestAnimationFrame(tick);
+  }
+
+  function step(){
+    if(i >= STEPS.length){ stop(); return; }
+    var s = STEPS[i];
+    highlight(s.from, s.to);
+    fly(s.from, s.to);
+    var row = document.createElement('div');
+    row.className = 'fitem ' + s.cls;
+    row.innerHTML = '<span class="w"></span><span class="t"></span>';
+    row.querySelector('.w').textContent = s.who;
+    row.querySelector('.t').textContent = s.t;
+    feed.appendChild(row);
+    i++;
+    mMsg.textContent = i;
+    mCalls.textContent = i + 3;
+    mDesks.textContent = Math.min(4, 1 + Math.ceil(i / 2));
+  }
+  function stop(){ if(timer){ clearInterval(timer); timer = null; } document.getElementById('run').textContent = 'Run'; }
+
+  document.getElementById('step').addEventListener('click', function(){ stop(); step(); });
+  document.getElementById('run').addEventListener('click', function(){
+    if(timer){ stop(); return; }
+    this.textContent = 'Pause';
+    timer = setInterval(step, reduce ? 1000 : 760);
+  });
+  document.getElementById('reset').addEventListener('click', function(){
+    stop(); i = 0; feed.textContent = ''; highlight(null, null);
+    mMsg.textContent = '0'; mCalls.textContent = '0'; mDesks.textContent = '1';
+  });
+  highlight(null, null);
+})();
+</script>
+
+</body>
+</html>

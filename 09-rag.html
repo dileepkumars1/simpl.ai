@@ -1,0 +1,486 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Module 2.5 — fetch the right paragraph and put it on the desk before asking.">
+<meta name="color-scheme" content="dark">
+<style>:root{color-scheme:dark}html{background:#100e1a}</style>
+<title>Look It Up First</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;600&family=Manrope:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>:root{
+  --ground:#100e1a; --ground-2:#0b0913;
+  --surface:#181428; --surface-2:#1e1934;
+  --line:#2a2340; --line-soft:#221c36;
+  --ink:#ECE9F5; --ink-dim:#9a92b6; --ink-faint:#6b6389;
+  --violet:#9b6bff; --teal:#45e0c4; --coral:#ff6f8f;
+  --violet-soft:rgba(155,107,255,.16); --teal-soft:rgba(69,224,196,.14); --coral-soft:rgba(255,111,143,.14);
+  --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px; --s7:48px; --s8:64px; --s9:96px;
+  --r-sm:6px; --r-md:12px; --r-lg:20px;
+  --display:'Unbounded',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --body:'Manrope',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,'SFMono-Regular',Menlo,monospace;
+  --wrap:1080px;
+}
+*,*::before,*::after{box-sizing:border-box}
+body{
+  margin:0; background:var(--ground); color:var(--ink);
+  font-family:var(--body); font-size:clamp(15px,.55vw + 13.6px,17px);
+  line-height:1.65; -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+h1,h2,h3{font-family:var(--display); font-weight:600; line-height:1.12; text-wrap:balance; margin:0}
+h1{font-size:clamp(30px,5.2vw,52px); letter-spacing:-.02em}
+h2{font-size:clamp(21px,2.7vw,30px); letter-spacing:-.01em}
+h3{font-size:clamp(16px,1.5vw,19px); letter-spacing:-.005em}
+p{margin:0; max-width:65ch; overflow-wrap:break-word}
+h1,h2,h3{overflow-wrap:break-word}
+.stack>*,.steps>*,.split>*,.two>*,.hero>*,.machine>*{min-width:0}
+.eyebrow{font-family:var(--mono); font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-faint); margin:0}
+.dim{color:var(--ink-dim)}
+.lede{font-size:clamp(17px,1.5vw,21px); line-height:1.5; color:var(--ink-dim)}
+.wrap{width:min(100% - 2*var(--s5), var(--wrap)); margin-inline:auto}
+@media (max-width:520px){ .wrap{width:min(100% - 2*var(--s4), var(--wrap))} }
+.stack{display:flex; flex-direction:column}
+.g2{gap:var(--s2)} .g3{gap:var(--s3)} .g4{gap:var(--s4)} .g5{gap:var(--s5)} .g6{gap:var(--s6)} .g7{gap:var(--s7)}
+section{padding-block:var(--s7)}
+section + section{border-top:1px solid var(--line-soft)}
+figure{margin:0}
+figcaption{font-size:13.5px; color:var(--ink-dim); margin-top:var(--s3); max-width:62ch}
+svg{max-width:100%; height:auto; display:block}
+.scroll-x{overflow-x:auto; -webkit-overflow-scrolling:touch}
+.card{background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); padding:var(--s5)}
+.tag{font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-faint)}
+/* site header / footer */
+.topbar{display:flex; flex-wrap:wrap; align-items:baseline; gap:var(--s3) var(--s4); padding-block:var(--s5) 0}
+.topbar .num{font-family:var(--mono); font-size:11px; letter-spacing:.16em; color:var(--violet)}
+.foot{padding-block:var(--s6); border-top:1px solid var(--line-soft); color:var(--ink-faint); font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase}
+/* controls */
+button{font-family:inherit; font-size:inherit; color:inherit}
+.btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:var(--s2);
+  min-height:44px; padding:0 var(--s4); border-radius:999px;
+  background:var(--surface-2); border:1px solid var(--line); color:var(--ink);
+  font-family:var(--mono); font-size:12.5px; letter-spacing:.04em;
+  cursor:pointer; transition:background .18s, border-color .18s, color .18s;
+}
+.btn:hover{background:#262046; border-color:#3a3160}
+.btn[aria-pressed="true"], .btn.on{background:var(--violet-soft); border-color:var(--violet); color:#d9c9ff}
+.btn:focus-visible, [tabindex]:focus-visible, input:focus-visible{outline:2px solid var(--teal); outline-offset:3px}
+.controls{display:flex; flex-wrap:wrap; gap:var(--s3); align-items:center}
+input[type="text"]{
+  min-height:44px; width:100%; padding:0 var(--s4); border-radius:999px;
+  background:var(--ground-2); border:1px solid var(--line); color:var(--ink);
+  font-family:var(--body); font-size:16px;
+}
+input[type="range"]{ -webkit-appearance:none; appearance:none; width:100%; height:44px; background:transparent; cursor:pointer }
+input[type="range"]::-webkit-slider-runnable-track{height:4px; border-radius:2px; background:linear-gradient(90deg,var(--teal),var(--violet),var(--coral))}
+input[type="range"]::-moz-range-track{height:4px; border-radius:2px; background:linear-gradient(90deg,var(--teal),var(--violet),var(--coral))}
+input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none; width:22px; height:22px; margin-top:-9px; border-radius:50%; background:var(--ink); border:3px solid var(--ground)}
+input[type="range"]::-moz-range-thumb{width:22px; height:22px; border-radius:50%; background:var(--ink); border:3px solid var(--ground); border-width:3px}
+.sr{position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0}
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important}
+}
+/* mechanism strip — a concept gets a drawing, not a paragraph */
+.mech{display:grid; gap:var(--s5)}
+@media (min-width:720px){ .mech.n2{grid-template-columns:repeat(2,1fr)} }
+@media (min-width:820px){ .mech.n3{grid-template-columns:repeat(3,1fr)} }
+.mech figure{display:flex; flex-direction:column; gap:var(--s3); min-width:0}
+.mech .art{
+  background:var(--ground-2); border:1px solid var(--line-soft); border-radius:var(--r-md);
+  padding:var(--s4); color:var(--ink-faint);
+}
+.mech .art svg{width:100%; height:auto}
+.mech .lab{font-family:var(--mono); font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:var(--violet)}
+.mech figcaption{font-size:14px; line-height:1.55; color:var(--ink-dim); margin-top:0}
+.mech figcaption b{color:var(--ink); font-weight:500; display:block; font-size:15px; margin-bottom:2px}
+.wide-art{background:var(--ground-2); border:1px solid var(--line-soft); border-radius:var(--r-md); padding:var(--s5); color:var(--ink-faint)}
+.wide-art svg{width:100%; height:auto}
+</style>
+<style>
+.rig{background:linear-gradient(165deg,#151125,#0c0a16); border:1px solid var(--line); border-radius:var(--r-lg); padding:var(--s5); display:flex; flex-direction:column; gap:var(--s5)}
+.qs{display:flex; flex-wrap:wrap; gap:var(--s2)}
+.qs .btn{text-transform:none; letter-spacing:0; font-family:var(--body); font-size:14px}
+.qs .btn.trap[aria-pressed="true"]{background:var(--coral-soft); border-color:var(--coral); color:#ffb3c4}
+.map{position:relative; aspect-ratio:1/.92; background:radial-gradient(125% 105% at 32% 22%,#181234,#0a0812 72%); border:1px solid var(--line); border-radius:var(--r-lg); overflow:hidden}
+@media (min-width:760px){ .map{aspect-ratio:16/9} }
+.map svg{position:absolute; inset:0; width:100%; height:100%}
+.clab{position:absolute; transform:translate(-50%,-50%); font-family:var(--mono); font-size:9.5px; letter-spacing:.18em; text-transform:uppercase; color:#635b8a; pointer-events:none; white-space:nowrap}
+.chunk{position:absolute; transform:translate(-50%,-50%); width:9px; height:9px; border-radius:50%; background:#544a7d; box-shadow:0 0 6px rgba(84,74,125,.8); transition:background .3s, box-shadow .3s, width .3s, height .3s}
+.chunk.hit{background:var(--teal); box-shadow:0 0 12px rgba(69,224,196,.75); width:13px; height:13px}
+.rig.trap .chunk.hit{background:var(--coral); box-shadow:0 0 12px rgba(255,111,143,.75)}
+.chunk .cl{position:absolute; left:16px; top:50%; transform:translateY(-50%); font-family:var(--mono); font-size:10px; color:#8ff0dd; white-space:nowrap; opacity:0; transition:opacity .3s; pointer-events:none}
+.chunk.hit .cl{opacity:1}
+.rig.trap .chunk.hit .cl{color:#ffb3c4}
+.qpt{position:absolute; transform:translate(-50%,-50%); width:15px; height:15px; border-radius:50%; background:#ECE9F5; border:3px solid var(--violet); box-shadow:0 0 18px rgba(155,107,255,.7); opacity:0; transition:opacity .35s}
+.qpt.on{opacity:1}
+.stages{display:flex; flex-wrap:wrap; gap:var(--s2); align-items:center}
+.stg{display:flex; align-items:center; gap:var(--s2); padding:7px var(--s3); border-radius:999px; border:1px solid var(--line); background:var(--ground-2); font-family:var(--mono); font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-faint); transition:border-color .3s, color .3s, background .3s}
+.stg.on{border-color:var(--violet); color:#d9c9ff; background:var(--violet-soft)}
+.stages .arw{color:#3a3160; font-size:12px}
+.panes{display:grid; gap:var(--s5)}
+@media (min-width:880px){ .panes{grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:var(--s6)} }
+.pulled{display:flex; flex-direction:column; gap:var(--s2); min-height:150px}
+.pc{border:1px solid rgba(69,224,196,.3); background:rgba(69,224,196,.05); border-radius:var(--r-sm); padding:var(--s3) var(--s4); font-size:13.5px; line-height:1.55; animation:slide .35s ease-out both}
+.rig.trap .pc{border-color:rgba(255,111,143,.3); background:rgba(255,111,143,.05)}
+@keyframes slide{from{opacity:0; transform:translateX(-10px)} to{opacity:1; transform:none}}
+.pc .ref{display:block; margin-top:5px; font-family:var(--mono); font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-faint)}
+.ansbox{border:1px solid rgba(69,224,196,.35); background:rgba(69,224,196,.05); border-radius:var(--r-md); padding:var(--s4); font-size:15px; line-height:1.65; min-height:150px}
+.rig.trap .ansbox{border-color:rgba(255,111,143,.4); background:rgba(255,111,143,.06)}
+.ansbox .cite{font-family:var(--mono); font-size:10.5px; color:var(--teal); vertical-align:super}
+.rig.trap .ansbox .cite{color:var(--coral)}
+.ansbox .verdict{display:block; margin-top:var(--s3); font-family:var(--mono); font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:#8ff0dd}
+.rig.trap .ansbox .verdict{color:#ffb3c4}
+.steps{display:grid; gap:var(--s5)}
+@media (min-width:760px){ .steps{grid-template-columns:repeat(3,1fr)} }
+.step .n{font-family:var(--mono); font-size:11px; letter-spacing:.16em; color:var(--teal)}
+.sowhat{font-family:var(--display); font-size:clamp(19px,2.4vw,27px); line-height:1.35; letter-spacing:-.01em; max-width:28ch}
+.sowhat em{font-style:normal; color:var(--teal)}
+</style>
+</head>
+<body>
+
+
+<style>
+.pagenav{display:flex; flex-wrap:wrap; gap:var(--s4); justify-content:space-between; align-items:center; padding-block:var(--s6); border-top:1px solid var(--line-soft)}
+.pnbtn{display:flex; flex-direction:column; gap:2px; min-height:44px; justify-content:center; padding:var(--s2) var(--s4); border-radius:var(--r-md); text-decoration:none; color:inherit; transition:background .18s; max-width:280px}
+.pnbtn:hover{background:var(--surface-2)}
+.pnbtn.hub{flex-direction:row; align-items:center; background:var(--surface-2); border:1px solid var(--line); border-radius:999px; font-family:var(--mono); font-size:12.5px; letter-spacing:.04em; padding:0 var(--s4); flex:none}
+.pnbtn.next{text-align:right; align-items:flex-end; margin-left:auto}
+.pnk{font-family:var(--mono); font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--violet)}
+.pnt{font-size:14px; color:var(--ink-dim)}
+@media (max-width:640px){ .pagenav{flex-direction:column; align-items:stretch} .pnbtn{max-width:none} .pnbtn.hub{order:-1; justify-content:center} .pnbtn.next{text-align:left; align-items:flex-start; margin-left:0} }
+</style>
+<header class="wrap topbar">
+  <span class="num">MODULE 02 — HOW AI THINKS · 09</span>
+  <span class="tag dim">AI Concepts</span>
+</header>
+
+<section class="wrap stack g6">
+  <div class="stack g4">
+    <h1>Look it up before you answer</h1>
+    <p class="lede">The fix for the last page is not a better model. It is fetching the right page of your handbook and putting it on the desk before the model says anything — a trick usually called RAG.</p>
+  </div>
+
+  <div class="rig" id="rig">
+    <div class="stack g3">
+      <p class="eyebrow">Ask the company handbook</p>
+      <div class="qs" id="qs"></div>
+    </div>
+
+    <div class="map" id="map">
+      <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><g id="links"></g></svg>
+      <div class="qpt" id="qpt"></div>
+    </div>
+    <p class="dim" style="font-size:13.5px">Every dot is a chunk of the handbook, placed by meaning — the same kind of map as <a href="02-tokens-embeddings.html" title="How AI reads language" style="color:var(--teal); text-decoration:underline; text-decoration-style:dotted; text-underline-offset:3px">page 2</a>, built from documents instead of words. Nobody sorted these into folders.</p>
+
+    <div class="stages" id="stages">
+      <span class="stg" data-s="0">question → point</span><span class="arw">→</span>
+      <span class="stg" data-s="1">find nearest chunks</span><span class="arw">→</span>
+      <span class="stg" data-s="2">put them on the desk</span><span class="arw">→</span>
+      <span class="stg" data-s="3">answer from what is there</span>
+    </div>
+
+    <div class="panes">
+      <div class="stack g3">
+        <p class="eyebrow">Pulled onto the desk</p>
+        <div class="pulled" id="pulled" aria-live="polite"></div>
+      </div>
+      <div class="stack g3">
+        <p class="eyebrow">The answer it builds</p>
+        <div class="ansbox" id="ansbox"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="wrap stack g5">
+  <p class="eyebrow">The problem it solves</p>
+  <h2>Your handbook was never in the training data</h2>
+  <div class="wide-art">
+    <svg viewBox="0 0 900 210" role="img" aria-label="The model's training set is a large cloud of public web pages. Your files sit outside it behind a login, with no path in, so questions about them are answered from the public average instead.">
+      <ellipse cx="200" cy="98" rx="180" ry="86" fill="#9b6bff" fill-opacity=".07" stroke="#9b6bff" stroke-opacity=".45"/>
+      <circle cx="150" cy="60" r="3" fill="#9b6bff" fill-opacity=".5"/><circle cx="190" cy="48" r="3" fill="#9b6bff" fill-opacity=".5"/><circle cx="230" cy="72" r="3" fill="#9b6bff" fill-opacity=".5"/><circle cx="120" cy="96" r="3" fill="#9b6bff" fill-opacity=".5"/><circle cx="180" cy="104" r="3" fill="#9b6bff" fill-opacity=".5"/><circle cx="250" cy="110" r="3" fill="#9b6bff" fill-opacity=".5"/><circle cx="210" cy="140" r="3" fill="#9b6bff" fill-opacity=".5"/><circle cx="150" cy="132" r="3" fill="#9b6bff" fill-opacity=".5"/><circle cx="260" cy="66" r="3" fill="#9b6bff" fill-opacity=".5"/><circle cx="120" cy="58" r="3" fill="#9b6bff" fill-opacity=".5"/><circle cx="280" cy="92" r="3" fill="#9b6bff" fill-opacity=".5"/><circle cx="170" cy="76" r="3" fill="#9b6bff" fill-opacity=".5"/>
+      <text x="200" y="30" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" letter-spacing="1.4" fill="#d3bcff">WHAT IT READ — THE PUBLIC INTERNET</text>
+      <rect x="470" y="60" width="150" height="78" rx="9" fill="#45e0c4" fill-opacity=".10" stroke="#45e0c4"/>
+      <rect x="527" y="76" width="36" height="26" rx="4" fill="none" stroke="#45e0c4" stroke-width="1.8"/>
+      <path d="M535 76 v-8 a10 10 0 0 1 20 0 v8" fill="none" stroke="#45e0c4" stroke-width="1.8"/>
+      <text x="545" y="124" text-anchor="middle" font-family="Manrope, sans-serif" font-size="13" fill="#8ff0dd">your files</text>
+      <text x="545" y="44" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="currentColor">behind a login</text>
+      <line x1="386" y1="98" x2="462" y2="98" stroke="#ff6f8f" stroke-width="1.6" stroke-dasharray="5 4"/>
+      <g stroke="#ff6f8f" stroke-width="2.2"><line x1="414" y1="88" x2="434" y2="108"/><line x1="434" y1="88" x2="414" y2="108"/></g>
+      <text x="424" y="130" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="#ffb3c4">no path in</text>
+      <line x1="636" y1="98" x2="683.0" y2="98.0" stroke="#ff6f8f" stroke-width="1.5"/><polygon points="690,98 683.0,102.0 683.0,94.0" fill="#ff6f8f"/>
+      <rect x="700" y="62" width="184" height="74" rx="9" fill="#ff6f8f" fill-opacity=".08" stroke="#ff6f8f" stroke-opacity=".5"/>
+      <text x="792" y="92" text-anchor="middle" font-family="Manrope, sans-serif" font-size="13" fill="#ffb3c4">so it answers with</text>
+      <text x="792" y="112" text-anchor="middle" font-family="Manrope, sans-serif" font-size="13" fill="#ffb3c4">everyone else’s average</text>
+      <text x="450" y="196" text-anchor="middle" font-family="Manrope, sans-serif" font-size="14" fill="#ECE9F5">Retrieval does not teach it anything — it changes what is on the desk before you ask.</text>
+    </svg>
+  </div>
+</section>
+
+<section class="wrap stack g5">
+  <p class="eyebrow">How it works</p>
+  <h2>Three steps, and only the middle one is new</h2>
+  <div class="mech n3">
+    <figure>
+      <div class="art">
+        <svg viewBox="0 0 240 108" role="img" aria-label="Documents are split into chunks and each chunk becomes a point in the store.">
+          <g>
+            <rect x="14" y="18" width="46" height="14" rx="3" fill="currentColor" fill-opacity=".25"/>
+            <rect x="14" y="38" width="46" height="14" rx="3" fill="currentColor" fill-opacity=".25"/>
+            <rect x="14" y="58" width="46" height="14" rx="3" fill="currentColor" fill-opacity=".25"/>
+            <rect x="14" y="78" width="46" height="14" rx="3" fill="currentColor" fill-opacity=".25"/>
+          </g>
+          <text x="37" y="12" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="8" fill="currentColor">chunks</text>
+          <line x1="68" y1="54" x2="93.0" y2="54.0" stroke="#9b6bff" stroke-width="1.5"/><polygon points="100,54 93.0,58.0 93.0,50.0" fill="#9b6bff"/>
+          <rect x="110" y="16" width="118" height="80" rx="6" fill="#9b6bff" fill-opacity=".05" stroke="currentColor" stroke-opacity=".3"/>
+          <circle cx="134" cy="38" r="3.5" fill="#9b6bff"/><circle cx="158" cy="30" r="3.5" fill="#9b6bff"/>
+          <circle cx="186" cy="46" r="3.5" fill="#9b6bff"/><circle cx="146" cy="66" r="3.5" fill="#9b6bff"/>
+          <circle cx="200" cy="76" r="3.5" fill="#9b6bff"/><circle cx="172" cy="82" r="3.5" fill="#9b6bff"/>
+          <text x="169" y="106" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="8" fill="currentColor">the coordinate store</text>
+        </svg>
+      </div>
+      <figcaption><b>Chop the documents into points</b>Same trick as <a href="02-tokens-embeddings.html" title="How AI reads language" style="color:var(--teal); text-decoration:underline; text-decoration-style:dotted; text-underline-offset:3px">page 2</a>, applied to files instead of words.</figcaption>
+    </figure>
+    <figure>
+      <div class="art">
+        <svg viewBox="0 0 240 118" role="img" aria-label="The question is given coordinates by the same method, landing near related chunks even with no shared words.">
+          <rect x="14" y="16" width="118" height="80" rx="6" fill="#9b6bff" fill-opacity=".05" stroke="currentColor" stroke-opacity=".3"/>
+          <circle cx="42" cy="40" r="3.5" fill="#9b6bff" fill-opacity=".5"/><circle cx="66" cy="32" r="3.5" fill="#9b6bff" fill-opacity=".5"/>
+          <circle cx="52" cy="70" r="3.5" fill="#9b6bff" fill-opacity=".5"/><circle cx="104" cy="80" r="3.5" fill="#9b6bff" fill-opacity=".5"/>
+          <circle cx="78" cy="54" r="6" fill="#ECE9F5"/>
+          <text x="78" y="112" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="8" fill="currentColor">“time off” lands by “annual leave”</text>
+          <text x="186" y="44" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="currentColor">no shared</text>
+          <text x="186" y="57" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="currentColor">words needed</text>
+        </svg>
+      </div>
+      <figcaption><b>Land the question on the map</b>Meaning, not keywords, decides what counts as near.</figcaption>
+    </figure>
+    <figure>
+      <div class="art">
+        <svg viewBox="0 0 240 118" role="img" aria-label="The nearest chunks are pasted in above your question and handed to the model together.">
+          <rect x="60" y="12" width="120" height="70" rx="6" fill="#45e0c4" fill-opacity=".07" stroke="#45e0c4" stroke-opacity=".5"/>
+          <rect x="72" y="22" width="96" height="13" rx="3" fill="#45e0c4" fill-opacity=".6"/>
+          <rect x="72" y="39" width="96" height="13" rx="3" fill="#45e0c4" fill-opacity=".6"/>
+          <rect x="72" y="56" width="96" height="13" rx="3" fill="currentColor" fill-opacity=".3"/>
+          <text x="120" y="66" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="8" fill="#ECE9F5">your question</text>
+          <text x="120" y="8" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="8" fill="#8ff0dd">pasted in above, invisibly</text>
+          <line x1="120" y1="88" x2="120" y2="95" stroke="#9b6bff" stroke-width="1.5"/><polygon points="120,102 116.5,95 123.5,95" fill="#9b6bff"/><text x="120" y="114" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="8" fill="currentColor">handed to the model together</text>
+        </svg>
+      </div>
+      <figcaption><b>Paste the nearest few in</b>From here it is ordinary reading comprehension.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section class="wrap stack g5">
+  <p class="eyebrow">See it break</p>
+  <h2>Citations are not proof</h2>
+  <div class="wide-art">
+    <svg viewBox="0 0 900 236" role="img" aria-label="On the map the question sits almost on top of the annual-leave chunks, so retrieval succeeds. In meaning the two senses of leaving are far apart, and no chunk about notice periods exists anywhere, so the correct answer was unreachable.">
+      <text x="0" y="20" font-family="JetBrains Mono, monospace" font-size="10" letter-spacing="1.4" fill="currentColor">ON THE MAP — VERY CLOSE</text>
+      <rect x="0" y="34" width="330" height="146" rx="9" fill="#9b6bff" fill-opacity=".05" stroke="currentColor" stroke-opacity=".25"/>
+      <circle cx="150" cy="96" r="4.5" fill="#ff6f8f"/><circle cx="184" cy="112" r="4.5" fill="#ff6f8f"/><circle cx="132" cy="126" r="4.5" fill="#ff6f8f"/>
+      <circle cx="160" cy="112" r="8" fill="#ECE9F5"/>
+      <line x1="160" y1="112" x2="150" y2="96" stroke="#ff6f8f" stroke-width="1.2" stroke-dasharray="2 2"/>
+      <line x1="160" y1="112" x2="184" y2="112" stroke="#ff6f8f" stroke-width="1.2" stroke-dasharray="2 2"/>
+      <line x1="160" y1="112" x2="132" y2="126" stroke="#ff6f8f" stroke-width="1.2" stroke-dasharray="2 2"/>
+      <text x="160" y="70" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="#ECE9F5">“policy on leaving”</text>
+      <text x="252" y="150" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#ffb3c4">§2.1 §2.4 §2.7</text>
+      <text x="165" y="200" text-anchor="middle" font-family="Manrope, sans-serif" font-size="13" fill="#8ff0dd">retrieval worked perfectly</text>
+
+      <text x="420" y="20" font-family="JetBrains Mono, monospace" font-size="10" letter-spacing="1.4" fill="currentColor">IN MEANING — VERY FAR</text>
+      <rect x="420" y="46" width="200" height="52" rx="8" fill="#45e0c4" fill-opacity=".12" stroke="#45e0c4"/>
+      <text x="520" y="70" text-anchor="middle" font-family="Manrope, sans-serif" font-size="13" fill="#8ff0dd">what was fetched</text>
+      <text x="520" y="88" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="currentColor">time off work</text>
+      <rect x="420" y="122" width="200" height="52" rx="8" fill="#ff6f8f" fill-opacity=".10" stroke="#ff6f8f"/>
+      <text x="520" y="146" text-anchor="middle" font-family="Manrope, sans-serif" font-size="13" fill="#ffb3c4">what was meant</text>
+      <text x="520" y="164" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="currentColor">ending employment</text>
+      <line x1="520" y1="102" x2="520" y2="118" stroke="#ff6f8f" stroke-width="1.6" stroke-dasharray="4 3"/>
+      <g stroke="#ff6f8f" stroke-width="2"><line x1="512" y1="102" x2="528" y2="118"/><line x1="528" y1="102" x2="512" y2="118"/></g>
+      <text x="520" y="200" text-anchor="middle" font-family="Manrope, sans-serif" font-size="13" fill="#ffb3c4">nothing in the system compares these</text>
+
+      <rect x="676" y="46" width="216" height="128" rx="9" fill="none" stroke="currentColor" stroke-opacity=".3" stroke-dasharray="5 5"/>
+      <text x="784" y="86" text-anchor="middle" font-family="Manrope, sans-serif" font-size="13" fill="#ECE9F5">no notice-period</text>
+      <text x="784" y="106" text-anchor="middle" font-family="Manrope, sans-serif" font-size="13" fill="#ECE9F5">chunk exists</text>
+      <text x="784" y="134" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="currentColor">anywhere on the map</text>
+      <text x="784" y="200" text-anchor="middle" font-family="Manrope, sans-serif" font-size="13" fill="currentColor">so “not covered here”</text>
+      <text x="784" y="218" text-anchor="middle" font-family="Manrope, sans-serif" font-size="13" fill="currentColor">was never reachable</text>
+    </svg>
+  </div>
+  <p class="dim">Fluent, genuinely cited, and answering a question nobody asked. After adopting retrieval, hallucination gets rarer and confident irrelevance takes its place.</p>
+</section>
+
+<section class="wrap stack g4">
+  <p class="eyebrow">So what</p>
+  <p class="sowhat">Retrieval moved the hard problem. It is no longer <em>what does the model know</em> — it is whether the right paragraph got picked.</p>
+</section>
+
+<nav class="wrap pagenav" aria-label="Series navigation">
+  <a class="pnbtn prev" href="08-hallucination.html"><span class="pnk">← Prev</span><span class="pnt">Why AI hallucinates</span></a>
+  <a class="pnbtn hub" href="00-atlas.html">All topics</a>
+  <a class="pnbtn next" href="10-three-doors.html"><span class="pnk">Next →</span><span class="pnt">Fine-tuning vs. RAG vs. prompting</span></a>
+</nav>
+<footer class="wrap foot">Part of the AI Concepts series</footer>
+
+<script>
+(function(){
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  var CLUSTERS = [
+    { n:'LEAVE',      x:20, y:22 },
+    { n:'EXPENSES',   x:74, y:19 },
+    { n:'SECURITY',   x:83, y:62 },
+    { n:'ONBOARDING', x:20, y:74 },
+    { n:'WORKING PATTERN', x:50, y:50 }
+  ];
+  var CHUNKS = [
+    { x:14, y:16, t:'Full-time employees receive 22 days of annual leave per year, in addition to public holidays.', r:'Handbook §2.1' },
+    { x:24, y:14, t:'Up to 5 unused leave days may be carried into the following year. Anything above 5 is forfeited.', r:'Handbook §2.3' },
+    { x:18, y:24, t:'Leave requests are approved by your line manager and should be submitted at least two weeks ahead.', r:'Handbook §2.4' },
+    { x:27, y:27, t:'Accrued but untaken leave is paid out in the final salary payment.', r:'Handbook §2.7' },
+    { x:10, y:30, t:'Sick leave is recorded separately and does not count against your annual allowance.', r:'Handbook §2.9' },
+    { x:30, y:8,  t:'The leave year runs from 1 January to 31 December.', r:'Handbook §2.2' },
+    { x:8,  y:8,  t:'Parental leave is covered by the separate family policy.', r:'Handbook §2.8' },
+
+    { x:68, y:14, t:'Meals while travelling are reimbursed up to $40 per day.', r:'Expenses §1.2' },
+    { x:78, y:16, t:'Alcohol is not reimbursable, including on client dinners.', r:'Expenses §1.8' },
+    { x:73, y:24, t:'Receipts must be submitted within 30 days of the expense being incurred.', r:'Expenses §1.5' },
+    { x:66, y:30, t:'Flights under six hours are booked in economy class.', r:'Expenses §2.1' },
+    { x:84, y:28, t:'Mileage is reimbursed at the standard national rate.', r:'Expenses §2.6' },
+    { x:88, y:15, t:'Client entertainment above $200 requires director approval in advance.', r:'Expenses §1.9' },
+    { x:60, y:22, t:'Personal spend on a company card must be repaid within 14 days.', r:'Expenses §3.1' },
+
+    { x:78, y:58, t:'Multi-factor authentication is mandatory on all company accounts.', r:'Security §3.1' },
+    { x:88, y:58, t:'Laptops must have full-disk encryption enabled before first use.', r:'Security §3.4' },
+    { x:78, y:70, t:'Suspected phishing should be forwarded to secops@ and then deleted.', r:'Security §4.2' },
+    { x:88, y:70, t:'Removable USB storage is blocked on managed devices.', r:'Security §3.9' },
+    { x:72, y:64, t:'Passwords are held in the company vault. Sharing them is prohibited.', r:'Security §3.6' },
+    { x:83, y:78, t:'Security incidents must be reported within one hour of discovery.', r:'Security §4.5' },
+
+    { x:14, y:66, t:'IT equipment is issued on day one; your buddy walks you through setup.', r:'Onboarding §1.1' },
+    { x:26, y:66, t:'Every new joiner is assigned a buddy for their first month.', r:'Onboarding §1.3' },
+    { x:14, y:78, t:'The first-week checklist covers accounts, payroll details and team introductions.', r:'Onboarding §1.4' },
+    { x:26, y:78, t:'Probation lasts six months and ends with a written review.', r:'Onboarding §2.2' },
+    { x:20, y:88, t:'A 30-day check-in is held with your manager.', r:'Onboarding §2.4' },
+    { x:8,  y:72, t:'Contracts are signed electronically before the start date.', r:'Onboarding §1.0' },
+
+    { x:46, y:46, t:'Employees are expected in the office two days per week.', r:'Working §1.1' },
+    { x:56, y:48, t:'Core hours are 10:00–16:00; outside those, arrange your day as suits.', r:'Working §1.2' },
+    { x:46, y:56, t:'A one-off $500 home office stipend is available in your first year.', r:'Working §2.1' },
+    { x:57, y:58, t:'Fully remote employees travel to headquarters once per quarter.', r:'Working §2.4' },
+    { x:40, y:62, t:'Wednesdays are meeting-free across all teams.', r:'Working §1.6' },
+    { x:63, y:40, t:'Distributed teams keep at least four hours of overlap.', r:'Working §1.8' }
+  ];
+
+  var QUESTIONS = [
+    { q:'How much time off do I get?', x:19, y:18,
+      a:'You receive 22 days of annual leave a year on top of public holidays<span class="cite">§2.1</span>. Up to 5 unused days carry into the next year and anything beyond that is forfeited<span class="cite">§2.3</span>. Requests go through your line manager, at least two weeks ahead<span class="cite">§2.4</span>.',
+      v:'Right chunks, right answer' },
+    { q:'Can I expense a client dinner?', x:73, y:18,
+      a:'Meals are covered up to $40 per day<span class="cite">§1.2</span>, but alcohol is not reimbursable — explicitly including client dinners<span class="cite">§1.8</span>. Keep the receipt: it has to be submitted within 30 days<span class="cite">§1.5</span>.',
+      v:'Right chunks, right answer' },
+    { q:'Do I have to come into the office?', x:50, y:48,
+      a:'Two days a week in the office is the expectation<span class="cite">§1.1</span>, with core hours of 10:00–16:00 and the rest of the day arranged to suit you<span class="cite">§1.2</span>.',
+      v:'Right chunks, right answer' },
+    { q:'What’s the policy on leaving?', x:20, y:22, trap:true,
+      a:'Leave is approved by your line manager and should be requested at least two weeks in advance<span class="cite">§2.4</span>. You receive 22 days a year<span class="cite">§2.1</span>, and any accrued but untaken leave is paid out in your final salary payment<span class="cite">§2.7</span>.',
+      v:'Real citations · wrong question answered' }
+  ];
+
+  var rig = document.getElementById('rig'), map = document.getElementById('map');
+  var links = document.getElementById('links'), qpt = document.getElementById('qpt');
+  var pulled = document.getElementById('pulled'), ansbox = document.getElementById('ansbox');
+  var qsBox = document.getElementById('qs');
+  var stages = Array.prototype.slice.call(document.querySelectorAll('.stg'));
+
+  CLUSTERS.forEach(function(c){
+    var l = document.createElement('span');
+    l.className = 'clab'; l.textContent = c.n;
+    l.style.left = c.x + '%'; l.style.top = (c.y - 13) + '%';
+    map.appendChild(l);
+  });
+  CHUNKS.forEach(function(c){
+    var d = document.createElement('span');
+    d.className = 'chunk';
+    d.style.left = c.x + '%'; d.style.top = c.y + '%';
+    var lab = document.createElement('span');
+    lab.className = 'cl'; lab.textContent = c.r;
+    d.appendChild(lab);
+    map.appendChild(d);
+    c.el = d;
+  });
+
+  var timers = [];
+  function clearTimers(){ timers.forEach(clearTimeout); timers = []; }
+  function at(ms, fn){ if(reduce) fn(); else timers.push(setTimeout(fn, ms)); }
+
+  function ask(Q, btn){
+    clearTimers();
+    Array.prototype.forEach.call(qsBox.children, function(b){
+      b.classList.toggle('on', b === btn); b.setAttribute('aria-pressed', b === btn);
+    });
+    rig.classList.toggle('trap', !!Q.trap);
+    CHUNKS.forEach(function(c){ c.el.classList.remove('hit'); });
+    links.textContent = ''; pulled.textContent = ''; ansbox.textContent = '';
+    stages.forEach(function(s){ s.classList.remove('on'); });
+
+    var near = CHUNKS.map(function(c){
+      return { c: c, d: Math.hypot(c.x - Q.x, c.y - Q.y) };
+    }).sort(function(a, b){ return a.d - b.d; }).slice(0, 3);
+
+    qpt.classList.remove('on');
+    qpt.style.left = Q.x + '%'; qpt.style.top = Q.y + '%';
+    at(30, function(){ qpt.classList.add('on'); stages[0].classList.add('on'); });
+
+    at(430, function(){
+      stages[1].classList.add('on');
+      near.forEach(function(k){
+        k.c.el.classList.add('hit');
+        var ln = document.createElementNS('http://www.w3.org/2000/svg','line');
+        ln.setAttribute('x1', Q.x); ln.setAttribute('y1', Q.y);
+        ln.setAttribute('x2', k.c.x); ln.setAttribute('y2', k.c.y);
+        ln.setAttribute('stroke', Q.trap ? '#ff6f8f' : '#45e0c4');
+        ln.setAttribute('stroke-width', '0.4');
+        ln.setAttribute('stroke-dasharray', '1.4 1.4');
+        ln.setAttribute('vector-effect', 'non-scaling-stroke');
+        links.appendChild(ln);
+      });
+    });
+
+    at(820, function(){
+      stages[2].classList.add('on');
+      near.forEach(function(k, i){
+        var d = document.createElement('div');
+        d.className = 'pc';
+        d.style.animationDelay = (reduce ? 0 : i * 90) + 'ms';
+        d.textContent = k.c.t;
+        var r = document.createElement('span'); r.className = 'ref'; r.textContent = k.c.r;
+        d.appendChild(r);
+        pulled.appendChild(d);
+      });
+    });
+
+    at(1240, function(){
+      stages[3].classList.add('on');
+      ansbox.innerHTML = Q.a + '<span class="verdict">' + Q.v + '</span>';
+    });
+  }
+
+  QUESTIONS.forEach(function(Q){
+    var b = document.createElement('button');
+    b.className = 'btn' + (Q.trap ? ' trap' : '');
+    b.type = 'button'; b.textContent = Q.q; b.setAttribute('aria-pressed','false');
+    b.addEventListener('click', function(){ ask(Q, b); });
+    qsBox.appendChild(b);
+  });
+
+  ask(QUESTIONS[0], qsBox.children[0]);
+})();
+</script>
+
+</body>
+</html>

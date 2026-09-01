@@ -1,0 +1,383 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Module 6.2 — whether a model runs on your laptop is a file size against a memory size.">
+<meta name="color-scheme" content="dark">
+<style>:root{color-scheme:dark}html{background:#100e1a}</style>
+<title>Datacenter Or Desk</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;600&family=Manrope:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>:root{
+  --ground:#100e1a; --ground-2:#0b0913;
+  --surface:#181428; --surface-2:#1e1934;
+  --line:#2a2340; --line-soft:#221c36;
+  --ink:#ECE9F5; --ink-dim:#9a92b6; --ink-faint:#6b6389;
+  --violet:#9b6bff; --teal:#45e0c4; --coral:#ff6f8f;
+  --violet-soft:rgba(155,107,255,.16); --teal-soft:rgba(69,224,196,.14); --coral-soft:rgba(255,111,143,.14);
+  --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px; --s7:48px; --s8:64px; --s9:96px;
+  --r-sm:6px; --r-md:12px; --r-lg:20px;
+  --display:'Unbounded',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --body:'Manrope',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,'SFMono-Regular',Menlo,monospace;
+  --wrap:1080px;
+}
+*,*::before,*::after{box-sizing:border-box}
+body{
+  margin:0; background:var(--ground); color:var(--ink);
+  font-family:var(--body); font-size:clamp(15px,.55vw + 13.6px,17px);
+  line-height:1.65; -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+h1,h2,h3{font-family:var(--display); font-weight:600; line-height:1.12; text-wrap:balance; margin:0}
+h1{font-size:clamp(30px,5.2vw,52px); letter-spacing:-.02em}
+h2{font-size:clamp(21px,2.7vw,30px); letter-spacing:-.01em}
+h3{font-size:clamp(16px,1.5vw,19px); letter-spacing:-.005em}
+p{margin:0; max-width:65ch; overflow-wrap:break-word}
+h1,h2,h3{overflow-wrap:break-word}
+.stack>*,.steps>*,.split>*,.two>*,.hero>*,.machine>*{min-width:0}
+.eyebrow{font-family:var(--mono); font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-faint); margin:0}
+.dim{color:var(--ink-dim)}
+.lede{font-size:clamp(17px,1.5vw,21px); line-height:1.5; color:var(--ink-dim)}
+.wrap{width:min(100% - 2*var(--s5), var(--wrap)); margin-inline:auto}
+@media (max-width:520px){ .wrap{width:min(100% - 2*var(--s4), var(--wrap))} }
+.stack{display:flex; flex-direction:column}
+.g2{gap:var(--s2)} .g3{gap:var(--s3)} .g4{gap:var(--s4)} .g5{gap:var(--s5)} .g6{gap:var(--s6)} .g7{gap:var(--s7)}
+section{padding-block:var(--s7)}
+section + section{border-top:1px solid var(--line-soft)}
+figure{margin:0}
+figcaption{font-size:13.5px; color:var(--ink-dim); margin-top:var(--s3); max-width:62ch}
+svg{max-width:100%; height:auto; display:block}
+.scroll-x{overflow-x:auto; -webkit-overflow-scrolling:touch}
+.card{background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); padding:var(--s5)}
+.tag{font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-faint)}
+/* site header / footer */
+.topbar{display:flex; flex-wrap:wrap; align-items:baseline; gap:var(--s3) var(--s4); padding-block:var(--s5) 0}
+.topbar .num{font-family:var(--mono); font-size:11px; letter-spacing:.16em; color:var(--violet)}
+.foot{padding-block:var(--s6); border-top:1px solid var(--line-soft); color:var(--ink-faint); font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase}
+/* controls */
+button{font-family:inherit; font-size:inherit; color:inherit}
+.btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:var(--s2);
+  min-height:44px; padding:0 var(--s4); border-radius:999px;
+  background:var(--surface-2); border:1px solid var(--line); color:var(--ink);
+  font-family:var(--mono); font-size:12.5px; letter-spacing:.04em;
+  cursor:pointer; transition:background .18s, border-color .18s, color .18s;
+}
+.btn:hover{background:#262046; border-color:#3a3160}
+.btn[aria-pressed="true"], .btn.on{background:var(--violet-soft); border-color:var(--violet); color:#d9c9ff}
+.btn:focus-visible, [tabindex]:focus-visible, input:focus-visible{outline:2px solid var(--teal); outline-offset:3px}
+.controls{display:flex; flex-wrap:wrap; gap:var(--s3); align-items:center}
+input[type="text"]{
+  min-height:44px; width:100%; padding:0 var(--s4); border-radius:999px;
+  background:var(--ground-2); border:1px solid var(--line); color:var(--ink);
+  font-family:var(--body); font-size:16px;
+}
+input[type="range"]{ -webkit-appearance:none; appearance:none; width:100%; height:44px; background:transparent; cursor:pointer }
+input[type="range"]::-webkit-slider-runnable-track{height:4px; border-radius:2px; background:linear-gradient(90deg,var(--teal),var(--violet),var(--coral))}
+input[type="range"]::-moz-range-track{height:4px; border-radius:2px; background:linear-gradient(90deg,var(--teal),var(--violet),var(--coral))}
+input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none; width:22px; height:22px; margin-top:-9px; border-radius:50%; background:var(--ink); border:3px solid var(--ground)}
+input[type="range"]::-moz-range-thumb{width:22px; height:22px; border-radius:50%; background:var(--ink); border:3px solid var(--ground); border-width:3px}
+.sr{position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0}
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important}
+}
+/* mechanism strip — a concept gets a drawing, not a paragraph */
+.mech{display:grid; gap:var(--s5)}
+@media (min-width:720px){ .mech.n2{grid-template-columns:repeat(2,1fr)} }
+@media (min-width:820px){ .mech.n3{grid-template-columns:repeat(3,1fr)} }
+.mech figure{display:flex; flex-direction:column; gap:var(--s3); min-width:0}
+.mech .art{
+  background:var(--ground-2); border:1px solid var(--line-soft); border-radius:var(--r-md);
+  padding:var(--s4); color:var(--ink-faint);
+}
+.mech .art svg{width:100%; height:auto}
+.mech .lab{font-family:var(--mono); font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:var(--violet)}
+.mech figcaption{font-size:14px; line-height:1.55; color:var(--ink-dim); margin-top:0}
+.mech figcaption b{color:var(--ink); font-weight:500; display:block; font-size:15px; margin-bottom:2px}
+.wide-art{background:var(--ground-2); border:1px solid var(--line-soft); border-radius:var(--r-md); padding:var(--s5); color:var(--ink-faint)}
+.wide-art svg{width:100%; height:auto}
+</style>
+<style>
+.rig{background:linear-gradient(165deg,#151125,#0c0a16); border:1px solid var(--line); border-radius:var(--r-lg); padding:var(--s5); display:flex; flex-direction:column; gap:var(--s5)}
+.dials{display:grid; gap:var(--s5)}
+@media (min-width:760px){ .dials{grid-template-columns:1fr 1fr; gap:var(--s6)} }
+.dial{display:flex; flex-direction:column; gap:var(--s2)}
+.dial .hd{display:flex; justify-content:space-between; align-items:baseline; font-family:var(--mono); font-size:10.5px; letter-spacing:.13em; text-transform:uppercase; color:var(--ink-faint)}
+.dial .hd b{color:var(--ink); font-weight:500; font-size:16px; letter-spacing:0; font-variant-numeric:tabular-nums}
+.gaugewrap{display:flex; flex-direction:column; gap:var(--s3)}
+.gauge{position:relative; height:46px; border-radius:var(--r-md); background:var(--ground-2); border:1px solid var(--line-soft); overflow:hidden}
+.gauge .need{position:absolute; inset:0 auto 0 0; background:linear-gradient(90deg,rgba(155,107,255,.5),rgba(155,107,255,.85)); transition:width .35s}
+.gauge .need.over{background:linear-gradient(90deg,rgba(255,111,143,.5),rgba(255,111,143,.9))}
+.gauge .cap{position:absolute; top:0; bottom:0; width:2px; background:var(--teal); box-shadow:0 0 12px rgba(69,224,196,.7); transition:left .35s}
+.gauge .lbl{position:absolute; left:var(--s3); top:50%; transform:translateY(-50%); font-family:var(--mono); font-size:11.5px; color:#ECE9F5; z-index:2}
+.caplbl{font-family:var(--mono); font-size:10.5px; color:#8ff0dd}
+.verdict{border-radius:var(--r-md); padding:var(--s4); border:1px solid var(--line); background:var(--ground-2); min-height:96px; display:flex; flex-direction:column; gap:var(--s2)}
+.verdict .k{font-family:var(--mono); font-size:10.5px; letter-spacing:.14em; text-transform:uppercase}
+.verdict .t{font-size:15px; line-height:1.6}
+.verdict.good{border-color:rgba(69,224,196,.5); background:rgba(69,224,196,.06)} .verdict.good .k{color:var(--teal)}
+.verdict.slow{border-color:rgba(155,107,255,.5); background:rgba(155,107,255,.08)} .verdict.slow .k{color:var(--violet)}
+.verdict.no{border-color:rgba(255,111,143,.5); background:rgba(255,111,143,.07)} .verdict.no .k{color:var(--coral)}
+.two{display:grid; gap:var(--s4)}
+@media (min-width:820px){ .two{grid-template-columns:1fr 1fr; gap:var(--s5)} }
+.home{border:1px solid var(--line); border-radius:var(--r-lg); padding:var(--s5); display:flex; flex-direction:column; gap:var(--s4)}
+.home.dc{border-top:3px solid var(--violet)} .home.desk{border-top:3px solid var(--teal)}
+.home .k{font-family:var(--mono); font-size:10.5px; letter-spacing:.15em; text-transform:uppercase}
+.home.dc .k{color:var(--violet)} .home.desk .k{color:var(--teal)}
+.home h3{font-size:18px}
+.spec{display:flex; flex-direction:column}
+.spec div{display:flex; gap:var(--s3); padding:8px 0; border-bottom:1px solid var(--line-soft); font-size:13.5px}
+.spec div:last-child{border-bottom:0}
+.spec dt{flex:0 0 88px; font-family:var(--mono); font-size:9.5px; letter-spacing:.13em; text-transform:uppercase; color:var(--ink-faint); padding-top:3px}
+.spec dd{margin:0; flex:1 1 auto; min-width:0}
+.mech .art{color:var(--ink-faint)}
+.sowhat{font-family:var(--display); font-size:clamp(19px,2.4vw,27px); line-height:1.35; letter-spacing:-.01em; max-width:28ch}
+.sowhat em{font-style:normal; color:var(--teal)}
+</style>
+</head>
+<body>
+
+
+<style>
+.pagenav{display:flex; flex-wrap:wrap; gap:var(--s4); justify-content:space-between; align-items:center; padding-block:var(--s6); border-top:1px solid var(--line-soft)}
+.pnbtn{display:flex; flex-direction:column; gap:2px; min-height:44px; justify-content:center; padding:var(--s2) var(--s4); border-radius:var(--r-md); text-decoration:none; color:inherit; transition:background .18s; max-width:280px}
+.pnbtn:hover{background:var(--surface-2)}
+.pnbtn.hub{flex-direction:row; align-items:center; background:var(--surface-2); border:1px solid var(--line); border-radius:999px; font-family:var(--mono); font-size:12.5px; letter-spacing:.04em; padding:0 var(--s4); flex:none}
+.pnbtn.next{text-align:right; align-items:flex-end; margin-left:auto}
+.pnk{font-family:var(--mono); font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--violet)}
+.pnt{font-size:14px; color:var(--ink-dim)}
+@media (max-width:640px){ .pagenav{flex-direction:column; align-items:stretch} .pnbtn{max-width:none} .pnbtn.hub{order:-1; justify-content:center} .pnbtn.next{text-align:left; align-items:flex-start; margin-left:0} }
+</style>
+<header class="wrap topbar">
+  <span class="num">MODULE 06 — BUILD SOMETHING · 20</span>
+  <span class="tag" style="color:var(--coral); border:1px solid rgba(255,111,143,.45); border-radius:999px; padding:3px 9px">BUILDER</span>
+</header>
+
+<section class="wrap stack g6">
+  <div class="stack g4">
+    <h1>Running AI on your own computer</h1>
+    <p class="lede">The same weights have two possible homes. Which one you can use is settled by arithmetic, not opinion — so here is the arithmetic.</p>
+  </div>
+
+  <div class="rig">
+    <div class="dials">
+      <div class="dial">
+        <label class="hd" for="size">Model size <b id="vSize">8B</b></label>
+        <input type="range" id="size" min="0" max="6" step="1" value="2" aria-describedby="verdict">
+        <span class="dim" style="font-size:12px" id="sizeNote"></span>
+      </div>
+      <div class="dial">
+        <label class="hd" for="ram">Your memory <b id="vRam">16 GB</b></label>
+        <input type="range" id="ram" min="0" max="5" step="1" value="2">
+        <span class="dim" style="font-size:12px">Usable memory is always less than installed — the rest runs your machine.</span>
+      </div>
+    </div>
+
+    <div class="gaugewrap">
+      <div class="gauge">
+        <span class="need" id="need"></span>
+        <span class="cap" id="cap"></span>
+        <span class="lbl" id="needLbl"></span>
+      </div>
+      <span class="caplbl" id="capLbl"></span>
+    </div>
+
+    <div class="verdict" id="verdict">
+      <span class="k" id="vK"></span>
+      <span class="t" id="vT"></span>
+    </div>
+    <p class="dim" style="font-size:13.5px">Memory needed ≈ parameters × bytes per parameter, plus room for the desk. Quantising to 4 bits is the single biggest lever, and it costs a little quality.</p>
+  </div>
+</section>
+
+<section class="wrap stack g5">
+  <p class="eyebrow">The problem it explains</p>
+  <h2>Why a model is a file, and files have a size</h2>
+  <div class="wide-art">
+    <svg viewBox="0 0 900 200" role="img" aria-label="Every parameter is a number that must be held in memory while the model runs. Eight billion parameters at two bytes each is sixteen gigabytes; at half a byte each, four gigabytes.">
+      <text x="0" y="18" font-family="JetBrains Mono, monospace" font-size="10" letter-spacing="1.4" fill="currentColor">ONE PARAMETER — THE DIALS FROM PAGE 3</text>
+      <circle cx="26" cy="56" r="15" fill="none" stroke="#9b6bff" stroke-width="1.6"/>
+      <line x1="26" y1="56" x2="34" y2="45" stroke="#9b6bff" stroke-width="2"/>
+      <text x="56" y="52" font-family="Manrope, sans-serif" font-size="13.5" fill="#ECE9F5">one number</text>
+      <text x="56" y="70" font-family="JetBrains Mono, monospace" font-size="10.5" fill="currentColor">held in memory the whole time it runs</text>
+      <line x1="0" y1="92" x2="900" y2="92" stroke="currentColor" stroke-opacity=".2"/>
+      <text x="0" y="118" font-family="JetBrains Mono, monospace" font-size="11" fill="#ECE9F5">8B × 2 bytes</text>
+      <rect x="130" y="106" width="320" height="16" rx="4" fill="#9b6bff" fill-opacity=".7"/>
+      <text x="462" y="118" font-family="JetBrains Mono, monospace" font-size="11" fill="currentColor">≈ 16 GB — full precision</text>
+      <text x="0" y="150" font-family="JetBrains Mono, monospace" font-size="11" fill="#ECE9F5">8B × 0.5 bytes</text>
+      <rect x="130" y="138" width="80" height="16" rx="4" fill="#45e0c4" fill-opacity=".7"/>
+      <text x="222" y="150" font-family="JetBrains Mono, monospace" font-size="11" fill="#8ff0dd">≈ 4 GB — quantised to 4 bits</text>
+      <text x="0" y="186" font-family="Manrope, sans-serif" font-size="13.5" fill="currentColor">Same model, same weights, rounded coarser. Most of what it knows survives the rounding.</text>
+    </svg>
+  </div>
+</section>
+
+<section class="wrap stack g5">
+  <p class="eyebrow">Two homes</p>
+  <h2>Rented, or on your desk</h2>
+  <div class="wide-art">
+    <svg viewBox="0 0 900 300" role="img"
+         aria-label="Two routes for the same request. Rented: your text leaves the room, crosses the internet to someone else's machine, and the answer comes back, billed per token. Local: your text goes to a file on your own disk and never crosses the boundary, with no per-token cost but a hard size limit.">
+      <line x1="0" y1="150" x2="900" y2="150" stroke="currentColor" stroke-opacity=".18"/>
+
+      <text x="0" y="20" font-family="JetBrains Mono, monospace" font-size="10" letter-spacing="1.4" fill="#d3bcff">RENTED IN A DATACENTER</text>
+      <rect x="0" y="40" width="130" height="46" rx="8" fill="none" stroke="currentColor" stroke-opacity=".45"/>
+      <text x="65" y="68" text-anchor="middle" font-family="Manrope, sans-serif" font-size="13" fill="#ECE9F5">your text</text>
+      <line x1="138" y1="63" x2="228" y2="63" stroke="#9b6bff" stroke-width="1.6"/><polygon points="236,63 228,59 228,67" fill="#9b6bff"/>
+      <line x1="186" y1="26" x2="186" y2="112" stroke="#ff6f8f" stroke-width="2" stroke-dasharray="6 5"/>
+      <text x="186" y="126" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9.5" fill="#ffb3c4">leaves the room</text>
+      <rect x="246" y="34" width="210" height="58" rx="9" fill="#9b6bff" fill-opacity=".14" stroke="#9b6bff"/>
+      <text x="351" y="58" text-anchor="middle" font-family="Manrope, sans-serif" font-size="13.5" fill="#ECE9F5">their machine</text>
+      <text x="351" y="78" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="#d3bcff">any size, including the largest</text>
+      <line x1="464" y1="63" x2="546" y2="63" stroke="#9b6bff" stroke-width="1.6"/><polygon points="554,63 546,59 546,67" fill="#9b6bff"/>
+      <rect x="564" y="40" width="120" height="46" rx="8" fill="none" stroke="currentColor" stroke-opacity=".45"/>
+      <text x="624" y="68" text-anchor="middle" font-family="Manrope, sans-serif" font-size="13" fill="#ECE9F5">the answer</text>
+      <text x="712" y="52" font-family="JetBrains Mono, monospace" font-size="10" fill="currentColor">billed per token</text>
+      <text x="712" y="70" font-family="JetBrains Mono, monospace" font-size="10" fill="currentColor">no hardware to buy</text>
+      <text x="712" y="88" font-family="JetBrains Mono, monospace" font-size="10" fill="currentColor">needs a connection</text>
+
+      <text x="0" y="182" font-family="JetBrains Mono, monospace" font-size="10" letter-spacing="1.4" fill="#8ff0dd">DOWNLOADED TO YOUR MACHINE</text>
+      <rect x="0" y="202" width="130" height="46" rx="8" fill="none" stroke="currentColor" stroke-opacity=".45"/>
+      <text x="65" y="230" text-anchor="middle" font-family="Manrope, sans-serif" font-size="13" fill="#ECE9F5">your text</text>
+      <line x1="138" y1="225" x2="228" y2="225" stroke="#45e0c4" stroke-width="1.6"/><polygon points="236,225 228,221 228,229" fill="#45e0c4"/>
+      <line x1="186" y1="188" x2="186" y2="274" stroke="currentColor" stroke-width="2" stroke-opacity=".25" stroke-dasharray="6 5"/>
+      <text x="186" y="288" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9.5" fill="#8ff0dd">never crossed</text>
+      <rect x="246" y="196" width="210" height="58" rx="9" fill="#45e0c4" fill-opacity=".12" stroke="#45e0c4"/>
+      <text x="351" y="220" text-anchor="middle" font-family="Manrope, sans-serif" font-size="13.5" fill="#ECE9F5">a file on your disk</text>
+      <text x="351" y="240" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="#8ff0dd">bounded by the gauge above</text>
+      <line x1="464" y1="225" x2="546" y2="225" stroke="#45e0c4" stroke-width="1.6"/><polygon points="554,225 546,221 546,229" fill="#45e0c4"/>
+      <rect x="564" y="202" width="120" height="46" rx="8" fill="none" stroke="currentColor" stroke-opacity=".45"/>
+      <text x="624" y="230" text-anchor="middle" font-family="Manrope, sans-serif" font-size="13" fill="#ECE9F5">the answer</text>
+      <text x="712" y="214" font-family="JetBrains Mono, monospace" font-size="10" fill="currentColor">no per-token cost</text>
+      <text x="712" y="232" font-family="JetBrains Mono, monospace" font-size="10" fill="currentColor">works with no internet</text>
+      <text x="712" y="250" font-family="JetBrains Mono, monospace" font-size="10" fill="currentColor">hard size ceiling</text>
+    </svg>
+  </div>
+  <p class="dim">The only structural difference is that red boundary. “Free” means free of per-token cost — the bill was the laptop.</p>
+</section>
+
+<section class="wrap stack g5">
+  <p class="eyebrow">How it works</p>
+  <h2>Three steps, then it is yours</h2>
+  <div class="mech n3">
+    <figure>
+      <div class="art">
+        <svg viewBox="0 0 240 112" role="img" aria-label="A weights file of several gigabytes is downloaded once to your disk.">
+          <rect x="20" y="18" width="60" height="42" rx="6" fill="#9b6bff" fill-opacity=".16" stroke="#9b6bff" stroke-opacity=".6"/>
+          <text x="50" y="44" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9.5" fill="#d3bcff">weights</text>
+          <line x1="88" y1="39" x2="132" y2="39" stroke="currentColor" stroke-width="1.4"/><polygon points="139,39 131,35 131,43" fill="currentColor"/>
+          <rect x="146" y="18" width="74" height="42" rx="6" fill="none" stroke="currentColor" stroke-opacity=".5"/>
+          <text x="183" y="44" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9.5" fill="#ECE9F5">your disk</text>
+          <text x="120" y="84" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9.5" fill="currentColor">a few GB, once</text>
+          <text x="120" y="99" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="currentColor">then never again</text>
+        </svg>
+      </div>
+      <figcaption><b>Download once</b>A file, like any other. Nothing phones home after this.</figcaption>
+    </figure>
+    <figure>
+      <div class="art">
+        <svg viewBox="0 0 240 112" role="img" aria-label="At run time the whole file is loaded into memory; if it does not fit, the machine spills to disk and slows dramatically.">
+          <rect x="18" y="22" width="204" height="34" rx="6" fill="none" stroke="currentColor" stroke-opacity=".45"/>
+          <rect x="20" y="24" width="120" height="30" rx="4" fill="#45e0c4" fill-opacity=".45"/>
+          <text x="80" y="44" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9.5" fill="#04302a">fits in memory</text>
+          <text x="182" y="44" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="currentColor">headroom</text>
+          <rect x="18" y="66" width="204" height="30" rx="6" fill="none" stroke="#ff6f8f" stroke-opacity=".5"/>
+          <rect x="20" y="68" width="200" height="26" rx="4" fill="#ff6f8f" fill-opacity=".35"/>
+          <text x="120" y="86" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9.5" fill="#ffb3c4">does not fit — spills to disk</text>
+        </svg>
+      </div>
+      <figcaption><b>Load into memory</b>All of it, at once. Spilling to disk is the difference between usable and unusable.</figcaption>
+    </figure>
+    <figure>
+      <div class="art">
+        <svg viewBox="0 0 240 112" role="img" aria-label="Generation then runs exactly as on page 3, only on your own processor and at your machine's speed.">
+          <rect x="16" y="20" width="88" height="30" rx="6" fill="#9b6bff" fill-opacity=".16" stroke="#9b6bff" stroke-opacity=".6"/>
+          <text x="60" y="39" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9.5" fill="#d3bcff">next word</text>
+          <path d="M104 35 L128 35" stroke="currentColor" stroke-width="1.4"/><polygon points="135,35 127,31 127,39" fill="currentColor"/>
+          <rect x="142" y="20" width="80" height="30" rx="6" fill="#45e0c4" fill-opacity=".16" stroke="#45e0c4" stroke-opacity=".6"/>
+          <text x="182" y="39" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9.5" fill="#8ff0dd">and again</text>
+          <text x="120" y="76" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9.5" fill="currentColor">identical to page 3</text>
+          <text x="120" y="94" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="currentColor">at your machine’s speed, not theirs</text>
+        </svg>
+      </div>
+      <figcaption><b>Generate</b>The same loop from <a href="03-what-is-an-llm.html" title="What is an LLM?" style="color:var(--teal); text-decoration:underline; text-decoration-style:dotted; text-underline-offset:3px">page 3</a>, running on your processor.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section class="wrap stack g4">
+  <p class="eyebrow">So what</p>
+  <p class="sowhat">Whether a model runs on your laptop is not a question about AI. It is <em>a file size against a memory size.</em></p>
+</section>
+
+<nav class="wrap pagenav" aria-label="Series navigation">
+  <a class="pnbtn prev" href="19-first-app.html"><span class="pnk">← Prev</span><span class="pnt">Create your first AI app</span></a>
+  <a class="pnbtn hub" href="00-atlas.html">All topics</a>
+  <a class="pnbtn next" href="21-injection.html"><span class="pnk">Next →</span><span class="pnt">Anything on the desk gives orders</span></a>
+</nav>
+<footer class="wrap foot">Part of the AI Concepts series</footer>
+
+<script>
+(function(){
+  var SIZES = [
+    { b:1,   nm:'1B',   note:'Tiny. Fine for tidying text; will disappoint you at reasoning.' },
+    { b:3,   nm:'3B',   note:'Small. Summaries, classification, simple rewriting.' },
+    { b:8,   nm:'8B',   note:'The common laptop size. Genuinely useful for everyday tasks.' },
+    { b:14,  nm:'14B',  note:'Noticeably better, and starting to want a good machine.' },
+    { b:32,  nm:'32B',  note:'Strong. Needs a workstation or a serious GPU.' },
+    { b:70,  nm:'70B',  note:'Approaching hosted quality. Rare on a laptop.' },
+    { b:400, nm:'400B+', note:'Frontier scale. This one only ever lives in a datacenter.' }
+  ];
+  var RAMS = [4, 8, 16, 24, 32, 64];
+  var QUANT = 0.5; // bytes per parameter at 4-bit
+  var OVERHEAD = 1.2; // GB for the context window and runtime
+
+  var size = document.getElementById('size'), ram = document.getElementById('ram');
+  var vSize = document.getElementById('vSize'), vRam = document.getElementById('vRam');
+  var sizeNote = document.getElementById('sizeNote');
+  var need = document.getElementById('need'), capEl = document.getElementById('cap');
+  var needLbl = document.getElementById('needLbl'), capLbl = document.getElementById('capLbl');
+  var verdict = document.getElementById('verdict'), vK = document.getElementById('vK'), vT = document.getElementById('vT');
+
+  function render(){
+    var s = SIZES[+size.value], r = RAMS[+ram.value];
+    var usable = r * 0.75;
+    var gb = s.b * QUANT + OVERHEAD;
+    var scaleMax = Math.max(gb, usable) * 1.15;
+
+    vSize.textContent = s.nm; vRam.textContent = r + ' GB';
+    sizeNote.textContent = s.note;
+    need.style.width = Math.min(100, gb / scaleMax * 100) + '%';
+    capEl.style.left = Math.min(100, usable / scaleMax * 100) + '%';
+    needLbl.textContent = gb.toFixed(1) + ' GB needed at 4-bit';
+    capLbl.textContent = '▲ ' + usable.toFixed(0) + ' GB usable of your ' + r + ' GB';
+
+    var ratio = gb / usable;
+    need.classList.toggle('over', ratio > 1);
+    if(ratio <= 0.7){
+      verdict.className = 'verdict good';
+      vK.textContent = 'Runs comfortably';
+      vT.textContent = 'It fits with room to spare, so the desk can be large too. This is the combination worth choosing on purpose.';
+    } else if(ratio <= 1){
+      verdict.className = 'verdict slow';
+      vK.textContent = 'Runs, but tight';
+      vT.textContent = 'It loads, and then competes with everything else you have open. Expect it to slow down as the conversation gets longer, because the desk needs memory as well.';
+    } else if(ratio <= 1.6){
+      verdict.className = 'verdict no';
+      vK.textContent = 'Spills to disk';
+      vT.textContent = 'Too big to hold at once, so your machine shuffles parts between memory and disk for every single word. It technically works, at roughly the pace of handwriting.';
+    } else {
+      verdict.className = 'verdict no';
+      vK.textContent = 'Will not load';
+      vT.textContent = 'Not close. This is the honest answer to “can I run the big one locally” — and why the datacenter exists at all.';
+    }
+  }
+  size.addEventListener('input', render);
+  ram.addEventListener('input', render);
+  render();
+})();
+</script>
+
+</body>
+</html>

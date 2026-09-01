@@ -1,0 +1,428 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Module 2.1 — training happens once and freezes; using changes nothing about the model.">
+<meta name="color-scheme" content="dark">
+<style>:root{color-scheme:dark}html{background:#100e1a}</style>
+<title>The Cutoff Line</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;600&family=Manrope:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>:root{
+  --ground:#100e1a; --ground-2:#0b0913;
+  --surface:#181428; --surface-2:#1e1934;
+  --line:#2a2340; --line-soft:#221c36;
+  --ink:#ECE9F5; --ink-dim:#9a92b6; --ink-faint:#6b6389;
+  --violet:#9b6bff; --teal:#45e0c4; --coral:#ff6f8f;
+  --violet-soft:rgba(155,107,255,.16); --teal-soft:rgba(69,224,196,.14); --coral-soft:rgba(255,111,143,.14);
+  --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px; --s7:48px; --s8:64px; --s9:96px;
+  --r-sm:6px; --r-md:12px; --r-lg:20px;
+  --display:'Unbounded',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --body:'Manrope',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,'SFMono-Regular',Menlo,monospace;
+  --wrap:1080px;
+}
+*,*::before,*::after{box-sizing:border-box}
+body{
+  margin:0; background:var(--ground); color:var(--ink);
+  font-family:var(--body); font-size:clamp(15px,.55vw + 13.6px,17px);
+  line-height:1.65; -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+h1,h2,h3{font-family:var(--display); font-weight:600; line-height:1.12; text-wrap:balance; margin:0}
+h1{font-size:clamp(30px,5.2vw,52px); letter-spacing:-.02em}
+h2{font-size:clamp(21px,2.7vw,30px); letter-spacing:-.01em}
+h3{font-size:clamp(16px,1.5vw,19px); letter-spacing:-.005em}
+p{margin:0; max-width:65ch; overflow-wrap:break-word}
+h1,h2,h3{overflow-wrap:break-word}
+.stack>*,.steps>*,.split>*,.two>*,.hero>*,.machine>*{min-width:0}
+.eyebrow{font-family:var(--mono); font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-faint); margin:0}
+.dim{color:var(--ink-dim)}
+.lede{font-size:clamp(17px,1.5vw,21px); line-height:1.5; color:var(--ink-dim)}
+.wrap{width:min(100% - 2*var(--s5), var(--wrap)); margin-inline:auto}
+@media (max-width:520px){ .wrap{width:min(100% - 2*var(--s4), var(--wrap))} }
+.stack{display:flex; flex-direction:column}
+.g2{gap:var(--s2)} .g3{gap:var(--s3)} .g4{gap:var(--s4)} .g5{gap:var(--s5)} .g6{gap:var(--s6)} .g7{gap:var(--s7)}
+section{padding-block:var(--s7)}
+section + section{border-top:1px solid var(--line-soft)}
+figure{margin:0}
+figcaption{font-size:13.5px; color:var(--ink-dim); margin-top:var(--s3); max-width:62ch}
+svg{max-width:100%; height:auto; display:block}
+.scroll-x{overflow-x:auto; -webkit-overflow-scrolling:touch}
+.card{background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); padding:var(--s5)}
+.tag{font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-faint)}
+/* site header / footer */
+.topbar{display:flex; flex-wrap:wrap; align-items:baseline; gap:var(--s3) var(--s4); padding-block:var(--s5) 0}
+.topbar .num{font-family:var(--mono); font-size:11px; letter-spacing:.16em; color:var(--violet)}
+.foot{padding-block:var(--s6); border-top:1px solid var(--line-soft); color:var(--ink-faint); font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase}
+/* controls */
+button{font-family:inherit; font-size:inherit; color:inherit}
+.btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:var(--s2);
+  min-height:44px; padding:0 var(--s4); border-radius:999px;
+  background:var(--surface-2); border:1px solid var(--line); color:var(--ink);
+  font-family:var(--mono); font-size:12.5px; letter-spacing:.04em;
+  cursor:pointer; transition:background .18s, border-color .18s, color .18s;
+}
+.btn:hover{background:#262046; border-color:#3a3160}
+.btn[aria-pressed="true"], .btn.on{background:var(--violet-soft); border-color:var(--violet); color:#d9c9ff}
+.btn:focus-visible, [tabindex]:focus-visible, input:focus-visible{outline:2px solid var(--teal); outline-offset:3px}
+.controls{display:flex; flex-wrap:wrap; gap:var(--s3); align-items:center}
+input[type="text"]{
+  min-height:44px; width:100%; padding:0 var(--s4); border-radius:999px;
+  background:var(--ground-2); border:1px solid var(--line); color:var(--ink);
+  font-family:var(--body); font-size:16px;
+}
+input[type="range"]{ -webkit-appearance:none; appearance:none; width:100%; height:44px; background:transparent; cursor:pointer }
+input[type="range"]::-webkit-slider-runnable-track{height:4px; border-radius:2px; background:linear-gradient(90deg,var(--teal),var(--violet),var(--coral))}
+input[type="range"]::-moz-range-track{height:4px; border-radius:2px; background:linear-gradient(90deg,var(--teal),var(--violet),var(--coral))}
+input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none; width:22px; height:22px; margin-top:-9px; border-radius:50%; background:var(--ink); border:3px solid var(--ground)}
+input[type="range"]::-moz-range-thumb{width:22px; height:22px; border-radius:50%; background:var(--ink); border:3px solid var(--ground); border-width:3px}
+.sr{position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0}
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important}
+}
+/* mechanism strip — a concept gets a drawing, not a paragraph */
+.mech{display:grid; gap:var(--s5)}
+@media (min-width:720px){ .mech.n2{grid-template-columns:repeat(2,1fr)} }
+@media (min-width:820px){ .mech.n3{grid-template-columns:repeat(3,1fr)} }
+.mech figure{display:flex; flex-direction:column; gap:var(--s3); min-width:0}
+.mech .art{
+  background:var(--ground-2); border:1px solid var(--line-soft); border-radius:var(--r-md);
+  padding:var(--s4); color:var(--ink-faint);
+}
+.mech .art svg{width:100%; height:auto}
+.mech .lab{font-family:var(--mono); font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:var(--violet)}
+.mech figcaption{font-size:14px; line-height:1.55; color:var(--ink-dim); margin-top:0}
+.mech figcaption b{color:var(--ink); font-weight:500; display:block; font-size:15px; margin-bottom:2px}
+.wide-art{background:var(--ground-2); border:1px solid var(--line-soft); border-radius:var(--r-md); padding:var(--s5); color:var(--ink-faint)}
+.wide-art svg{width:100%; height:auto}
+</style>
+<style>
+.rig{background:linear-gradient(165deg,#151125,#0c0a16); border:1px solid var(--line); border-radius:var(--r-lg); padding:var(--s5); display:flex; flex-direction:column; gap:var(--s5)}
+.tl{position:relative; height:118px; border-radius:var(--r-md); overflow:hidden; background:var(--ground-2); border:1px solid var(--line-soft); touch-action:none}
+.tl .band{position:absolute; top:0; bottom:0}
+.tl .train{left:0; background:linear-gradient(90deg,rgba(155,107,255,.05),rgba(155,107,255,.22))}
+.tl .use{right:0; background:rgba(69,224,196,.07)}
+.tl .bandlab{position:absolute; top:11px; font-family:var(--mono); font-size:10.5px; letter-spacing:.15em; text-transform:uppercase}
+.tl .bandlab.l{color:#d3bcff} .tl .bandlab.r{color:#8ff0dd}
+.tl .sub{position:absolute; top:31px; font-family:var(--body); font-size:12.5px; color:var(--ink-faint); max-width:46%}
+.cut{position:absolute; top:0; bottom:0; width:2px; background:var(--coral); box-shadow:0 0 16px rgba(255,111,143,.6); z-index:5; cursor:ew-resize}
+.cut::after{content:''; position:absolute; left:-13px; right:-13px; top:0; bottom:0}
+.cut .knob{position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); width:26px; height:44px; border-radius:8px; background:var(--coral); display:flex; align-items:center; justify-content:center; color:#2a0d15; font-family:var(--mono); font-size:13px}
+.cut:focus-visible{outline:2px solid var(--teal); outline-offset:2px}
+.ev{position:absolute; bottom:12px; transform:translateX(-50%); display:flex; flex-direction:column; align-items:center; gap:5px; width:max-content}
+.ev .pin{width:9px; height:9px; border-radius:50%; background:var(--ink-faint); transition:background .25s, box-shadow .25s}
+.ev .cap{font-family:var(--mono); font-size:10px; letter-spacing:.04em; color:var(--ink-faint); white-space:nowrap; transition:color .25s}
+.ev.known .pin{background:var(--teal); box-shadow:0 0 10px rgba(69,224,196,.6)}
+.ev.known .cap{color:#8ff0dd}
+.ev.unknown .pin{background:#3a3160}
+.ev.unknown .cap{color:#4d4668}
+.ev.lookup .pin{background:var(--violet); box-shadow:0 0 10px rgba(155,107,255,.6)}
+.ev.lookup .cap{color:#d3bcff}
+.evlist{display:grid; gap:var(--s2)}
+@media (min-width:720px){ .evlist{grid-template-columns:1fr 1fr; gap:var(--s2) var(--s5)} }
+.evrow{display:flex; align-items:center; gap:var(--s3); padding:9px var(--s3); border-radius:var(--r-sm); background:var(--ground-2); border:1px solid var(--line-soft); min-height:44px}
+.evrow .yr{font-family:var(--mono); font-size:11.5px; color:var(--ink-faint); font-variant-numeric:tabular-nums; flex:0 0 auto}
+.evrow .nm{font-size:13.5px; flex:1 1 auto; min-width:0}
+.evrow .st{font-family:var(--mono); font-size:10px; letter-spacing:.1em; text-transform:uppercase; flex:0 0 auto}
+.evrow.known{border-color:rgba(69,224,196,.4)} .evrow.known .st{color:#8ff0dd}
+.evrow.unknown .nm{color:var(--ink-faint)} .evrow.unknown .st{color:#4d4668}
+.evrow.lookup{border-color:rgba(155,107,255,.4)} .evrow.lookup .st{color:#d3bcff}
+.askbox{display:grid; gap:var(--s4)}
+@media (min-width:720px){ .askbox{grid-template-columns:1fr 1fr} }
+.qa{border:1px solid var(--line); border-radius:var(--r-md); padding:var(--s4); display:flex; flex-direction:column; gap:var(--s2); background:var(--surface)}
+.qa .q{font-family:var(--mono); font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-faint)}
+.qa .a{font-size:14.5px}
+.qa.bad{border-color:rgba(255,111,143,.4); background:rgba(255,111,143,.06)}
+.qa.bad .a{color:#ffb3c4}
+.steps{display:grid; gap:var(--s5)}
+@media (min-width:760px){ .steps{grid-template-columns:repeat(2,1fr)} }
+.step .n{font-family:var(--mono); font-size:11px; letter-spacing:.16em; color:var(--violet)}
+.sowhat{font-family:var(--display); font-size:clamp(19px,2.4vw,27px); line-height:1.35; letter-spacing:-.01em; max-width:27ch}
+.sowhat em{font-style:normal; color:var(--coral)}
+</style>
+</head>
+<body>
+
+
+<style>
+.pagenav{display:flex; flex-wrap:wrap; gap:var(--s4); justify-content:space-between; align-items:center; padding-block:var(--s6); border-top:1px solid var(--line-soft)}
+.pnbtn{display:flex; flex-direction:column; gap:2px; min-height:44px; justify-content:center; padding:var(--s2) var(--s4); border-radius:var(--r-md); text-decoration:none; color:inherit; transition:background .18s; max-width:280px}
+.pnbtn:hover{background:var(--surface-2)}
+.pnbtn.hub{flex-direction:row; align-items:center; background:var(--surface-2); border:1px solid var(--line); border-radius:999px; font-family:var(--mono); font-size:12.5px; letter-spacing:.04em; padding:0 var(--s4); flex:none}
+.pnbtn.next{text-align:right; align-items:flex-end; margin-left:auto}
+.pnk{font-family:var(--mono); font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--violet)}
+.pnt{font-size:14px; color:var(--ink-dim)}
+@media (max-width:640px){ .pagenav{flex-direction:column; align-items:stretch} .pnbtn{max-width:none} .pnbtn.hub{order:-1; justify-content:center} .pnbtn.next{text-align:left; align-items:flex-start; margin-left:0} }
+</style>
+<header class="wrap topbar">
+  <span class="num">MODULE 02 — HOW AI THINKS · 05</span>
+  <span class="tag dim">AI Concepts</span>
+</header>
+
+<section class="wrap stack g6">
+  <div class="stack g4">
+    <h1>Training vs. using</h1>
+    <p class="lede">Two completely different events get called “AI”. One took months and happened once. The other takes a second and happens every time you type.</p>
+  </div>
+
+  <div class="rig">
+    <div class="tl" id="tl">
+      <div class="band train" id="bandTrain"></div>
+      <div class="band use" id="bandUse"></div>
+      <span class="bandlab l" style="left:14px">TRAINING · once</span>
+      <span class="sub" id="subTrain" style="left:14px">Months of compute. Enormously expensive. Everything it will ever know is fixed here.</span>
+      <span class="bandlab r" id="labUse">USING · every chat</span>
+      <span class="sub" id="subUse">Instant. Cheap. Changes nothing about the model.</span>
+      <div class="cut" id="cut" tabindex="0" role="slider" aria-label="Knowledge cutoff position" aria-valuemin="1" aria-valuemax="10" aria-valuenow="6">
+        <span class="knob" aria-hidden="true">↔</span>
+      </div>
+      <div id="pins"></div>
+    </div>
+
+    <p class="dim" style="font-size:13.5px">Drag the red line — that is the <strong style="color:var(--ink); font-weight:500">knowledge cutoff</strong>. Different models are trained at different times, so it sits in a different place for each one.</p>
+
+    <div class="evlist" id="evlist"></div>
+
+    <div class="controls">
+      <button class="btn" id="lookup" type="button" aria-pressed="false">Give it a way to look things up</button>
+    </div>
+
+    <div class="askbox">
+      <div class="qa" id="qaKnown">
+        <span class="q">Asked about something before the line</span>
+        <span class="a">Answers from memory, instantly, and is usually right.</span>
+      </div>
+      <div class="qa bad" id="qaUnknown">
+        <span class="q">Asked about something after the line</span>
+        <span class="a">The dangerous case: it does not know that it does not know, so it often answers anyway.</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="wrap stack g5">
+  <p class="eyebrow">The problem it explains</p>
+  <h2>Talking to it does not teach it</h2>
+  <p class="dim">People assume a correction sticks. It does not: nothing you type during Using ever reaches the numbers set during Training.</p>
+  <figure class="scroll-x">
+    <svg viewBox="0 0 900 300" role="img" style="min-width:640px"
+         aria-label="Training writes to the model's parameters and happens once. Using reads from those parameters and writes only to the context window, which is discarded when the chat ends. No arrow leads from using back into the parameters.">
+      <defs>
+        <marker id="a5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0 0 L10 5 L0 10 z" fill="currentColor"/>
+        </marker>
+      </defs>
+      <rect x="330" y="112" width="240" height="76" rx="12" fill="rgba(155,107,255,.14)" stroke="rgba(155,107,255,.5)"/>
+      <text x="450" y="145" text-anchor="middle" font-family="Manrope, sans-serif" font-size="15" fill="#ECE9F5">the model’s numbers</text>
+      <text x="450" y="167" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" fill="#9a92b6">set once, then frozen</text>
+
+      <text x="24" y="40" font-family="JetBrains Mono, monospace" font-size="12" letter-spacing="1.6" fill="#d3bcff">TRAINING</text>
+      <rect x="24" y="56" width="180" height="60" rx="10" fill="#1e1934" stroke="#2a2340"/>
+      <text x="114" y="92" text-anchor="middle" font-family="Manrope, sans-serif" font-size="13.5" fill="#ECE9F5">a mountain of text</text>
+      <g stroke="#9b6bff" color="#9b6bff" fill="none" stroke-width="1.8">
+        <path d="M114 124 L114 150 L322 150" marker-end="url(#a5)"/>
+      </g>
+      <text x="130" y="172" font-family="JetBrains Mono, monospace" font-size="11" fill="#d3bcff">writes</text>
+
+      <text x="700" y="40" font-family="JetBrains Mono, monospace" font-size="12" letter-spacing="1.6" fill="#8ff0dd">USING</text>
+      <rect x="676" y="56" width="200" height="60" rx="10" fill="#1e1934" stroke="#2a2340"/>
+      <text x="776" y="92" text-anchor="middle" font-family="Manrope, sans-serif" font-size="13.5" fill="#ECE9F5">your message</text>
+      <g stroke="#45e0c4" color="#45e0c4" fill="none" stroke-width="1.8">
+        <path d="M776 124 L776 150 L578 150" marker-end="url(#a5)"/>
+      </g>
+      <text x="640" y="172" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11" fill="#8ff0dd">reads</text>
+
+      <g stroke="#ff6f8f" stroke-width="1.8" stroke-dasharray="5 5" fill="none">
+        <path d="M776 210 L776 236 L450 236 L450 200"/>
+      </g>
+      <g stroke="#ff6f8f" stroke-width="2.4">
+        <line x1="437" y1="215" x2="463" y2="241"/><line x1="463" y1="215" x2="437" y2="241"/>
+      </g>
+      <text x="600" y="266" text-anchor="middle" font-family="Manrope, sans-serif" font-size="13.5" fill="#ffb3c4">no path back — corrections you type never reach the numbers</text>
+      <text x="450" y="292" text-anchor="middle" font-family="Manrope, sans-serif" font-size="13" fill="#6b6389">they live on the desk for this chat only, then go</text>
+    </svg>
+    <figcaption>The missing arrow is the point. “I already told you that” fails because telling it something writes to the desk, not to the model.</figcaption>
+  </figure>
+</section>
+
+<section class="wrap stack g5">
+  <p class="eyebrow">How it works</p>
+  <h2>Two events, two price tags</h2>
+  <div class="mech n2">
+    <figure>
+      <div class="art">
+        <svg viewBox="0 0 300 132" role="img" aria-label="Thousands of processors read a mountain of text into the model once, at very high cost.">
+          <g fill="#9b6bff" fill-opacity=".5">
+            <rect x="16" y="28" width="10" height="10" rx="2"/><rect x="29" y="28" width="10" height="10" rx="2"/><rect x="42" y="28" width="10" height="10" rx="2"/><rect x="55" y="28" width="10" height="10" rx="2"/><rect x="68" y="28" width="10" height="10" rx="2"/><rect x="81" y="28" width="10" height="10" rx="2"/><rect x="16" y="41" width="10" height="10" rx="2"/><rect x="29" y="41" width="10" height="10" rx="2"/><rect x="42" y="41" width="10" height="10" rx="2"/><rect x="55" y="41" width="10" height="10" rx="2"/><rect x="68" y="41" width="10" height="10" rx="2"/><rect x="81" y="41" width="10" height="10" rx="2"/><rect x="16" y="54" width="10" height="10" rx="2"/><rect x="29" y="54" width="10" height="10" rx="2"/><rect x="42" y="54" width="10" height="10" rx="2"/><rect x="55" y="54" width="10" height="10" rx="2"/><rect x="68" y="54" width="10" height="10" rx="2"/><rect x="81" y="54" width="10" height="10" rx="2"/><rect x="16" y="67" width="10" height="10" rx="2"/><rect x="29" y="67" width="10" height="10" rx="2"/><rect x="42" y="67" width="10" height="10" rx="2"/><rect x="55" y="67" width="10" height="10" rx="2"/><rect x="68" y="67" width="10" height="10" rx="2"/><rect x="81" y="67" width="10" height="10" rx="2"/>
+          </g>
+          <text x="60" y="22" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="currentColor">1000s of processors</text>
+          <line x1="104" y1="52" x2="133.0" y2="52.0" stroke="#9b6bff" stroke-width="1.5"/><polygon points="140,52 133.0,56.0 133.0,48.0" fill="#9b6bff"/>
+          <rect x="146" y="34" width="132" height="36" rx="8" fill="#9b6bff" fill-opacity=".16" stroke="#9b6bff"/>
+          <text x="212" y="57" text-anchor="middle" font-family="Manrope, sans-serif" font-size="13" fill="#ECE9F5">the numbers</text>
+          <rect x="16" y="96" width="262" height="12" rx="3" fill="#ff6f8f" fill-opacity=".65"/>
+          <text x="16" y="124" font-family="JetBrains Mono, monospace" font-size="9" fill="#ffb3c4">cost · happens once, months long</text>
+        </svg>
+      </div>
+      <figcaption><b>Training</b>It ends on a date, and that date becomes the edge of what it knows.</figcaption>
+    </figure>
+    <figure>
+      <div class="art">
+        <svg viewBox="0 0 300 132" role="img" aria-label="One message goes in and an answer comes out at negligible cost, leaving the numbers untouched.">
+          <rect x="16" y="34" width="76" height="36" rx="8" fill="none" stroke="currentColor" stroke-opacity=".45"/>
+          <text x="54" y="57" text-anchor="middle" font-family="Manrope, sans-serif" font-size="12" fill="#ECE9F5">your text</text>
+          <line x1="98" y1="52" x2="121.0" y2="52.0" stroke="#45e0c4" stroke-width="1.5"/><polygon points="128,52 121.0,56.0 121.0,48.0" fill="#45e0c4"/>
+          <rect x="134" y="34" width="72" height="36" rx="8" fill="#9b6bff" fill-opacity=".16" stroke="#9b6bff" stroke-opacity=".6"/>
+          <text x="170" y="57" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="#d3bcff">unchanged</text>
+          <line x1="212" y1="52" x2="235.0" y2="52.0" stroke="#45e0c4" stroke-width="1.5"/><polygon points="242,52 235.0,56.0 235.0,48.0" fill="#45e0c4"/>
+          <rect x="248" y="34" width="36" height="36" rx="8" fill="#45e0c4" fill-opacity=".18" stroke="#45e0c4"/>
+          <text x="266" y="57" text-anchor="middle" font-family="Manrope, sans-serif" font-size="12" fill="#8ff0dd">out</text>
+          <rect x="16" y="96" width="5" height="12" rx="2" fill="#45e0c4" fill-opacity=".8"/>
+          <text x="30" y="106" font-family="JetBrains Mono, monospace" font-size="9" fill="#8ff0dd">cost · every chat, one second</text>
+        </svg>
+      </div>
+      <figcaption><b>Using</b>Same frozen model as everybody else’s, every single time.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section class="wrap stack g5">
+  <p class="eyebrow">The catch</p>
+  <h2>So why does it know today’s news?</h2>
+  <div class="wide-art">
+    <svg viewBox="0 0 900 190" role="img" aria-label="A search step fetches today's page and places it on the desk beside your question; the model itself is untouched and still frozen at the cutoff.">
+      <rect x="24" y="30" width="150" height="54" rx="9" fill="none" stroke="currentColor" stroke-opacity=".45"/>
+      <text x="99" y="62" text-anchor="middle" font-family="Manrope, sans-serif" font-size="14" fill="#ECE9F5">your question</text>
+      <rect x="24" y="108" width="150" height="54" rx="9" fill="#45e0c4" fill-opacity=".12" stroke="#45e0c4"/>
+      <text x="99" y="133" text-anchor="middle" font-family="Manrope, sans-serif" font-size="13" fill="#8ff0dd">a search step</text>
+      <text x="99" y="152" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="currentColor">fetches today’s page</text>
+      <line x1="182" y1="57" x2="323.0" y2="57.0" stroke="currentColor" stroke-width="1.5"/><polygon points="330,57 323.0,61.0 323.0,53.0" fill="currentColor"/>
+      <line x1="182" y1="135" x2="323.2" y2="101.6" stroke="#45e0c4" stroke-width="1.5"/><polygon points="330,100 324.1,105.5 322.3,97.7" fill="#45e0c4"/>
+      <rect x="338" y="34" width="210" height="122" rx="10" fill="#45e0c4" fill-opacity=".06" stroke="#45e0c4" stroke-opacity=".5"/>
+      <text x="443" y="58" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" letter-spacing="1.4" fill="#8ff0dd">THE DESK</text>
+      <rect x="358" y="70" width="170" height="18" rx="4" fill="currentColor" fill-opacity=".25"/>
+      <text x="443" y="83" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#ECE9F5">your question</text>
+      <rect x="358" y="96" width="170" height="18" rx="4" fill="#45e0c4" fill-opacity=".5"/>
+      <text x="443" y="109" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#04302a">today’s page</text>
+      <text x="443" y="140" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="currentColor">both handed over together</text>
+      <line x1="556" y1="95" x2="653.0" y2="95.0" stroke="#9b6bff" stroke-width="1.5"/><polygon points="660,95 653.0,99.0 653.0,91.0" fill="#9b6bff"/>
+      
+      <rect x="668" y="62" width="208" height="66" rx="10" fill="#9b6bff" fill-opacity=".14" stroke="#9b6bff"/>
+      <text x="772" y="90" text-anchor="middle" font-family="Manrope, sans-serif" font-size="14" fill="#ECE9F5">the same frozen model</text>
+      <text x="772" y="112" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="#d3bcff">learned nothing new</text>
+      <text x="772" y="44" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#ff6f8f">still cut off at the same date</text>
+    </svg>
+  </div>
+  <p class="dim">The model stays frozen. Everything clever happens in what gets handed to it — which is the next few pages.</p>
+</section>
+
+<section class="wrap stack g4">
+  <p class="eyebrow">So what</p>
+  <p class="sowhat">A model with no lookup is <em>a very well-read colleague who has been in a locked room since the cutoff date</em> — and does not know they were locked in.</p>
+</section>
+
+<nav class="wrap pagenav" aria-label="Series navigation">
+  <a class="pnbtn prev" href="04-context-window.html"><span class="pnk">← Prev</span><span class="pnt">The context window</span></a>
+  <a class="pnbtn hub" href="00-atlas.html">All topics</a>
+  <a class="pnbtn next" href="06-why-assistant.html"><span class="pnk">Next →</span><span class="pnt">Why it acts like an assistant</span></a>
+</nav>
+<footer class="wrap foot">Part of the AI Concepts series</footer>
+
+<script>
+(function(){
+  var EVENTS = [
+    { p:  6, y:'2019', n:'a long-running TV series ends' },
+    { p: 16, y:'2020', n:'a bridge opens in your city' },
+    { p: 27, y:'2021', n:'a spelling reform is adopted' },
+    { p: 38, y:'2022', n:'a company changes its name' },
+    { p: 52, y:'2023', n:'a new tax rule takes effect' },
+    { p: 66, y:'2024', n:'your team ships version 4' },
+    { p: 79, y:'2025', n:'a rival launches a product' },
+    { p: 91, y:'2026', n:'the price of your plan changes' }
+  ];
+  var cutPct = 60, lookupOn = false;
+  var tl = document.getElementById('tl'), cut = document.getElementById('cut');
+  var pins = document.getElementById('pins'), list = document.getElementById('evlist');
+  var bandTrain = document.getElementById('bandTrain'), bandUse = document.getElementById('bandUse');
+  var labUse = document.getElementById('labUse'), subUse = document.getElementById('subUse');
+  var subTrain = document.getElementById('subTrain');
+  var qaU = document.getElementById('qaUnknown');
+
+  EVENTS.forEach(function(e){
+    e.pin = document.createElement('div');
+    e.pin.className = 'ev';
+    e.pin.style.left = e.p + '%';
+    e.pin.innerHTML = '<span class="pin"></span><span class="cap">' + e.y + '</span>';
+    pins.appendChild(e.pin);
+
+    e.row = document.createElement('div');
+    e.row.className = 'evrow';
+    e.row.innerHTML = '<span class="yr">' + e.y + '</span><span class="nm">' + e.n + '</span><span class="st"></span>';
+    list.appendChild(e.row);
+  });
+
+  function render(){
+    cut.style.left = cutPct + '%';
+    cut.setAttribute('aria-valuenow', Math.round(cutPct / 10));
+    bandTrain.style.width = cutPct + '%';
+    bandUse.style.width = (100 - cutPct) + '%';
+    labUse.style.left = 'calc(' + cutPct + '% + 16px)';
+    subUse.style.left = 'calc(' + cutPct + '% + 16px)';
+    subTrain.style.maxWidth = 'calc(' + cutPct + '% - 30px)';
+
+    var hidden = 0;
+    EVENTS.forEach(function(e){
+      var known = e.p < cutPct;
+      var state = known ? 'known' : (lookupOn ? 'lookup' : 'unknown');
+      if(!known && !lookupOn) hidden++;
+      e.pin.className = 'ev ' + state;
+      e.row.className = 'evrow ' + state;
+      e.row.querySelector('.st').textContent =
+        state === 'known' ? 'in memory' : state === 'lookup' ? 'fetched' : 'never seen';
+    });
+
+    qaU.querySelector('.a').textContent = lookupOn
+      ? 'Now it looks the answer up first and reads the result before replying. The model did not learn anything — it was handed the facts.'
+      : 'The dangerous case: it does not know that it does not know, so it often answers anyway.';
+    qaU.classList.toggle('bad', !lookupOn);
+    qaU.querySelector('.q').textContent = lookupOn
+      ? 'Asked about something after the line, with lookup'
+      : 'Asked about something after the line';
+  }
+
+  function setFromClientX(clientX){
+    var r = tl.getBoundingClientRect();
+    cutPct = Math.max(12, Math.min(92, (clientX - r.left) / r.width * 100));
+    render();
+  }
+  var dragging = false;
+  cut.addEventListener('mousedown', function(e){ e.preventDefault(); dragging = true; });
+  tl.addEventListener('mousedown', function(e){ if(e.target === cut || cut.contains(e.target)) return; setFromClientX(e.clientX); dragging = true; });
+  window.addEventListener('mousemove', function(e){ if(dragging) setFromClientX(e.clientX); });
+  window.addEventListener('mouseup', function(){ dragging = false; });
+  cut.addEventListener('touchstart', function(e){ e.preventDefault(); dragging = true; }, { passive:false });
+  tl.addEventListener('touchmove', function(e){ if(dragging){ e.preventDefault(); setFromClientX(e.touches[0].clientX); } }, { passive:false });
+  window.addEventListener('touchend', function(){ dragging = false; });
+  cut.addEventListener('keydown', function(e){
+    var step = e.shiftKey ? 10 : 4;
+    if(e.key === 'ArrowLeft'){ cutPct = Math.max(12, cutPct - step); render(); e.preventDefault(); }
+    if(e.key === 'ArrowRight'){ cutPct = Math.min(92, cutPct + step); render(); e.preventDefault(); }
+  });
+
+  var lb = document.getElementById('lookup');
+  lb.addEventListener('click', function(){
+    lookupOn = !lookupOn;
+    lb.setAttribute('aria-pressed', lookupOn);
+    lb.classList.toggle('on', lookupOn);
+    lb.textContent = lookupOn ? 'Take the lookup away' : 'Give it a way to look things up';
+    render();
+  });
+
+  render();
+})();
+</script>
+
+</body>
+</html>

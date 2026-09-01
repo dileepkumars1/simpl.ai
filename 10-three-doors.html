@@ -1,0 +1,427 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Module 2.6 — prompting, retrieval and fine-tuning solve three different problems.">
+<meta name="color-scheme" content="dark">
+<style>:root{color-scheme:dark}html{background:#100e1a}</style>
+<title>One Goal, Three Doors</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;600&family=Manrope:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>:root{
+  --ground:#100e1a; --ground-2:#0b0913;
+  --surface:#181428; --surface-2:#1e1934;
+  --line:#2a2340; --line-soft:#221c36;
+  --ink:#ECE9F5; --ink-dim:#9a92b6; --ink-faint:#6b6389;
+  --violet:#9b6bff; --teal:#45e0c4; --coral:#ff6f8f;
+  --violet-soft:rgba(155,107,255,.16); --teal-soft:rgba(69,224,196,.14); --coral-soft:rgba(255,111,143,.14);
+  --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px; --s7:48px; --s8:64px; --s9:96px;
+  --r-sm:6px; --r-md:12px; --r-lg:20px;
+  --display:'Unbounded',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --body:'Manrope',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,'SFMono-Regular',Menlo,monospace;
+  --wrap:1080px;
+}
+*,*::before,*::after{box-sizing:border-box}
+body{
+  margin:0; background:var(--ground); color:var(--ink);
+  font-family:var(--body); font-size:clamp(15px,.55vw + 13.6px,17px);
+  line-height:1.65; -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+h1,h2,h3{font-family:var(--display); font-weight:600; line-height:1.12; text-wrap:balance; margin:0}
+h1{font-size:clamp(30px,5.2vw,52px); letter-spacing:-.02em}
+h2{font-size:clamp(21px,2.7vw,30px); letter-spacing:-.01em}
+h3{font-size:clamp(16px,1.5vw,19px); letter-spacing:-.005em}
+p{margin:0; max-width:65ch; overflow-wrap:break-word}
+h1,h2,h3{overflow-wrap:break-word}
+.stack>*,.steps>*,.split>*,.two>*,.hero>*,.machine>*{min-width:0}
+.eyebrow{font-family:var(--mono); font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-faint); margin:0}
+.dim{color:var(--ink-dim)}
+.lede{font-size:clamp(17px,1.5vw,21px); line-height:1.5; color:var(--ink-dim)}
+.wrap{width:min(100% - 2*var(--s5), var(--wrap)); margin-inline:auto}
+@media (max-width:520px){ .wrap{width:min(100% - 2*var(--s4), var(--wrap))} }
+.stack{display:flex; flex-direction:column}
+.g2{gap:var(--s2)} .g3{gap:var(--s3)} .g4{gap:var(--s4)} .g5{gap:var(--s5)} .g6{gap:var(--s6)} .g7{gap:var(--s7)}
+section{padding-block:var(--s7)}
+section + section{border-top:1px solid var(--line-soft)}
+figure{margin:0}
+figcaption{font-size:13.5px; color:var(--ink-dim); margin-top:var(--s3); max-width:62ch}
+svg{max-width:100%; height:auto; display:block}
+.scroll-x{overflow-x:auto; -webkit-overflow-scrolling:touch}
+.card{background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); padding:var(--s5)}
+.tag{font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-faint)}
+/* site header / footer */
+.topbar{display:flex; flex-wrap:wrap; align-items:baseline; gap:var(--s3) var(--s4); padding-block:var(--s5) 0}
+.topbar .num{font-family:var(--mono); font-size:11px; letter-spacing:.16em; color:var(--violet)}
+.foot{padding-block:var(--s6); border-top:1px solid var(--line-soft); color:var(--ink-faint); font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase}
+/* controls */
+button{font-family:inherit; font-size:inherit; color:inherit}
+.btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:var(--s2);
+  min-height:44px; padding:0 var(--s4); border-radius:999px;
+  background:var(--surface-2); border:1px solid var(--line); color:var(--ink);
+  font-family:var(--mono); font-size:12.5px; letter-spacing:.04em;
+  cursor:pointer; transition:background .18s, border-color .18s, color .18s;
+}
+.btn:hover{background:#262046; border-color:#3a3160}
+.btn[aria-pressed="true"], .btn.on{background:var(--violet-soft); border-color:var(--violet); color:#d9c9ff}
+.btn:focus-visible, [tabindex]:focus-visible, input:focus-visible{outline:2px solid var(--teal); outline-offset:3px}
+.controls{display:flex; flex-wrap:wrap; gap:var(--s3); align-items:center}
+input[type="text"]{
+  min-height:44px; width:100%; padding:0 var(--s4); border-radius:999px;
+  background:var(--ground-2); border:1px solid var(--line); color:var(--ink);
+  font-family:var(--body); font-size:16px;
+}
+input[type="range"]{ -webkit-appearance:none; appearance:none; width:100%; height:44px; background:transparent; cursor:pointer }
+input[type="range"]::-webkit-slider-runnable-track{height:4px; border-radius:2px; background:linear-gradient(90deg,var(--teal),var(--violet),var(--coral))}
+input[type="range"]::-moz-range-track{height:4px; border-radius:2px; background:linear-gradient(90deg,var(--teal),var(--violet),var(--coral))}
+input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none; width:22px; height:22px; margin-top:-9px; border-radius:50%; background:var(--ink); border:3px solid var(--ground)}
+input[type="range"]::-moz-range-thumb{width:22px; height:22px; border-radius:50%; background:var(--ink); border:3px solid var(--ground); border-width:3px}
+.sr{position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0}
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important}
+}
+/* mechanism strip — a concept gets a drawing, not a paragraph */
+.mech{display:grid; gap:var(--s5)}
+@media (min-width:720px){ .mech.n2{grid-template-columns:repeat(2,1fr)} }
+@media (min-width:820px){ .mech.n3{grid-template-columns:repeat(3,1fr)} }
+.mech figure{display:flex; flex-direction:column; gap:var(--s3); min-width:0}
+.mech .art{
+  background:var(--ground-2); border:1px solid var(--line-soft); border-radius:var(--r-md);
+  padding:var(--s4); color:var(--ink-faint);
+}
+.mech .art svg{width:100%; height:auto}
+.mech .lab{font-family:var(--mono); font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:var(--violet)}
+.mech figcaption{font-size:14px; line-height:1.55; color:var(--ink-dim); margin-top:0}
+.mech figcaption b{color:var(--ink); font-weight:500; display:block; font-size:15px; margin-bottom:2px}
+.wide-art{background:var(--ground-2); border:1px solid var(--line-soft); border-radius:var(--r-md); padding:var(--s5); color:var(--ink-faint)}
+.wide-art svg{width:100%; height:auto}
+</style>
+<style>
+.rig{background:linear-gradient(165deg,#151125,#0c0a16); border:1px solid var(--line); border-radius:var(--r-lg); padding:var(--s5); display:flex; flex-direction:column; gap:var(--s5)}
+.doors{display:grid; gap:var(--s4)}
+@media (min-width:840px){ .doors{grid-template-columns:repeat(3,1fr)} }
+.door{
+  border:1px solid var(--line); border-radius:var(--r-lg); padding:var(--s5);
+  display:flex; flex-direction:column; gap:var(--s4); background:var(--surface);
+  transition:border-color .3s, background .3s, opacity .3s;
+}
+.door.dim{opacity:.34}
+.door .h{display:flex; flex-direction:column; gap:5px}
+.door .k{font-family:var(--mono); font-size:10.5px; letter-spacing:.16em; text-transform:uppercase}
+.door h3{font-size:19px}
+.door.p{border-top:3px solid var(--teal)} .door.p .k{color:var(--teal)}
+.door.r{border-top:3px solid var(--violet)} .door.r .k{color:var(--violet)}
+.door.f{border-top:3px solid var(--coral)} .door.f .k{color:var(--coral)}
+.door.p.pick{background:rgba(69,224,196,.07); border-color:var(--teal)}
+.door.r.pick{background:rgba(155,107,255,.09); border-color:var(--violet)}
+.door.f.pick{background:rgba(255,111,143,.07); border-color:var(--coral)}
+.spec{display:flex; flex-direction:column; gap:0}
+.spec div{display:flex; gap:var(--s3); padding:8px 0; border-bottom:1px solid var(--line-soft); font-size:13.5px}
+.spec div:last-child{border-bottom:0}
+.spec dt{flex:0 0 92px; font-family:var(--mono); font-size:9.5px; letter-spacing:.13em; text-transform:uppercase; color:var(--ink-faint); padding-top:3px}
+.spec dd{margin:0; flex:1 1 auto; min-width:0}
+.scen{display:flex; flex-wrap:wrap; gap:var(--s2)}
+.scen .btn{text-transform:none; letter-spacing:0; font-family:var(--body); font-size:13.5px; text-align:left; justify-content:flex-start}
+.verdict{border-radius:var(--r-md); padding:var(--s4); border:1px solid var(--line); background:var(--ground-2); font-size:15px; line-height:1.6; min-height:88px}
+.verdict .who{font-family:var(--mono); font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; display:block; margin-bottom:6px}
+.verdict.p{border-color:rgba(69,224,196,.4)} .verdict.p .who{color:var(--teal)}
+.verdict.r{border-color:rgba(155,107,255,.45)} .verdict.r .who{color:var(--violet)}
+.verdict.f{border-color:rgba(255,111,143,.4)} .verdict.f .who{color:var(--coral)}
+.myth{border:1px solid rgba(255,111,143,.35); background:rgba(255,111,143,.06); border-radius:var(--r-lg); padding:var(--s5); display:flex; flex-direction:column; gap:var(--s3)}
+.myth .k{font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--coral)}
+.sowhat{font-family:var(--display); font-size:clamp(19px,2.4vw,27px); line-height:1.35; letter-spacing:-.01em; max-width:28ch}
+.sowhat em{font-style:normal; color:var(--violet)}
+</style>
+</head>
+<body>
+
+
+<style>
+.pagenav{display:flex; flex-wrap:wrap; gap:var(--s4); justify-content:space-between; align-items:center; padding-block:var(--s6); border-top:1px solid var(--line-soft)}
+.pnbtn{display:flex; flex-direction:column; gap:2px; min-height:44px; justify-content:center; padding:var(--s2) var(--s4); border-radius:var(--r-md); text-decoration:none; color:inherit; transition:background .18s; max-width:280px}
+.pnbtn:hover{background:var(--surface-2)}
+.pnbtn.hub{flex-direction:row; align-items:center; background:var(--surface-2); border:1px solid var(--line); border-radius:999px; font-family:var(--mono); font-size:12.5px; letter-spacing:.04em; padding:0 var(--s4); flex:none}
+.pnbtn.next{text-align:right; align-items:flex-end; margin-left:auto}
+.pnk{font-family:var(--mono); font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--violet)}
+.pnt{font-size:14px; color:var(--ink-dim)}
+@media (max-width:640px){ .pagenav{flex-direction:column; align-items:stretch} .pnbtn{max-width:none} .pnbtn.hub{order:-1; justify-content:center} .pnbtn.next{text-align:left; align-items:flex-start; margin-left:0} }
+</style>
+<style>
+.recap{border:1px solid var(--line); border-radius:var(--r-lg); background:var(--surface); padding:var(--s5); display:flex; flex-direction:column; gap:var(--s5)}
+.recap-icons{display:flex; flex-wrap:wrap; gap:var(--s3)}
+.ricon{width:52px; height:52px; border-radius:var(--r-md); border:1.5px solid var(--line); background:var(--ground-2); display:flex; align-items:center; justify-content:center; color:var(--ink-dim); cursor:pointer; transition:border-color .2s, background .2s, opacity .2s; padding:0}
+.ricon svg{width:30px; height:30px}
+.ricon[aria-pressed="true"]{border-color:var(--violet); background:var(--violet-soft); color:var(--violet)}
+.ricon.solved{opacity:.25; pointer-events:none}
+.recap-cards{display:flex; flex-wrap:wrap; gap:var(--s3)}
+.rcard{min-height:44px; padding:0 var(--s4); border-radius:999px; border:1px solid var(--line); background:var(--surface-2); color:var(--ink); font-size:13.5px; cursor:pointer; text-align:left; transition:border-color .15s, background .15s, opacity .2s, transform .12s}
+.rcard.solved{opacity:.25; pointer-events:none}
+.rcard.wrong{animation:rshake .3s}
+@keyframes rshake{ 25%{transform:translateX(-4px)} 75%{transform:translateX(4px)} }
+.recap-chain{display:flex; flex-wrap:wrap; align-items:center; gap:0; min-height:52px}
+.rchain-item{width:44px; height:44px; border-radius:var(--r-md); background:var(--violet-soft); border:1.5px solid var(--violet); display:flex; align-items:center; justify-content:center; color:var(--violet); flex:none}
+.rchain-item svg{width:24px; height:24px}
+.rchain-link{width:20px; height:2px; background:var(--line); flex:none}
+.recap-done{display:none; flex-direction:column; gap:var(--s4); padding-top:var(--s4); border-top:1px solid var(--line-soft)}
+.recap-done.show{display:flex}
+.recap-done p{font-family:var(--display); font-size:clamp(17px,2vw,21px); line-height:1.4; max-width:60ch}
+@media (prefers-reduced-motion: reduce){ .rcard.wrong{animation:none} }
+</style>
+<header class="wrap topbar">
+  <span class="num">MODULE 02 — HOW AI THINKS · 10</span>
+  <span class="tag dim">AI Concepts</span>
+</header>
+
+<section class="wrap stack g6">
+  <div class="stack g4">
+    <h1>Fine-tuning vs. RAG vs. prompting</h1>
+    <p class="lede">Three answers to one wish — “make it better at my task”. They are not competitors, and the expensive one is almost never the one you needed.</p>
+  </div>
+
+  <figure class="scroll-x">
+    <svg viewBox="0 0 900 230" role="img" style="min-width:620px"
+         aria-label="One goal, make the AI better at my task, forks into three routes: change the prompt, change what is on the desk, or change the model's numbers."
+      >
+      <defs>
+        <marker id="a10" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0 0 L10 5 L0 10 z" fill="currentColor"/>
+        </marker>
+      </defs>
+      <rect x="330" y="16" width="240" height="56" rx="10" fill="#1e1934" stroke="#2a2340"/>
+      <text x="450" y="42" text-anchor="middle" font-family="Manrope, sans-serif" font-size="14" fill="#ECE9F5">“make it better at my task”</text>
+      <text x="450" y="61" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10.5" fill="#6b6389">one wish, three routes</text>
+      <g fill="none" stroke-width="1.8">
+        <path d="M400 76 L400 100 L150 100 L150 138" stroke="#45e0c4" color="#45e0c4" marker-end="url(#a10)"/>
+        <path d="M450 76 L450 138" stroke="#9b6bff" color="#9b6bff" marker-end="url(#a10)"/>
+        <path d="M500 76 L500 100 L750 100 L750 138" stroke="#ff6f8f" color="#ff6f8f" marker-end="url(#a10)"/>
+      </g>
+      <rect x="40" y="146" width="220" height="64" rx="10" fill="rgba(69,224,196,.10)" stroke="rgba(69,224,196,.5)"/>
+      <text x="150" y="174" text-anchor="middle" font-family="Manrope, sans-serif" font-size="14" fill="#ECE9F5">change the prompt</text>
+      <text x="150" y="195" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10.5" fill="#8ff0dd">free · instant</text>
+      <rect x="340" y="146" width="220" height="64" rx="10" fill="rgba(155,107,255,.12)" stroke="rgba(155,107,255,.5)"/>
+      <text x="450" y="174" text-anchor="middle" font-family="Manrope, sans-serif" font-size="14" fill="#ECE9F5">change what is on the desk</text>
+      <text x="450" y="195" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10.5" fill="#d3bcff">cheap · seconds</text>
+      <rect x="640" y="146" width="220" height="64" rx="10" fill="rgba(255,111,143,.10)" stroke="rgba(255,111,143,.5)"/>
+      <text x="750" y="174" text-anchor="middle" font-family="Manrope, sans-serif" font-size="14" fill="#ECE9F5">change the model’s numbers</text>
+      <text x="750" y="195" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10.5" fill="#ffb3c4">costly · weeks</text>
+    </svg>
+    <figcaption>Only the third door alters the model itself. The first two leave it exactly as it was and change what it is handed.</figcaption>
+  </figure>
+
+  <div class="doors" id="doors">
+    <div class="door p" id="dP">
+      <div class="h"><span class="k">DOOR 1</span><h3>Prompting</h3></div>
+      <div class="spec">
+        <div><dt>Changes</dt><dd>the words you send</dd></div>
+        <div><dt>Cost</dt><dd>nothing</dd></div>
+        <div><dt>New info live</dt><dd>instantly</dd></div>
+        <div><dt>Good at</dt><dd>tone, length, format, one-off tasks</dd></div>
+        <div><dt>Can’t do</dt><dd>supply facts it was never given</dd></div>
+      </div>
+    </div>
+    <div class="door r" id="dR">
+      <div class="h"><span class="k">DOOR 2</span><h3>Retrieval (RAG)</h3></div>
+      <div class="spec">
+        <div><dt>Changes</dt><dd>what gets pasted in before your question</dd></div>
+        <div><dt>Cost</dt><dd>low, ongoing</dd></div>
+        <div><dt>New info live</dt><dd>as soon as the document is indexed</dd></div>
+        <div><dt>Good at</dt><dd>your facts, your files, anything that changes</dd></div>
+        <div><dt>Can’t do</dt><dd>change how it writes, or fix a bad retrieval</dd></div>
+      </div>
+    </div>
+    <div class="door f" id="dF">
+      <div class="h"><span class="k">DOOR 3</span><h3>Fine-tuning</h3></div>
+      <div class="spec">
+        <div><dt>Changes</dt><dd>the model’s own numbers — its “weights,” the parameters from <a href="03-what-is-an-llm.html" title="What is an LLM?" style="color:var(--violet); text-decoration:underline; text-decoration-style:dotted; text-underline-offset:3px">page 3</a></dd></div>
+        <div><dt>Cost</dt><dd>high, and again for every update</dd></div>
+        <div><dt>New info live</dt><dd>weeks — a whole training run</dd></div>
+        <div><dt>Good at</dt><dd>a consistent style or format, at scale</dd></div>
+        <div><dt>Can’t do</dt><dd>reliably store facts you need to be correct</dd></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="rig">
+    <p class="eyebrow">Pick what you actually need</p>
+    <div class="scen" id="scen"></div>
+    <div class="verdict" id="verdict" aria-live="polite"></div>
+  </div>
+</section>
+
+<section class="wrap stack g5">
+  <p class="eyebrow">The expensive mistake</p>
+  <h2>Fine-tuning does not teach facts</h2>
+  <div class="wide-art">
+    <svg viewBox="0 0 900 300" role="img" aria-label="The same fact taken through two routes. Through fine-tuning it dissolves into the weights and comes back as an unsourceable handbook-flavoured sentence. Placed on the desk it comes back quoted, with an arrow pointing at the exact line.">
+      <rect x="330" y="12" width="240" height="40" rx="7" fill="#45e0c4" fill-opacity=".14" stroke="#45e0c4"/>
+      <text x="450" y="38" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="13" fill="#8ff0dd">“Returns: 14 days, store credit”</text>
+      <text x="450" y="68" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="currentColor">one fact, two routes</text>
+      <line x1="390" y1="76" x2="246.8" y2="106.5" stroke="#ff6f8f" stroke-width="1.5"/><polygon points="240,108 246.0,102.6 247.7,110.5" fill="#ff6f8f"/>
+      <line x1="510" y1="76" x2="653.2" y2="106.5" stroke="#45e0c4" stroke-width="1.5"/><polygon points="660,108 652.3,110.5 654.0,102.6" fill="#45e0c4"/>
+
+      <text x="130" y="112" font-family="JetBrains Mono, monospace" font-size="10" letter-spacing="1.4" fill="#ffb3c4">DOOR 3 — INTO THE WEIGHTS</text>
+      <rect x="40" y="124" width="320" height="96" rx="10" fill="#ff6f8f" fill-opacity=".05" stroke="#ff6f8f" stroke-opacity=".4"/>
+      <g transform="translate(40,60)"><circle cx="120" cy="104" r="10" fill="#ff6f8f" fill-opacity="0.3"/><circle cx="146" cy="92" r="7" fill="#ff6f8f" fill-opacity="0.22"/><circle cx="96" cy="118" r="8" fill="#ff6f8f" fill-opacity="0.25"/><circle cx="160" cy="118" r="6" fill="#ff6f8f" fill-opacity="0.2"/><circle cx="108" cy="86" r="6" fill="#ff6f8f" fill-opacity="0.18"/><circle cx="138" cy="124" r="9" fill="#ff6f8f" fill-opacity="0.24"/><circle cx="84" cy="100" r="5" fill="#ff6f8f" fill-opacity="0.16"/><circle cx="168" cy="98" r="5" fill="#ff6f8f" fill-opacity="0.15"/><circle cx="128" cy="74" r="5" fill="#ff6f8f" fill-opacity="0.14"/></g>
+      <text x="200" y="182" text-anchor="middle" font-family="Manrope, sans-serif" font-size="13" fill="#ffb3c4">dissolved across billions of numbers</text>
+      <text x="200" y="204" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="currentColor">nothing to point at · weeks to correct</text>
+      <line x1="200" y1="230" x2="200.0" y2="243.0" stroke="#ff6f8f" stroke-width="1.5"/><polygon points="200,250 196.0,243.0 204.0,243.0" fill="#ff6f8f"/>
+      <text x="200" y="270" text-anchor="middle" font-family="Manrope, sans-serif" font-size="13.5" fill="#ECE9F5">“Returns are accepted within 30 days.”</text>
+      <text x="200" y="290" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="#ffb3c4">handbook-flavoured, and wrong</text>
+
+      <text x="600" y="112" font-family="JetBrains Mono, monospace" font-size="10" letter-spacing="1.4" fill="#8ff0dd">DOOR 2 — ONTO THE DESK</text>
+      <rect x="540" y="124" width="320" height="96" rx="10" fill="#45e0c4" fill-opacity=".05" stroke="#45e0c4" stroke-opacity=".4"/>
+      <rect x="576" y="150" width="248" height="20" rx="4" fill="#45e0c4" fill-opacity=".55"/>
+      <text x="700" y="164" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="#04302a">14 days · store credit · §4.2</text>
+      <text x="700" y="196" text-anchor="middle" font-family="Manrope, sans-serif" font-size="13" fill="#8ff0dd">sits there as readable text</text>
+      <text x="700" y="214" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="currentColor">swap the file · fixed in seconds</text>
+      <line x1="700" y1="230" x2="700.0" y2="243.0" stroke="#45e0c4" stroke-width="1.5"/><polygon points="700,250 696.0,243.0 704.0,243.0" fill="#45e0c4"/>
+      <text x="700" y="270" text-anchor="middle" font-family="Manrope, sans-serif" font-size="13.5" fill="#ECE9F5">“Within 14 days, as store credit (§4.2).”</text>
+      <text x="700" y="290" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="#8ff0dd">quoted, and checkable</text>
+    </svg>
+  </div>
+  <p class="dim">Trained on your handbook, it gets fluent at sounding like your handbook — including confident sentences about policies you never had. Facts that must be right belong on the desk.</p>
+  <p class="dim">Start at door 1 because it is free, and move to door 2 the moment the answer depends on something the model cannot know. Door 3 is for when both already work and you need that behaviour thousands of times a day.</p>
+</section>
+
+<section class="wrap stack g4">
+  <p class="eyebrow">So what</p>
+  <p class="sowhat">Ask which thing is wrong: the <em>instructions</em>, the <em>information</em>, or the <em>manner</em>. Each has its own door, and only one of them is expensive.</p>
+</section>
+
+<section class="wrap stack g5">
+  <p class="eyebrow">MODULE RECAP</p>
+  <h2>Before you move on</h2>
+  <p class="dim">Click an idea below, then click the card it matches.</p>
+  <div class="recap">
+    <div class="recap-icons" id="rIcons" role="group" aria-label="This module's ideas"></div>
+    <div class="recap-cards" id="rCards" role="group" aria-label="Match each idea to its card"></div>
+    <div class="recap-chain" id="rChain" aria-hidden="true"></div>
+    <p class="sr" id="rLive" aria-live="polite"></p>
+    <div class="recap-done" id="rDone">
+      <p>Now you know why it needs telling, why it can be wrong, and the three honest ways to fix that — asking, showing, or retraining.</p>
+      <a class="btn" href="11-multimodal.html">Continue to Module 3 →</a>
+    </div>
+  </div>
+</section>
+<script>
+(function(){
+  var DATA = [
+    {m:'cut', label:'Page 5', text:'A well-read colleague locked in a room since the cutoff date.'},
+    {m:'two', label:'Page 6', text:'Post-training changed its manners, not its knowledge.'},
+    {m:'chips', label:'Page 7', text:'Ask the cheaper question: what does it need to know?'},
+    {m:'gap', label:'Page 8', text:'Put the source on the desk instead of asking it to be careful.'},
+    {m:'map', label:'Page 9', text:'The hard problem is whether the right paragraph got picked.'},
+    {m:'doors', label:'Page 10', text:'Instructions, information, or manner — each has its own door.'}
+  ];
+  var MOTIF = {
+    chips: '<rect x="6" y="7" width="28" height="6" rx="3" fill="currentColor" opacity=".8"/><rect x="6" y="17" width="21" height="6" rx="3" fill="currentColor" opacity=".55"/><rect x="6" y="27" width="15" height="6" rx="3" fill="currentColor" opacity=".35"/>',
+    cut: '<line x1="4" y1="20" x2="36" y2="20" stroke="currentColor" stroke-width="1.4"/><circle cx="10" cy="20" r="2.6" fill="currentColor"/><circle cx="17" cy="20" r="2.6" fill="currentColor"/><line x1="23" y1="9" x2="23" y2="31" stroke="currentColor" stroke-width="2.4"/><circle cx="30" cy="20" r="2.6" fill="none" stroke="currentColor" stroke-dasharray="1.5 1.5"/>',
+    doors: '<path d="M5 34V16a5 5 0 0 1 10 0v18z" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M17 34V16a5 5 0 0 1 10 0v18z" fill="none" stroke="currentColor" stroke-width="1.6" opacity=".6"/><path d="M29 34V16a5 5 0 0 1 8 0v18z" fill="none" stroke="currentColor" stroke-width="1.6" opacity=".35"/>',
+    gap: '<rect x="4" y="16" width="12" height="8" rx="2" fill="currentColor" opacity=".6"/><rect x="18" y="16" width="8" height="8" rx="2" fill="none" stroke="currentColor" stroke-dasharray="2 2"/><rect x="28" y="16" width="8" height="8" rx="2" fill="currentColor" opacity=".6"/>',
+    map: '<circle cx="9" cy="12" r="2.4" fill="currentColor" opacity=".4"/><circle cx="30" cy="10" r="2.4" fill="currentColor" opacity=".4"/><circle cx="12" cy="30" r="2.4" fill="currentColor" opacity=".4"/><circle cx="31" cy="29" r="2.4" fill="currentColor" opacity=".4"/><circle cx="20" cy="20" r="3.6" fill="currentColor"/><g stroke="currentColor" stroke-width="1" opacity=".6" stroke-dasharray="2 2"><line x1="20" y1="20" x2="30" y2="10"/><line x1="20" y1="20" x2="12" y2="30"/></g>',
+    two: '<rect x="4" y="14" width="26" height="12" rx="2" fill="currentColor" opacity=".55"/><rect x="32" y="14" width="4" height="12" rx="1.5" fill="currentColor"/>'
+  };
+  var icons = document.getElementById('rIcons'), cards = document.getElementById('rCards'), chain = document.getElementById('rChain');
+  var done = document.getElementById('rDone'), live = document.getElementById('rLive');
+  var selected = null, solvedCount = 0;
+
+  function shuffle(arr){ for(var i=arr.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=arr[i]; arr[i]=arr[j]; arr[j]=t; } return arr; }
+
+  DATA.forEach(function(d, idx){
+    var b = document.createElement('button');
+    b.type = 'button'; b.className = 'ricon'; b.setAttribute('aria-pressed', 'false'); b.setAttribute('aria-label', d.label);
+    b.innerHTML = '<svg viewBox="0 0 40 40" aria-hidden="true">' + MOTIF[d.m] + '</svg>';
+    b.addEventListener('click', function(){
+      if(b.classList.contains('solved')) return;
+      Array.prototype.forEach.call(icons.children, function(x){ x.setAttribute('aria-pressed', 'false'); });
+      b.setAttribute('aria-pressed', 'true');
+      selected = idx;
+    });
+    icons.appendChild(b);
+  });
+
+  var order = shuffle(DATA.map(function(d, i){ return i; }));
+  order.forEach(function(idx){
+    var d = DATA[idx];
+    var c = document.createElement('button');
+    c.type = 'button'; c.className = 'rcard'; c.textContent = d.text;
+    c.addEventListener('click', function(){
+      if(selected === null || c.classList.contains('solved')) return;
+      if(selected === idx){
+        var iconBtn = icons.children[selected];
+        iconBtn.classList.add('solved'); iconBtn.setAttribute('aria-pressed', 'false');
+        c.classList.add('solved');
+        if(chain.children.length){ var link = document.createElement('span'); link.className = 'rchain-link'; chain.appendChild(link); }
+        var chip = document.createElement('span'); chip.className = 'rchain-item'; chip.innerHTML = iconBtn.innerHTML;
+        chain.appendChild(chip);
+        live.textContent = 'Matched: ' + d.label;
+        selected = null;
+        solvedCount++;
+        if(solvedCount === DATA.length){
+          done.classList.add('show');
+          var f = done.querySelector('a'); if(f) f.focus();
+        }
+      } else {
+        c.classList.remove('wrong'); void c.offsetWidth; c.classList.add('wrong');
+        live.textContent = 'Not quite — try again';
+      }
+    });
+    cards.appendChild(c);
+  });
+})();
+</script>
+<nav class="wrap pagenav" aria-label="Series navigation">
+  <a class="pnbtn prev" href="09-rag.html"><span class="pnk">← Prev</span><span class="pnt">Look it up before you answer</span></a>
+  <a class="pnbtn hub" href="00-atlas.html">All topics</a>
+  <a class="pnbtn next" href="11-multimodal.html"><span class="pnk">Next →</span><span class="pnt">Multimodal AI</span></a>
+</nav>
+<footer class="wrap foot">Part of the AI Concepts series</footer>
+
+<script>
+(function(){
+  var SCEN = [
+    { t:'It rambles — I want shorter answers', d:'p',
+      w:'Nothing is missing and nothing needs to change about the model. Say “under 100 words” and you are done. Reach for anything heavier and you are paying to solve a solved problem.' },
+    { t:'Answers must quote our internal policies', d:'r',
+      w:'The model has never read them and never will. Index the documents and the right paragraphs get pasted in before the question — with the caveat from <a href="09-rag.html" title="Look it up before you answer" style="color:var(--violet); text-decoration:underline; text-decoration-style:dotted; text-underline-offset:3px">page 9</a> that you now own the quality of the retrieval.' },
+    { t:'It must know about a product we launched last week', d:'r',
+      w:'Anything that changes belongs on the desk, not in the model. A new document is live in seconds; a new training run is weeks and stale on arrival.' },
+    { t:'We want it to learn all our company knowledge', d:'r', trap:true,
+      w:'This is the sentence that leads teams through door 3, and it is the wrong door. Fine-tuning will make it sound like your company without reliably knowing anything about it. Facts that must be correct go on the desk.' },
+    { t:'Replies should sound like our support team, every time', d:'f',
+      w:'A genuine door 3 case: a consistent manner, needed at volume. Try examples in the prompt first — if a couple of samples get you there, you have saved a training run.' },
+    { t:'It must emit our niche data format, reliably, at scale', d:'f',
+      w:'The other honest door 3 case. When the format is unusual and the volume is high, baking it in beats paying for long instructions on every single call.' }
+  ];
+  var NAMES = { p:'Door 1 — Prompting', r:'Door 2 — Retrieval', f:'Door 3 — Fine-tuning' };
+  var doors = { p: document.getElementById('dP'), r: document.getElementById('dR'), f: document.getElementById('dF') };
+  var box = document.getElementById('scen'), verdict = document.getElementById('verdict');
+
+  function pick(s, btn){
+    Array.prototype.forEach.call(box.children, function(b){
+      b.classList.toggle('on', b === btn); b.setAttribute('aria-pressed', b === btn);
+    });
+    Object.keys(doors).forEach(function(k){
+      doors[k].classList.toggle('pick', k === s.d);
+      doors[k].classList.toggle('dim', k !== s.d);
+    });
+    verdict.className = 'verdict ' + s.d;
+    verdict.innerHTML = '<span class="who">' + NAMES[s.d] + (s.trap ? ' — not the one you were about to pick' : '') + '</span>';
+    verdict.insertAdjacentHTML('beforeend', s.w);
+  }
+
+  SCEN.forEach(function(s){
+    var b = document.createElement('button');
+    b.className = 'btn'; b.type = 'button'; b.textContent = s.t; b.setAttribute('aria-pressed','false');
+    b.addEventListener('click', function(){ pick(s, b); });
+    box.appendChild(b);
+  });
+  pick(SCEN[0], box.children[0]);
+})();
+</script>
+
+</body>
+</html>

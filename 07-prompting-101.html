@@ -1,0 +1,363 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Module 2.3 — a prompt is the only material the model has to work from.">
+<meta name="color-scheme" content="dark">
+<style>:root{color-scheme:dark}html{background:#100e1a}</style>
+<title>The Request Builder</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;600&family=Manrope:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>:root{
+  --ground:#100e1a; --ground-2:#0b0913;
+  --surface:#181428; --surface-2:#1e1934;
+  --line:#2a2340; --line-soft:#221c36;
+  --ink:#ECE9F5; --ink-dim:#9a92b6; --ink-faint:#6b6389;
+  --violet:#9b6bff; --teal:#45e0c4; --coral:#ff6f8f;
+  --violet-soft:rgba(155,107,255,.16); --teal-soft:rgba(69,224,196,.14); --coral-soft:rgba(255,111,143,.14);
+  --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px; --s7:48px; --s8:64px; --s9:96px;
+  --r-sm:6px; --r-md:12px; --r-lg:20px;
+  --display:'Unbounded',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --body:'Manrope',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,'SFMono-Regular',Menlo,monospace;
+  --wrap:1080px;
+}
+*,*::before,*::after{box-sizing:border-box}
+body{
+  margin:0; background:var(--ground); color:var(--ink);
+  font-family:var(--body); font-size:clamp(15px,.55vw + 13.6px,17px);
+  line-height:1.65; -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+h1,h2,h3{font-family:var(--display); font-weight:600; line-height:1.12; text-wrap:balance; margin:0}
+h1{font-size:clamp(30px,5.2vw,52px); letter-spacing:-.02em}
+h2{font-size:clamp(21px,2.7vw,30px); letter-spacing:-.01em}
+h3{font-size:clamp(16px,1.5vw,19px); letter-spacing:-.005em}
+p{margin:0; max-width:65ch; overflow-wrap:break-word}
+h1,h2,h3{overflow-wrap:break-word}
+.stack>*,.steps>*,.split>*,.two>*,.hero>*,.machine>*{min-width:0}
+.eyebrow{font-family:var(--mono); font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-faint); margin:0}
+.dim{color:var(--ink-dim)}
+.lede{font-size:clamp(17px,1.5vw,21px); line-height:1.5; color:var(--ink-dim)}
+.wrap{width:min(100% - 2*var(--s5), var(--wrap)); margin-inline:auto}
+@media (max-width:520px){ .wrap{width:min(100% - 2*var(--s4), var(--wrap))} }
+.stack{display:flex; flex-direction:column}
+.g2{gap:var(--s2)} .g3{gap:var(--s3)} .g4{gap:var(--s4)} .g5{gap:var(--s5)} .g6{gap:var(--s6)} .g7{gap:var(--s7)}
+section{padding-block:var(--s7)}
+section + section{border-top:1px solid var(--line-soft)}
+figure{margin:0}
+figcaption{font-size:13.5px; color:var(--ink-dim); margin-top:var(--s3); max-width:62ch}
+svg{max-width:100%; height:auto; display:block}
+.scroll-x{overflow-x:auto; -webkit-overflow-scrolling:touch}
+.card{background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); padding:var(--s5)}
+.tag{font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-faint)}
+/* site header / footer */
+.topbar{display:flex; flex-wrap:wrap; align-items:baseline; gap:var(--s3) var(--s4); padding-block:var(--s5) 0}
+.topbar .num{font-family:var(--mono); font-size:11px; letter-spacing:.16em; color:var(--violet)}
+.foot{padding-block:var(--s6); border-top:1px solid var(--line-soft); color:var(--ink-faint); font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase}
+/* controls */
+button{font-family:inherit; font-size:inherit; color:inherit}
+.btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:var(--s2);
+  min-height:44px; padding:0 var(--s4); border-radius:999px;
+  background:var(--surface-2); border:1px solid var(--line); color:var(--ink);
+  font-family:var(--mono); font-size:12.5px; letter-spacing:.04em;
+  cursor:pointer; transition:background .18s, border-color .18s, color .18s;
+}
+.btn:hover{background:#262046; border-color:#3a3160}
+.btn[aria-pressed="true"], .btn.on{background:var(--violet-soft); border-color:var(--violet); color:#d9c9ff}
+.btn:focus-visible, [tabindex]:focus-visible, input:focus-visible{outline:2px solid var(--teal); outline-offset:3px}
+.controls{display:flex; flex-wrap:wrap; gap:var(--s3); align-items:center}
+input[type="text"]{
+  min-height:44px; width:100%; padding:0 var(--s4); border-radius:999px;
+  background:var(--ground-2); border:1px solid var(--line); color:var(--ink);
+  font-family:var(--body); font-size:16px;
+}
+input[type="range"]{ -webkit-appearance:none; appearance:none; width:100%; height:44px; background:transparent; cursor:pointer }
+input[type="range"]::-webkit-slider-runnable-track{height:4px; border-radius:2px; background:linear-gradient(90deg,var(--teal),var(--violet),var(--coral))}
+input[type="range"]::-moz-range-track{height:4px; border-radius:2px; background:linear-gradient(90deg,var(--teal),var(--violet),var(--coral))}
+input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none; width:22px; height:22px; margin-top:-9px; border-radius:50%; background:var(--ink); border:3px solid var(--ground)}
+input[type="range"]::-moz-range-thumb{width:22px; height:22px; border-radius:50%; background:var(--ink); border:3px solid var(--ground); border-width:3px}
+.sr{position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0}
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important}
+}
+/* mechanism strip — a concept gets a drawing, not a paragraph */
+.mech{display:grid; gap:var(--s5)}
+@media (min-width:720px){ .mech.n2{grid-template-columns:repeat(2,1fr)} }
+@media (min-width:820px){ .mech.n3{grid-template-columns:repeat(3,1fr)} }
+.mech figure{display:flex; flex-direction:column; gap:var(--s3); min-width:0}
+.mech .art{
+  background:var(--ground-2); border:1px solid var(--line-soft); border-radius:var(--r-md);
+  padding:var(--s4); color:var(--ink-faint);
+}
+.mech .art svg{width:100%; height:auto}
+.mech .lab{font-family:var(--mono); font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:var(--violet)}
+.mech figcaption{font-size:14px; line-height:1.55; color:var(--ink-dim); margin-top:0}
+.mech figcaption b{color:var(--ink); font-weight:500; display:block; font-size:15px; margin-bottom:2px}
+.wide-art{background:var(--ground-2); border:1px solid var(--line-soft); border-radius:var(--r-md); padding:var(--s5); color:var(--ink-faint)}
+.wide-art svg{width:100%; height:auto}
+</style>
+<style>
+.rig{background:linear-gradient(165deg,#151125,#0c0a16); border:1px solid var(--line); border-radius:var(--r-lg); padding:var(--s5); display:flex; flex-direction:column; gap:var(--s5)}
+.chips{display:flex; flex-wrap:wrap; gap:var(--s2)}
+.chip{
+  display:inline-flex; align-items:center; gap:var(--s2); min-height:44px; padding:0 var(--s4);
+  border-radius:999px; border:1px solid var(--line); background:var(--surface-2); color:var(--ink-dim);
+  font-family:var(--mono); font-size:12px; letter-spacing:.05em; text-transform:uppercase; cursor:pointer;
+  transition:background .2s, border-color .2s, color .2s;
+}
+.chip .dot{width:8px; height:8px; border-radius:50%; background:#3a3160; transition:background .2s}
+.chip[aria-pressed="true"]{background:var(--violet-soft); border-color:var(--violet); color:#e5d7ff}
+.chip[aria-pressed="true"] .dot{background:var(--violet)}
+.chip:focus-visible{outline:2px solid var(--teal); outline-offset:3px}
+.panes{display:grid; gap:var(--s5)}
+@media (min-width:900px){ .panes{grid-template-columns:minmax(0,1fr) minmax(0,1.05fr); gap:var(--s6)} }
+.pane{display:flex; flex-direction:column; gap:var(--s3); min-width:0}
+.promptbox{background:#0e0c18; border:1px solid var(--line); border-radius:var(--r-md); padding:var(--s4); display:flex; flex-direction:column; gap:var(--s3); min-height:230px}
+.pline{display:flex; flex-direction:column; gap:3px; padding-left:var(--s3); border-left:2px solid var(--line)}
+.pline.on{border-left-color:var(--violet)}
+.pline .k{font-family:var(--mono); font-size:9.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-faint)}
+.pline.on .k{color:var(--violet)}
+.pline .v{font-family:var(--mono); font-size:12.5px; line-height:1.6; color:var(--ink)}
+.outbox{background:rgba(69,224,196,.04); border:1px solid rgba(69,224,196,.25); border-radius:var(--r-md); padding:var(--s4); display:flex; flex-direction:column; gap:var(--s3); min-height:230px}
+.outbox p{font-size:14.5px; line-height:1.65}
+.outbox .vague{color:var(--ink-faint); font-style:italic}
+table.pt{border-collapse:collapse; width:100%; font-size:13.5px; font-variant-numeric:tabular-nums}
+table.pt th{text-align:left; font-family:var(--mono); font-size:10px; letter-spacing:.13em; text-transform:uppercase; color:var(--ink-faint); padding:0 var(--s3) 6px 0; border-bottom:1px solid var(--line)}
+table.pt td{padding:7px var(--s3) 7px 0; border-bottom:1px solid var(--line-soft)}
+table.pt td:first-child{color:var(--ink)}
+.meter{display:flex; flex-wrap:wrap; gap:var(--s4); font-family:var(--mono); font-size:10.5px; letter-spacing:.13em; text-transform:uppercase; color:var(--ink-faint)}
+.meter b{color:var(--ink); font-weight:500; font-size:16px; letter-spacing:0; display:block; margin-top:2px}
+.meter b.good{color:var(--teal)} .meter b.bad{color:var(--coral)}
+.steps{display:grid; gap:var(--s4)}
+@media (min-width:700px){ .steps{grid-template-columns:repeat(2,1fr); gap:var(--s4) var(--s5)} }
+.srow{display:flex; gap:var(--s4); align-items:flex-start; padding-bottom:var(--s4); border-bottom:1px solid var(--line-soft)}
+.srow .rank{font-family:var(--mono); font-size:11px; color:var(--violet); flex:0 0 auto; padding-top:3px; width:20px}
+.srow h3{font-size:16px; margin-bottom:3px}
+.srow p{font-size:14px; color:var(--ink-dim)}
+.sowhat{font-family:var(--display); font-size:clamp(19px,2.4vw,27px); line-height:1.35; letter-spacing:-.01em; max-width:27ch}
+.sowhat em{font-style:normal; color:var(--violet)}
+</style>
+</head>
+<body>
+
+
+<style>
+.pagenav{display:flex; flex-wrap:wrap; gap:var(--s4); justify-content:space-between; align-items:center; padding-block:var(--s6); border-top:1px solid var(--line-soft)}
+.pnbtn{display:flex; flex-direction:column; gap:2px; min-height:44px; justify-content:center; padding:var(--s2) var(--s4); border-radius:var(--r-md); text-decoration:none; color:inherit; transition:background .18s; max-width:280px}
+.pnbtn:hover{background:var(--surface-2)}
+.pnbtn.hub{flex-direction:row; align-items:center; background:var(--surface-2); border:1px solid var(--line); border-radius:999px; font-family:var(--mono); font-size:12.5px; letter-spacing:.04em; padding:0 var(--s4); flex:none}
+.pnbtn.next{text-align:right; align-items:flex-end; margin-left:auto}
+.pnk{font-family:var(--mono); font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--violet)}
+.pnt{font-size:14px; color:var(--ink-dim)}
+@media (max-width:640px){ .pagenav{flex-direction:column; align-items:stretch} .pnbtn{max-width:none} .pnbtn.hub{order:-1; justify-content:center} .pnbtn.next{text-align:left; align-items:flex-start; margin-left:0} }
+</style>
+<header class="wrap topbar">
+  <span class="num">MODULE 02 — HOW AI THINKS · 07</span>
+  <span class="tag dim">AI Concepts</span>
+</header>
+
+<section class="wrap stack g6">
+  <div class="stack g4">
+    <h1>Prompting 101</h1>
+    <p class="lede">A prompt is not a magic phrase. It is the only material the model has to work from — so the useful question is what you left out.</p>
+  </div>
+
+  <div class="rig">
+    <div class="stack g3">
+      <p class="eyebrow">Add a block to the request</p>
+      <div class="chips" id="chips"></div>
+    </div>
+
+    <div class="panes">
+      <div class="pane">
+        <p class="eyebrow">What you actually send</p>
+        <div class="promptbox" id="promptbox"></div>
+      </div>
+      <div class="pane">
+        <p class="eyebrow">What comes back</p>
+        <div class="outbox" id="outbox" aria-live="polite"></div>
+        <div class="meter">
+          <span>Length<b id="mWords">0</b></span>
+          <span>Real figures<b id="mFacts">no</b></span>
+          <span>Usable as-is<b id="mUse">no</b></span>
+        </div>
+      </div>
+    </div>
+    <p class="dim" style="font-size:13.5px">The outputs here are written to show how each block changes the shape of an answer. Watch which one changes it most.</p>
+  </div>
+</section>
+
+<section class="wrap stack g5">
+  <p class="eyebrow">The problem it explains</p>
+  <h2>“It gave me something generic” is usually accurate reporting</h2>
+  <p class="dim">The model cannot look up your pricing, read your last email or guess your house style. If it is not on the desk, it does not exist — so a vague answer is often the honest consequence of a vague request.</p>
+  <figure class="scroll-x">
+    <svg viewBox="0 0 900 250" role="img" style="min-width:640px"
+         aria-label="Everything the model can use is inside the prompt. The company's real numbers, tone of voice and audience sit outside it, unreachable, unless you put them in."
+      >
+      <rect x="300" y="40" width="300" height="150" rx="12" fill="rgba(155,107,255,.10)" stroke="rgba(155,107,255,.5)"/>
+      <text x="450" y="72" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" letter-spacing="1.5" fill="#d3bcff">EVERYTHING IT CAN USE</text>
+      <text x="450" y="106" text-anchor="middle" font-family="Manrope, sans-serif" font-size="15" fill="#ECE9F5">your prompt</text>
+      <text x="450" y="132" text-anchor="middle" font-family="Manrope, sans-serif" font-size="13" fill="#9a92b6">+ whatever else is on the desk</text>
+      <text x="450" y="164" text-anchor="middle" font-family="Manrope, sans-serif" font-size="13" fill="#6b6389">and nothing whatsoever besides</text>
+      <g font-family="Manrope, sans-serif" font-size="13" fill="#6b6389">
+        <text x="24" y="60">your actual prices</text>
+        <text x="24" y="96">last quarter’s email</text>
+        <text x="24" y="132">how your team writes</text>
+        <text x="24" y="168">who this is for</text>
+        <text x="24" y="204">what you already tried</text>
+        <text x="876" y="80" text-anchor="end">your competitor’s page</text>
+        <text x="876" y="116" text-anchor="end">the deadline</text>
+        <text x="876" y="152" text-anchor="end">the awkward exception</text>
+      </g>
+      <g stroke="#2a2340" stroke-dasharray="3 5">
+        <line x1="170" y1="56" x2="292" y2="88"/><line x1="176" y1="92" x2="292" y2="104"/>
+        <line x1="180" y1="128" x2="292" y2="120"/><line x1="150" y1="164" x2="292" y2="136"/>
+        <line x1="160" y1="200" x2="292" y2="152"/>
+        <line x1="738" y1="76" x2="608" y2="96"/><line x1="742" y1="112" x2="608" y2="112"/>
+        <line x1="726" y1="148" x2="608" y2="128"/>
+      </g>
+      <text x="450" y="228" text-anchor="middle" font-family="Manrope, sans-serif" font-size="13.5" fill="#ffb3c4">none of the grey text is reachable — the dotted lines are wishes, not wires</text>
+    </svg>
+    <figcaption>Prompting is not persuasion. It is deciding what to put inside that box.</figcaption>
+  </figure>
+</section>
+
+<section class="wrap stack g5">
+  <p class="eyebrow">What actually moved the needle</p>
+  <h2>Ranked by how much each block changed the answer</h2>
+  <div class="wide-art">
+    <svg viewBox="0 0 700 228" role="img" aria-label="Context changed the answer most, then format, example and constraint. Role changed it least, despite being the most commonly given advice.">
+      <text x="0" y="22" font-family="JetBrains Mono, monospace" font-size="12" fill="#ECE9F5">Context</text><rect x="104" y="10" width="560" height="15" rx="4" fill="#9b6bff" fill-opacity="0.85"/><text x="0" y="39" font-family="Manrope, sans-serif" font-size="12" fill="currentColor">adds information nothing else can supply</text><text x="0" y="62" font-family="JetBrains Mono, monospace" font-size="12" fill="#ECE9F5">Format</text><rect x="104" y="50" width="403" height="15" rx="4" fill="#9b6bff" fill-opacity="0.85"/><text x="0" y="79" font-family="Manrope, sans-serif" font-size="12" fill="currentColor">turns a paragraph into something you can paste</text><text x="0" y="102" font-family="JetBrains Mono, monospace" font-size="12" fill="#ECE9F5">Example</text><rect x="104" y="90" width="302" height="15" rx="4" fill="#9b6bff" fill-opacity="0.85"/><text x="0" y="119" font-family="Manrope, sans-serif" font-size="12" fill="currentColor">one sample beats three sentences about tone</text><text x="0" y="142" font-family="JetBrains Mono, monospace" font-size="12" fill="#ECE9F5">Constraint</text><rect x="104" y="130" width="213" height="15" rx="4" fill="#9b6bff" fill-opacity="0.85"/><text x="0" y="159" font-family="Manrope, sans-serif" font-size="12" fill="currentColor">mostly removes — length, jargon, hedging</text><text x="0" y="182" font-family="JetBrains Mono, monospace" font-size="12" fill="#ECE9F5">Role</text><rect x="104" y="170" width="78" height="15" rx="4" fill="#ff6f8f" fill-opacity="0.7"/><text x="0" y="199" font-family="Manrope, sans-serif" font-size="12" fill="currentColor">nudges vocabulary; supplies no facts</text>
+      <text x="104" y="222" font-family="JetBrains Mono, monospace" font-size="9" letter-spacing="1.2" fill="currentColor">HOW MUCH THE ANSWER CHANGED →</text>
+    </svg>
+  </div>
+  <figcaption style="font-size:13.5px; color:var(--ink-dim)">Ranked from the demo above, not from a study. Bar length is relative, not measured.</figcaption>
+  <p class="dim">Most prompting advice is about the bottom bar. Most of the improvement is in the top two.</p>
+</section>
+
+<section class="wrap stack g4">
+  <p class="eyebrow">So what</p>
+  <p class="sowhat">Before you rewrite the wording, ask the cheaper question: <em>what does it need to know that I never told it?</em></p>
+</section>
+
+<nav class="wrap pagenav" aria-label="Series navigation">
+  <a class="pnbtn prev" href="06-why-assistant.html"><span class="pnk">← Prev</span><span class="pnt">Why it acts like an assistant</span></a>
+  <a class="pnbtn hub" href="00-atlas.html">All topics</a>
+  <a class="pnbtn next" href="08-hallucination.html"><span class="pnk">Next →</span><span class="pnt">Why AI hallucinates</span></a>
+</nav>
+<footer class="wrap foot">Part of the AI Concepts series</footer>
+
+<script>
+(function(){
+  var BLOCKS = [
+    { id:'role',       lab:'Role',       k:'ROLE',       v:'You are a pricing analyst who writes for busy founders.' },
+    { id:'context',    lab:'Context',    k:'CONTEXT',    v:'B2B SaaS, three tiers. Starter goes $19 → $29 on 1 March. Pro and Enterprise unchanged. Existing customers keep today’s price for 12 months.' },
+    { id:'format',     lab:'Format',     k:'FORMAT',     v:'Give me a three-row table — tier, old price, new price — then one line on what existing customers should do.' },
+    { id:'example',    lab:'Example',    k:'EXAMPLE',    v:'Match this voice: “We’re raising Starter to $29 on 1 March. If you’re on Starter today, nothing changes until 2027.”' },
+    { id:'constraint', lab:'Constraint', k:'CONSTRAINT', v:'Under 80 words. No marketing adjectives.' }
+  ];
+  var on = {};
+  var chips = document.getElementById('chips');
+  var pbox = document.getElementById('promptbox'), obox = document.getElementById('outbox');
+  var mW = document.getElementById('mWords'), mF = document.getElementById('mFacts'), mU = document.getElementById('mUse');
+
+  BLOCKS.forEach(function(b){
+    var el = document.createElement('button');
+    el.className = 'chip'; el.type = 'button'; el.setAttribute('aria-pressed','false');
+    el.innerHTML = '<span class="dot"></span>' + b.lab;
+    el.addEventListener('click', function(){
+      on[b.id] = !on[b.id];
+      el.setAttribute('aria-pressed', !!on[b.id]);
+      render();
+    });
+    chips.appendChild(el);
+  });
+
+  function buildPrompt(){
+    pbox.textContent = '';
+    var base = document.createElement('div');
+    base.className = 'pline on';
+    base.innerHTML = '<span class="k">TASK</span><span class="v">Write something about our new pricing.</span>';
+    pbox.appendChild(base);
+    BLOCKS.forEach(function(b){
+      if(!on[b.id]) return;
+      var d = document.createElement('div');
+      d.className = 'pline on';
+      d.innerHTML = '<span class="k">' + b.k + '</span><span class="v"></span>';
+      d.querySelector('.v').textContent = b.v;
+      pbox.appendChild(d);
+    });
+  }
+
+  function buildOutput(){
+    obox.textContent = '';
+    var terse = on.example || on.constraint;
+    var words = 0, parts = [];
+
+    function para(text, cls){
+      var p = document.createElement('p');
+      if(cls) p.className = cls;
+      p.textContent = text;
+      obox.appendChild(p);
+      words += text.trim().split(/\s+/).length;
+    }
+
+    if(!on.context){
+      // no figures available, so the answer cannot contain any
+      para(on.role
+        ? 'Our pricing has been updated to better reflect the value the platform delivers to growing teams. The new structure is live today, and we’re confident it represents a strong investment for our customers.'
+        : 'We’ve made some updates to our pricing! The new rates are now live, and we think they reflect the great value our platform delivers. Reach out to the team if you have any questions.',
+        'vague');
+      if(on.format){
+        var t = document.createElement('table'); t.className = 'pt';
+        t.innerHTML = '<thead><tr><th>Tier</th><th>Old</th><th>New</th></tr></thead><tbody>' +
+          '<tr><td>Tier 1</td><td>—</td><td>—</td></tr>' +
+          '<tr><td>Tier 2</td><td>—</td><td>—</td></tr>' +
+          '<tr><td>Tier 3</td><td>—</td><td>—</td></tr></tbody>';
+        obox.appendChild(t);
+        para('It built the table you asked for and had nothing to put in it.', 'vague');
+      }
+    } else {
+      if(on.format){
+        var tb = document.createElement('table'); tb.className = 'pt';
+        tb.innerHTML = '<thead><tr><th>Tier</th><th>Old</th><th>New</th></tr></thead><tbody>' +
+          '<tr><td>Starter</td><td>$19</td><td>$29</td></tr>' +
+          '<tr><td>Pro</td><td>unchanged</td><td>unchanged</td></tr>' +
+          '<tr><td>Enterprise</td><td>unchanged</td><td>unchanged</td></tr></tbody>';
+        obox.appendChild(tb);
+        words += 12;
+        para(terse
+          ? 'On Starter today? Nothing changes until 2027.'
+          : 'If you are already on the Starter plan, your current price is held for 12 months — there is nothing you need to do right now.');
+      } else if(terse){
+        para('Starter goes from $19 to $29 on 1 March. Pro and Enterprise are unchanged. If you’re on Starter today, nothing changes until 2027.');
+      } else {
+        para(on.role
+          ? 'Starter is moving from $19 to $29 on 1 March; Pro and Enterprise are unchanged. Existing Starter customers keep their current price for a further 12 months, so there is no action needed before 2027. Worth flagging in your next customer update rather than a separate announcement.'
+          : 'We’re excited to share that our pricing is evolving! Starter will move from $19 to $29 on 1 March, while our Pro and Enterprise tiers remain exactly where they are. And great news for existing customers — you’ll keep your current rate for a full 12 months.');
+      }
+    }
+    return words;
+  }
+
+  function render(){
+    buildPrompt();
+    var w = buildOutput();
+    mW.textContent = w + 'w';
+    mW.className = (on.constraint && w <= 80) ? 'good' : '';
+    mF.textContent = on.context ? 'yes' : 'no';
+    mF.className = on.context ? 'good' : 'bad';
+    var usable = on.context && (on.format || on.constraint || on.example);
+    mU.textContent = usable ? 'yes' : 'no';
+    mU.className = usable ? 'good' : 'bad';
+  }
+  render();
+})();
+</script>
+
+</body>
+</html>

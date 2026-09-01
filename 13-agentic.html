@@ -1,0 +1,403 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Module 4.1 — the same model, wired into a loop and allowed to decide when it is done.">
+<meta name="color-scheme" content="dark">
+<style>:root{color-scheme:dark}html{background:#100e1a}</style>
+<title>The Loop</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;600&family=Manrope:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>:root{
+  --ground:#100e1a; --ground-2:#0b0913;
+  --surface:#181428; --surface-2:#1e1934;
+  --line:#2a2340; --line-soft:#221c36;
+  --ink:#ECE9F5; --ink-dim:#9a92b6; --ink-faint:#6b6389;
+  --violet:#9b6bff; --teal:#45e0c4; --coral:#ff6f8f;
+  --violet-soft:rgba(155,107,255,.16); --teal-soft:rgba(69,224,196,.14); --coral-soft:rgba(255,111,143,.14);
+  --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px; --s7:48px; --s8:64px; --s9:96px;
+  --r-sm:6px; --r-md:12px; --r-lg:20px;
+  --display:'Unbounded',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --body:'Manrope',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,'SFMono-Regular',Menlo,monospace;
+  --wrap:1080px;
+}
+*,*::before,*::after{box-sizing:border-box}
+body{
+  margin:0; background:var(--ground); color:var(--ink);
+  font-family:var(--body); font-size:clamp(15px,.55vw + 13.6px,17px);
+  line-height:1.65; -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+h1,h2,h3{font-family:var(--display); font-weight:600; line-height:1.12; text-wrap:balance; margin:0}
+h1{font-size:clamp(30px,5.2vw,52px); letter-spacing:-.02em}
+h2{font-size:clamp(21px,2.7vw,30px); letter-spacing:-.01em}
+h3{font-size:clamp(16px,1.5vw,19px); letter-spacing:-.005em}
+p{margin:0; max-width:65ch; overflow-wrap:break-word}
+h1,h2,h3{overflow-wrap:break-word}
+.stack>*,.steps>*,.split>*,.two>*,.hero>*,.machine>*{min-width:0}
+.eyebrow{font-family:var(--mono); font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-faint); margin:0}
+.dim{color:var(--ink-dim)}
+.lede{font-size:clamp(17px,1.5vw,21px); line-height:1.5; color:var(--ink-dim)}
+.wrap{width:min(100% - 2*var(--s5), var(--wrap)); margin-inline:auto}
+@media (max-width:520px){ .wrap{width:min(100% - 2*var(--s4), var(--wrap))} }
+.stack{display:flex; flex-direction:column}
+.g2{gap:var(--s2)} .g3{gap:var(--s3)} .g4{gap:var(--s4)} .g5{gap:var(--s5)} .g6{gap:var(--s6)} .g7{gap:var(--s7)}
+section{padding-block:var(--s7)}
+section + section{border-top:1px solid var(--line-soft)}
+figure{margin:0}
+figcaption{font-size:13.5px; color:var(--ink-dim); margin-top:var(--s3); max-width:62ch}
+svg{max-width:100%; height:auto; display:block}
+.scroll-x{overflow-x:auto; -webkit-overflow-scrolling:touch}
+.card{background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); padding:var(--s5)}
+.tag{font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-faint)}
+/* site header / footer */
+.topbar{display:flex; flex-wrap:wrap; align-items:baseline; gap:var(--s3) var(--s4); padding-block:var(--s5) 0}
+.topbar .num{font-family:var(--mono); font-size:11px; letter-spacing:.16em; color:var(--violet)}
+.foot{padding-block:var(--s6); border-top:1px solid var(--line-soft); color:var(--ink-faint); font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase}
+/* controls */
+button{font-family:inherit; font-size:inherit; color:inherit}
+.btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:var(--s2);
+  min-height:44px; padding:0 var(--s4); border-radius:999px;
+  background:var(--surface-2); border:1px solid var(--line); color:var(--ink);
+  font-family:var(--mono); font-size:12.5px; letter-spacing:.04em;
+  cursor:pointer; transition:background .18s, border-color .18s, color .18s;
+}
+.btn:hover{background:#262046; border-color:#3a3160}
+.btn[aria-pressed="true"], .btn.on{background:var(--violet-soft); border-color:var(--violet); color:#d9c9ff}
+.btn:focus-visible, [tabindex]:focus-visible, input:focus-visible{outline:2px solid var(--teal); outline-offset:3px}
+.controls{display:flex; flex-wrap:wrap; gap:var(--s3); align-items:center}
+input[type="text"]{
+  min-height:44px; width:100%; padding:0 var(--s4); border-radius:999px;
+  background:var(--ground-2); border:1px solid var(--line); color:var(--ink);
+  font-family:var(--body); font-size:16px;
+}
+input[type="range"]{ -webkit-appearance:none; appearance:none; width:100%; height:44px; background:transparent; cursor:pointer }
+input[type="range"]::-webkit-slider-runnable-track{height:4px; border-radius:2px; background:linear-gradient(90deg,var(--teal),var(--violet),var(--coral))}
+input[type="range"]::-moz-range-track{height:4px; border-radius:2px; background:linear-gradient(90deg,var(--teal),var(--violet),var(--coral))}
+input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none; width:22px; height:22px; margin-top:-9px; border-radius:50%; background:var(--ink); border:3px solid var(--ground)}
+input[type="range"]::-moz-range-thumb{width:22px; height:22px; border-radius:50%; background:var(--ink); border:3px solid var(--ground); border-width:3px}
+.sr{position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0}
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important}
+}
+/* mechanism strip — a concept gets a drawing, not a paragraph */
+.mech{display:grid; gap:var(--s5)}
+@media (min-width:720px){ .mech.n2{grid-template-columns:repeat(2,1fr)} }
+@media (min-width:820px){ .mech.n3{grid-template-columns:repeat(3,1fr)} }
+.mech figure{display:flex; flex-direction:column; gap:var(--s3); min-width:0}
+.mech .art{
+  background:var(--ground-2); border:1px solid var(--line-soft); border-radius:var(--r-md);
+  padding:var(--s4); color:var(--ink-faint);
+}
+.mech .art svg{width:100%; height:auto}
+.mech .lab{font-family:var(--mono); font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:var(--violet)}
+.mech figcaption{font-size:14px; line-height:1.55; color:var(--ink-dim); margin-top:0}
+.mech figcaption b{color:var(--ink); font-weight:500; display:block; font-size:15px; margin-bottom:2px}
+.wide-art{background:var(--ground-2); border:1px solid var(--line-soft); border-radius:var(--r-md); padding:var(--s5); color:var(--ink-faint)}
+.wide-art svg{width:100%; height:auto}
+</style>
+<style>
+.rig{background:linear-gradient(165deg,#151125,#0c0a16); border:1px solid var(--line); border-radius:var(--r-lg); padding:var(--s5); display:flex; flex-direction:column; gap:var(--s5)}
+.bench{display:grid; gap:var(--s5)}
+@media (min-width:880px){ .bench{grid-template-columns:300px minmax(0,1fr); gap:var(--s6); align-items:start} }
+.ringwrap{display:flex; flex-direction:column; gap:var(--s3)}
+.ring{width:100%; max-width:300px; margin-inline:auto}
+.ring .node{transition:fill .3s, stroke .3s}
+.ring .nlab{font-family:var(--mono); font-size:11px; transition:fill .3s}
+.log{display:flex; flex-direction:column; gap:var(--s2); min-height:230px}
+.entry{display:grid; grid-template-columns:56px minmax(0,1fr); gap:var(--s3); align-items:baseline;
+       padding:8px var(--s3); border-radius:var(--r-sm); border:1px solid var(--line-soft); background:var(--ground-2);
+       animation:pop .3s ease-out both}
+@keyframes pop{from{opacity:0; transform:translateY(-4px)} to{opacity:1; transform:none}}
+.entry .k{font-family:var(--mono); font-size:9.5px; letter-spacing:.13em; text-transform:uppercase}
+.entry .v{font-size:14px; line-height:1.5; min-width:0}
+.entry.goal{border-color:rgba(236,233,245,.35)} .entry.goal .k{color:var(--ink)}
+.entry.plan .k{color:var(--violet)}
+.entry.act{border-color:rgba(155,107,255,.4); background:rgba(155,107,255,.07)} .entry.act .k{color:var(--violet)}
+.entry.act .v{font-family:var(--mono); font-size:12.5px; color:#d3bcff}
+.entry.observe{border-color:rgba(69,224,196,.35); background:rgba(69,224,196,.05)} .entry.observe .k{color:var(--teal)}
+.entry.decide .k{color:var(--ink-faint)}
+.entry.done{border-color:rgba(69,224,196,.6)} .entry.done .k{color:var(--teal)}
+.meta{display:flex; flex-wrap:wrap; gap:var(--s5); font-family:var(--mono); font-size:10.5px; letter-spacing:.13em; text-transform:uppercase; color:var(--ink-faint)}
+.meta b{display:block; margin-top:2px; color:var(--ink); font-weight:500; font-size:17px; letter-spacing:0; font-variant-numeric:tabular-nums}
+.mech .art{color:var(--ink-faint)}
+.sowhat{font-family:var(--display); font-size:clamp(19px,2.4vw,27px); line-height:1.35; letter-spacing:-.01em; max-width:27ch}
+.sowhat em{font-style:normal; color:var(--violet)}
+</style>
+</head>
+<body>
+
+
+<style>
+.pagenav{display:flex; flex-wrap:wrap; gap:var(--s4); justify-content:space-between; align-items:center; padding-block:var(--s6); border-top:1px solid var(--line-soft)}
+.pnbtn{display:flex; flex-direction:column; gap:2px; min-height:44px; justify-content:center; padding:var(--s2) var(--s4); border-radius:var(--r-md); text-decoration:none; color:inherit; transition:background .18s; max-width:280px}
+.pnbtn:hover{background:var(--surface-2)}
+.pnbtn.hub{flex-direction:row; align-items:center; background:var(--surface-2); border:1px solid var(--line); border-radius:999px; font-family:var(--mono); font-size:12.5px; letter-spacing:.04em; padding:0 var(--s4); flex:none}
+.pnbtn.next{text-align:right; align-items:flex-end; margin-left:auto}
+.pnk{font-family:var(--mono); font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--violet)}
+.pnt{font-size:14px; color:var(--ink-dim)}
+@media (max-width:640px){ .pagenav{flex-direction:column; align-items:stretch} .pnbtn{max-width:none} .pnbtn.hub{order:-1; justify-content:center} .pnbtn.next{text-align:left; align-items:flex-start; margin-left:0} }
+</style>
+<header class="wrap topbar">
+  <span class="num">MODULE 04 — AGENTIC AI · 13</span>
+  <span class="tag dim">AI Concepts</span>
+</header>
+
+<section class="wrap stack g6">
+  <div class="stack g4">
+    <h1>What makes AI “agentic”</h1>
+    <p class="lede">Nothing was added to the model. The same next-word machine was wired into a circle, and allowed to keep going until it decides it is finished.</p>
+  </div>
+
+  <div class="rig">
+    <div class="bench">
+      <div class="ringwrap">
+        <svg class="ring" id="ring" viewBox="0 0 260 260" role="img"
+             aria-label="A ring of five stages — goal, plan, act, observe, decide — with the current stage highlighted as the run proceeds."></svg>
+        <div class="meta">
+          <span>Loops<b id="mLoops">0</b></span>
+          <span>Tool calls<b id="mCalls">0</b></span>
+          <span>On the desk<b id="mDesk">0</b></span>
+        </div>
+      </div>
+      <div class="stack g4">
+        <p class="eyebrow">Goal: find the cheapest supplier for 500 units</p>
+        <div class="log" id="log" aria-live="polite"></div>
+        <div class="controls">
+          <button class="btn" id="step" type="button">Step</button>
+          <button class="btn" id="run" type="button">Run</button>
+          <button class="btn" id="reset" type="button">Reset</button>
+        </div>
+      </div>
+    </div>
+    <p class="dim" style="font-size:13.5px" id="cap">Press Step. Watch which stage repeats — that repetition is the entire difference.</p>
+  </div>
+</section>
+
+<section class="wrap stack g5">
+  <p class="eyebrow">The problem it explains</p>
+  <h2>Same model, different wiring</h2>
+  <div class="wide-art">
+    <svg viewBox="0 0 900 210" role="img" aria-label="A plain chat sends one prompt in and gets one answer out along a straight line. An agent is the identical model with its output routed back into its own input, so it can act, look at the result, and go again.">
+      <text x="0" y="18" font-family="JetBrains Mono, monospace" font-size="10" letter-spacing="1.4" fill="currentColor">A PLAIN CHAT</text>
+      <rect x="0" y="34" width="96" height="44" rx="8" fill="none" stroke="currentColor" stroke-opacity=".45"/>
+      <text x="48" y="61" text-anchor="middle" font-family="Manrope, sans-serif" font-size="12.5" fill="#ECE9F5">prompt</text>
+      <line x1="104" y1="56" x2="148" y2="56" stroke="currentColor" stroke-width="1.5"/><polygon points="156,56 148,52 148,60" fill="currentColor"/>
+      <rect x="164" y="34" width="112" height="44" rx="8" fill="#9b6bff" fill-opacity=".14" stroke="#9b6bff"/>
+      <text x="220" y="61" text-anchor="middle" font-family="Manrope, sans-serif" font-size="12.5" fill="#ECE9F5">the model</text>
+      <line x1="284" y1="56" x2="328" y2="56" stroke="currentColor" stroke-width="1.5"/><polygon points="336,56 328,52 328,60" fill="currentColor"/>
+      <rect x="344" y="34" width="96" height="44" rx="8" fill="none" stroke="currentColor" stroke-opacity=".45"/>
+      <text x="392" y="61" text-anchor="middle" font-family="Manrope, sans-serif" font-size="12.5" fill="#ECE9F5">answer</text>
+      <text x="220" y="98" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="currentColor">one pass · it stops whether or not it worked</text>
+
+      <text x="520" y="18" font-family="JetBrains Mono, monospace" font-size="10" letter-spacing="1.4" fill="#d3bcff">AN AGENT</text>
+      <rect x="520" y="34" width="96" height="44" rx="8" fill="none" stroke="currentColor" stroke-opacity=".45"/>
+      <text x="568" y="61" text-anchor="middle" font-family="Manrope, sans-serif" font-size="12.5" fill="#ECE9F5">goal</text>
+      <line x1="624" y1="56" x2="668" y2="56" stroke="currentColor" stroke-width="1.5"/><polygon points="676,56 668,52 668,60" fill="currentColor"/>
+      <rect x="684" y="34" width="112" height="44" rx="8" fill="#9b6bff" fill-opacity=".14" stroke="#9b6bff"/>
+      <text x="740" y="61" text-anchor="middle" font-family="Manrope, sans-serif" font-size="12.5" fill="#ECE9F5">the model</text>
+      <text x="740" y="26" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9.5" fill="#d3bcff">byte-for-byte identical</text>
+      <path d="M804 56 L860 56 L860 86" fill="none" stroke="currentColor" stroke-width="1.5"/><polygon points="860,92 856.5,86 863.5,86" fill="currentColor"/>
+      <rect x="820" y="92" width="80" height="38" rx="8" fill="#45e0c4" fill-opacity=".12" stroke="#45e0c4"/>
+      <text x="860" y="116" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="#8ff0dd">a tool</text>
+      <path d="M820 111 L740 111 L740 84" fill="none" stroke="#45e0c4" stroke-width="1.6"/>
+      <polygon points="740,78 736.5,85 743.5,85" fill="#45e0c4"/>
+      <text x="700" y="128" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="#8ff0dd">what happened, fed back in</text>
+      <text x="700" y="150" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="#d3bcff">…then it goes again</text>
+      <line x1="470" y1="10" x2="470" y2="170" stroke="currentColor" stroke-opacity=".2" stroke-dasharray="3 6"/>
+      <text x="450" y="196" text-anchor="middle" font-family="Manrope, sans-serif" font-size="14" fill="#ECE9F5">The difference is one arrow. Nothing inside the box changed.</text>
+    </svg>
+  </div>
+</section>
+
+<section class="wrap stack g5">
+  <p class="eyebrow">How it works</p>
+  <h2>Three moves it repeats</h2>
+  <div class="mech n3">
+    <figure>
+      <div class="art">
+        <svg viewBox="0 0 240 112" role="img" aria-label="A goal is broken into an ordered list of smaller steps.">
+          <rect x="14" y="14" width="212" height="24" rx="5" fill="none" stroke="currentColor" stroke-opacity=".45"/>
+          <text x="120" y="30" text-anchor="middle" font-family="Manrope, sans-serif" font-size="11.5" fill="#ECE9F5">“find the cheapest supplier”</text>
+          <line x1="120" y1="42" x2="120" y2="50" stroke="#9b6bff" stroke-width="1.4"/><polygon points="120,56 116.5,50 123.5,50" fill="#9b6bff"/>
+          <g font-family="JetBrains Mono, monospace" font-size="9.5" fill="#d3bcff">
+            <rect x="30" y="60" width="180" height="14" rx="3" fill="#9b6bff" fill-opacity=".18"/><text x="38" y="71">1 · check each price list</text>
+            <rect x="30" y="78" width="180" height="14" rx="3" fill="#9b6bff" fill-opacity=".18"/><text x="38" y="89">2 · compare at 500 units</text>
+            <rect x="30" y="96" width="180" height="14" rx="3" fill="#9b6bff" fill-opacity=".18"/><text x="38" y="107">3 · write it in the note</text>
+          </g>
+        </svg>
+      </div>
+      <figcaption><b>Plan</b>It writes the steps down as text, because text is all it can produce.</figcaption>
+    </figure>
+    <figure>
+      <div class="art">
+        <svg viewBox="0 0 240 112" role="img" aria-label="One step becomes a tool request that your code runs, exactly as on page 12.">
+          <rect x="20" y="20" width="200" height="34" rx="6" fill="#9b6bff" fill-opacity=".12" stroke="#9b6bff"/>
+          <text x="34" y="41" font-family="JetBrains Mono, monospace" font-size="10.5" fill="#d3bcff">open_price_list(“Bregan”)</text>
+          <line x1="120" y1="60" x2="120" y2="70" stroke="currentColor" stroke-width="1.4"/><polygon points="120,76 116.5,70 123.5,70" fill="currentColor"/>
+          <rect x="46" y="78" width="148" height="26" rx="6" fill="#45e0c4" fill-opacity=".12" stroke="#45e0c4" stroke-opacity=".6"/>
+          <text x="120" y="95" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="#8ff0dd">your code runs it</text>
+        </svg>
+      </div>
+      <figcaption><b>Act</b>One step at a time, through the same tool handoff as <a href="12-tool-use.html" title="Tool use" style="color:var(--violet); text-decoration:underline; text-decoration-style:dotted; text-underline-offset:3px">page 12</a>.</figcaption>
+    </figure>
+    <figure>
+      <div class="art">
+        <svg viewBox="0 0 240 112" role="img" aria-label="The result goes on the desk and the agent asks itself whether the goal is met; if not, it loops.">
+          <rect x="16" y="16" width="130" height="24" rx="5" fill="#45e0c4" fill-opacity=".16" stroke="#45e0c4" stroke-opacity=".6"/>
+          <text x="81" y="32" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="#8ff0dd">$3.95 / unit</text>
+          <text x="120" y="58" text-anchor="middle" font-family="Manrope, sans-serif" font-size="12" fill="#ECE9F5">done yet?</text>
+          <path d="M92 66 L60 84" stroke="currentColor" stroke-width="1.3" fill="none"/><polygon points="54,88 62,87 59,81" fill="currentColor"/>
+          <path d="M148 66 L182 84" stroke="#9b6bff" stroke-width="1.3" fill="none"/><polygon points="188,88 180,81 177,87" fill="#9b6bff"/>
+          <text x="44" y="102" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="currentColor">yes · stop</text>
+          <text x="196" y="102" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="#d3bcff">no · loop</text>
+        </svg>
+      </div>
+      <figcaption><b>Observe and decide</b>The stopping rule is the agent’s hardest and least reliable judgement.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section class="wrap stack g5">
+  <p class="eyebrow">What it costs</p>
+  <h2>Every loop re-reads everything</h2>
+  <div class="wide-art">
+    <svg viewBox="0 0 900 200" role="img" aria-label="With each loop the desk grows, and because the whole desk is re-read before every word, both cost and the chance of an early mistake being treated as fact grow with it.">
+      <text x="0" y="18" font-family="JetBrains Mono, monospace" font-size="10" letter-spacing="1.4" fill="currentColor">THE DESK, AFTER EACH LOOP</text>
+      <g>
+        <rect x="0" y="34" width="96" height="16" rx="3" fill="#45e0c4" fill-opacity=".55"/>
+        <text x="700" y="46" font-family="JetBrains Mono, monospace" font-size="10" fill="currentColor">loop 1 — goal + one result</text>
+        <rect x="0" y="60" width="216" height="16" rx="3" fill="#45e0c4" fill-opacity=".55"/>
+        <text x="700" y="72" font-family="JetBrains Mono, monospace" font-size="10" fill="currentColor">loop 2 — everything above, again</text>
+        <rect x="0" y="86" width="360" height="16" rx="3" fill="#9b6bff" fill-opacity=".55"/>
+        <text x="700" y="98" font-family="JetBrains Mono, monospace" font-size="10" fill="currentColor">loop 3</text>
+        <rect x="0" y="112" width="520" height="16" rx="3" fill="#9b6bff" fill-opacity=".55"/>
+        <text x="700" y="124" font-family="JetBrains Mono, monospace" font-size="10" fill="currentColor">loop 4</text>
+        <rect x="0" y="138" width="660" height="16" rx="3" fill="#ff6f8f" fill-opacity=".55"/>
+        <text x="700" y="150" font-family="JetBrains Mono, monospace" font-size="10" fill="#ffb3c4">loop 5 — and the edge is coming</text>
+      </g>
+      <text x="0" y="182" font-family="Manrope, sans-serif" font-size="14" fill="#ECE9F5">A mistake in loop 1 is read back as established fact in every loop after it.</text>
+    </svg>
+  </div>
+</section>
+
+<section class="wrap stack g4">
+  <p class="eyebrow">So what</p>
+  <p class="sowhat">An agent is not a smarter model. It is <em>the same model, given a tool, a loop, and permission to decide when to stop.</em></p>
+</section>
+
+<nav class="wrap pagenav" aria-label="Series navigation">
+  <a class="pnbtn prev" href="12-tool-use.html"><span class="pnk">← Prev</span><span class="pnt">Tool use</span></a>
+  <a class="pnbtn hub" href="00-atlas.html">All topics</a>
+  <a class="pnbtn next" href="14-agent-memory.html"><span class="pnk">Next →</span><span class="pnt">Memory in AI agents</span></a>
+</nav>
+<footer class="wrap foot">Part of the AI Concepts series</footer>
+
+<script>
+(function(){
+  var NS = 'http://www.w3.org/2000/svg';
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var STAGES = ['Goal','Plan','Act','Observe','Decide'];
+  var RUN = [
+    [0,'Goal','Find the cheapest supplier for 500 units and add it to the weekly note.'],
+    [1,'Plan','Check all three price lists, compare at 500 units, then write the note.'],
+    [2,'Act','open_price_list("Alva")'],
+    [3,'Observe','Alva — $4.20 per unit at 500.'],
+    [4,'Decide','Two suppliers still unchecked. Keep going.'],
+    [2,'Act','open_price_list("Bregan")'],
+    [3,'Observe','Bregan — $3.95 per unit at 500, minimum order 250.'],
+    [4,'Decide','One left. Keep going.'],
+    [2,'Act','open_price_list("Corran")'],
+    [3,'Observe','Corran — $4.05 per unit at 500.'],
+    [4,'Decide','All three checked. Enough to answer.'],
+    [2,'Act','append_to_note("Cheapest at 500 units: Bregan, $3.95")'],
+    [3,'Observe','Weekly note updated.'],
+    [4,'Decide','Goal met. Stop.']
+  ];
+
+  var ring = document.getElementById('ring'), log = document.getElementById('log');
+  var mL = document.getElementById('mLoops'), mC = document.getElementById('mCalls'), mD = document.getElementById('mDesk');
+  var cap = document.getElementById('cap');
+  var i = 0, timer = null, nodes = [];
+
+  function el(n, a){ var e = document.createElementNS(NS, n); for(var k in a) e.setAttribute(k, a[k]); return e; }
+  (function build(){
+    ring.appendChild(el('circle', { cx:130, cy:130, r:88, fill:'none', stroke:'#2a2340', 'stroke-width':1.5 }));
+    for(var s = 0; s < 5; s++){
+      var a = (-90 + s * 72) * Math.PI / 180;
+      var x = 130 + 88 * Math.cos(a), y = 130 + 88 * Math.sin(a);
+      var c = el('circle', { cx:x, cy:y, r:15, fill:'#181428', stroke:'#2a2340', 'stroke-width':1.5, class:'node' });
+      ring.appendChild(c);
+      var lx = 130 + 118 * Math.cos(a), ly = 130 + 118 * Math.sin(a);
+      var t = el('text', { x:lx, y:ly + 4, 'text-anchor':'middle', class:'nlab', fill:'#6b6389' });
+      t.textContent = STAGES[s];
+      ring.appendChild(t);
+      nodes.push({ c: c, t: t });
+      // arc arrowhead pointing round the ring
+      var ah = (-90 + s * 72 + 36) * Math.PI / 180;
+      var ax = 130 + 88 * Math.cos(ah), ay = 130 + 88 * Math.sin(ah);
+      var p = el('polygon', { points: '0,-4 7,0 0,4', fill:'#2a2340',
+        transform: 'translate(' + ax.toFixed(1) + ',' + ay.toFixed(1) + ') rotate(' + (ah * 180 / Math.PI + 90).toFixed(1) + ')' });
+      ring.appendChild(p);
+    }
+    var mid = el('text', { x:130, y:126, 'text-anchor':'middle', 'font-family':'JetBrains Mono, monospace', 'font-size':10, fill:'#4d4668' });
+    mid.textContent = 'until done';
+    ring.appendChild(mid);
+    var mid2 = el('text', { x:130, y:144, 'text-anchor':'middle', 'font-family':'JetBrains Mono, monospace', 'font-size':10, fill:'#4d4668' });
+    mid2.textContent = 'or out of budget';
+    ring.appendChild(mid2);
+  })();
+
+  function light(s){
+    nodes.forEach(function(n, k){
+      var on = k === s;
+      n.c.setAttribute('fill', on ? 'rgba(155,107,255,.28)' : '#181428');
+      n.c.setAttribute('stroke', on ? '#9b6bff' : '#2a2340');
+      n.t.setAttribute('fill', on ? '#d3bcff' : '#6b6389');
+    });
+  }
+
+  function stats(){
+    var done = RUN.slice(0, i);
+    mL.textContent = done.filter(function(d){ return d[1] === 'Decide'; }).length;
+    mC.textContent = done.filter(function(d){ return d[1] === 'Act'; }).length;
+    mD.textContent = done.length;
+  }
+
+  function step(){
+    if(i >= RUN.length){ stop(); cap.textContent = 'Fourteen steps, four tool calls, one answer — and the model was never doing anything except writing the next chunk of text.'; return; }
+    var r = RUN[i];
+    light(r[0]);
+    var e = document.createElement('div');
+    var cls = r[1].toLowerCase();
+    if(i === RUN.length - 1) cls += ' done';
+    e.className = 'entry ' + cls;
+    e.innerHTML = '<span class="k"></span><span class="v"></span>';
+    e.querySelector('.k').textContent = r[1];
+    e.querySelector('.v').textContent = r[2];
+    log.appendChild(e);
+    log.scrollTop = log.scrollHeight;
+    i++; stats();
+  }
+  function stop(){ if(timer){ clearInterval(timer); timer = null; } document.getElementById('run').textContent = 'Run'; }
+
+  document.getElementById('step').addEventListener('click', function(){ stop(); step(); });
+  document.getElementById('run').addEventListener('click', function(){
+    if(timer){ stop(); return; }
+    this.textContent = 'Pause';
+    timer = setInterval(step, reduce ? 900 : 620);
+  });
+  document.getElementById('reset').addEventListener('click', function(){
+    stop(); i = 0; log.textContent = ''; light(-1); stats();
+    cap.textContent = 'Press Step. Watch which stage repeats — that repetition is the entire difference.';
+  });
+
+  light(-1); stats();
+})();
+</script>
+
+</body>
+</html>

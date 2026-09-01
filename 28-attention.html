@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Module 8.1 — tap a word, see which other words it leans on to make sense.">
+<meta name="color-scheme" content="dark">
+<style>:root{color-scheme:dark}html{background:#100e1a}</style>
+<title>Glowing Threads</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;600&family=Manrope:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>:root{
+  --ground:#100e1a; --ground-2:#0b0913;
+  --surface:#181428; --surface-2:#1e1934;
+  --line:#2a2340; --line-soft:#221c36;
+  --ink:#ECE9F5; --ink-dim:#9a92b6; --ink-faint:#6b6389;
+  --violet:#9b6bff; --teal:#45e0c4; --coral:#ff6f8f;
+  --violet-soft:rgba(155,107,255,.16); --teal-soft:rgba(69,224,196,.14); --coral-soft:rgba(255,111,143,.14);
+  --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px; --s7:48px; --s8:64px; --s9:96px;
+  --r-sm:6px; --r-md:12px; --r-lg:20px;
+  --display:'Unbounded',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --body:'Manrope',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,'SFMono-Regular',Menlo,monospace;
+  --wrap:1080px;
+}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0; background:var(--ground); color:var(--ink); font-family:var(--body); font-size:clamp(15px,.55vw + 13.6px,17px); line-height:1.65; -webkit-font-smoothing:antialiased; overflow-x:hidden}
+h1,h2,h3{font-family:var(--display); font-weight:600; line-height:1.12; text-wrap:balance; margin:0}
+h1{font-size:clamp(30px,5.2vw,52px); letter-spacing:-.02em}
+h2{font-size:clamp(21px,2.7vw,30px); letter-spacing:-.01em}
+h3{font-size:clamp(16px,1.5vw,19px); letter-spacing:-.005em}
+p{margin:0; max-width:65ch; overflow-wrap:break-word}
+h1,h2,h3{overflow-wrap:break-word}
+.stack>*,.steps>*,.split>*,.two>*,.hero>*,.machine>*{min-width:0}
+.eyebrow{font-family:var(--mono); font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-faint); margin:0}
+.dim{color:var(--ink-dim)}
+.lede{font-size:clamp(17px,1.5vw,21px); line-height:1.5; color:var(--ink-dim)}
+.wrap{width:min(100% - 2*var(--s5), var(--wrap)); margin-inline:auto}
+@media (max-width:520px){ .wrap{width:min(100% - 2*var(--s4), var(--wrap))} }
+.stack{display:flex; flex-direction:column}
+.g2{gap:var(--s2)} .g3{gap:var(--s3)} .g4{gap:var(--s4)} .g5{gap:var(--s5)} .g6{gap:var(--s6)} .g7{gap:var(--s7)}
+section{padding-block:var(--s7)}
+section + section{border-top:1px solid var(--line-soft)}
+figure{margin:0}
+figcaption{font-size:13.5px; color:var(--ink-dim); margin-top:var(--s3); max-width:62ch}
+svg{max-width:100%; height:auto; display:block}
+.scroll-x{overflow-x:auto; -webkit-overflow-scrolling:touch}
+.card{background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); padding:var(--s5)}
+.tag{font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-faint)}
+.topbar{display:flex; flex-wrap:wrap; align-items:baseline; gap:var(--s3) var(--s4); padding-block:var(--s5) 0}
+.topbar .num{font-family:var(--mono); font-size:11px; letter-spacing:.16em; color:var(--violet)}
+.foot{padding-block:var(--s6); border-top:1px solid var(--line-soft); color:var(--ink-faint); font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase}
+button{font-family:inherit; font-size:inherit; color:inherit}
+.btn{display:inline-flex; align-items:center; justify-content:center; gap:var(--s2); min-height:44px; padding:0 var(--s4); border-radius:999px; background:var(--surface-2); border:1px solid var(--line); color:var(--ink); font-family:var(--mono); font-size:12.5px; letter-spacing:.04em; cursor:pointer; transition:background .18s, border-color .18s, color .18s}
+.btn:hover{background:#262046; border-color:#3a3160}
+.btn[aria-pressed="true"], .btn.on{background:var(--violet-soft); border-color:var(--violet); color:#d9c9ff}
+.btn:focus-visible, [tabindex]:focus-visible, input:focus-visible{outline:2px solid var(--teal); outline-offset:3px}
+.sr{position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0}
+@media (prefers-reduced-motion: reduce){ *,*::before,*::after{animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important} }
+.wide-art{background:var(--ground-2); border:1px solid var(--line-soft); border-radius:var(--r-md); padding:var(--s5); color:var(--ink-faint)}
+.wide-art svg{width:100%; height:auto}
+.sowhat{font-family:var(--display); font-size:clamp(19px,2.4vw,27px); line-height:1.35; letter-spacing:-.01em; max-width:28ch}
+.sowhat em{font-style:normal; color:var(--violet)}
+</style>
+<style>
+.sentwrap{position:relative; background:var(--ground-2); border:1px solid var(--line-soft); border-radius:var(--r-lg); padding:var(--s6) var(--s5)}
+.sentline{position:relative; display:flex; flex-wrap:wrap; gap:10px 6px; font-family:var(--display); font-size:clamp(19px,2.6vw,26px); z-index:1}
+.sentline .w{padding:2px 6px; border-radius:6px; background:none; border:none; color:var(--ink-dim); cursor:default; transition:color .2s, background .2s}
+.sentline button.w{cursor:pointer; color:var(--ink)}
+.sentline button.w:hover{background:var(--surface-2)}
+.sentline button.w[aria-pressed="true"]{background:var(--violet); color:#0e0a1c}
+.sentline .w.lit{color:#d9c9ff; background:rgba(155,107,255,.14)}
+#linesSvg{position:absolute; inset:0; width:100%; height:100%; pointer-events:none; z-index:0}
+.readout{margin-top:var(--s5); border:1px solid var(--line); border-radius:var(--r-md); background:var(--surface); padding:var(--s4); font-size:14.5px; line-height:1.6; min-height:60px}
+.readout .who{font-family:var(--mono); font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--teal); display:block; margin-bottom:6px}
+.link{display:flex; gap:8px; padding:4px 0; font-size:14px}
+.link b{color:var(--ink); font-weight:500}
+</style>
+</head>
+<body>
+
+<style>
+.pagenav{display:flex; flex-wrap:wrap; gap:var(--s4); justify-content:space-between; align-items:center; padding-block:var(--s6); border-top:1px solid var(--line-soft)}
+.pnbtn{display:flex; flex-direction:column; gap:2px; min-height:44px; justify-content:center; padding:var(--s2) var(--s4); border-radius:var(--r-md); text-decoration:none; color:inherit; transition:background .18s; max-width:280px}
+.pnbtn:hover{background:var(--surface-2)}
+.pnbtn.hub{flex-direction:row; align-items:center; background:var(--surface-2); border:1px solid var(--line); border-radius:999px; font-family:var(--mono); font-size:12.5px; letter-spacing:.04em; padding:0 var(--s4); flex:none}
+.pnbtn.next{text-align:right; align-items:flex-end; margin-left:auto}
+.pnk{font-family:var(--mono); font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--violet)}
+.pnt{font-size:14px; color:var(--ink-dim)}
+@media (max-width:640px){ .pagenav{flex-direction:column; align-items:stretch} .pnbtn{max-width:none} .pnbtn.hub{order:-1; justify-content:center} .pnbtn.next{text-align:left; align-items:flex-start; margin-left:0} }
+</style>
+<header class="wrap topbar">
+  <span class="num">MODULE 08 — GOING DEEPER · 28</span>
+  <span class="tag dim">AI Concepts</span>
+</header>
+
+<section class="wrap stack g6">
+  <div class="stack g4">
+    <h1>Glowing threads between words</h1>
+    <p class="lede">Tap a word below — a highlighted word doesn't just sit next to its neighbors, it leans on specific ones to know what it means.</p>
+  </div>
+
+  <div class="sentwrap">
+    <div class="sentline" id="sent"></div>
+    <svg id="linesSvg" aria-hidden="true"></svg>
+  </div>
+  <div class="readout" id="readout" aria-live="polite">Tap a highlighted word to see what it leans on.</div>
+  <p class="dim" style="font-size:13px">Hand-authored to illustrate a real pattern (pronouns link to what they refer to, verbs link to their subject) — not measurements from a live model. Real attention patterns aren't something this page can capture offline.</p>
+</section>
+
+<section class="wrap stack g4">
+  <p class="eyebrow">So what</p>
+  <p class="sowhat">A model doesn't read a sentence left to right and forget the start — every word stays in reach of every other word, <em>the whole time.</em></p>
+</section>
+
+<nav class="wrap pagenav" aria-label="Series navigation">
+  <a class="pnbtn prev" href="27-field-guide.html"><span class="pnk">← Prev</span><span class="pnt">The AI tools field guide</span></a>
+  <a class="pnbtn hub" href="00-atlas.html">All topics</a>
+  <a class="pnbtn next" href="29-parameters.html"><span class="pnk">Next →</span><span class="pnt">Parameters &amp; weights, really</span></a>
+</nav>
+<footer class="wrap foot">Part of the AI Concepts series</footer>
+
+<script>
+(function(){
+  var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var WORDS = ['The','scientist','published','her','results','after','she','finished','the','experiment','.'];
+  // index -> array of {to, why}
+  var LINKS = {
+    1: [], // scientist — the anchor others point back to
+    2: [{to:1, why:'verb → its subject'}],
+    3: [{to:1, why:'possessive → who it belongs to'}],
+    4: [{to:3, why:'noun → its possessor'}],
+    6: [{to:1, why:'pronoun → what it refers to'}],
+    7: [{to:6, why:'verb → its subject'}],
+    9: [{to:7, why:'object → the verb acting on it'}]
+  };
+  var sent = document.getElementById('sent'), svg = document.getElementById('linesSvg'), readout = document.getElementById('readout');
+  var els = [];
+
+  WORDS.forEach(function(w, i){
+    var interactive = LINKS.hasOwnProperty(i);
+    var el = document.createElement(interactive ? 'button' : 'span');
+    el.className = 'w'; el.textContent = w;
+    if(interactive){
+      el.type = 'button'; el.setAttribute('aria-pressed','false');
+      el.addEventListener('click', function(){ show(i, el); });
+    }
+    sent.appendChild(el);
+    els.push(el);
+  });
+
+  function clearLit(){
+    els.forEach(function(el){ el.classList.remove('lit'); if(el.tagName === 'BUTTON') el.setAttribute('aria-pressed','false'); });
+  }
+
+  function draw(fromIdx, targets){
+    var box = sent.getBoundingClientRect();
+    svg.setAttribute('viewBox', '0 0 ' + box.width + ' ' + box.height);
+    svg.textContent = '';
+    var a = els[fromIdx].getBoundingClientRect();
+    var ax = a.left - box.left + a.width/2, ay = a.top - box.top + a.height/2;
+    targets.forEach(function(t){
+      var b = els[t.to].getBoundingClientRect();
+      var bx = b.left - box.left + b.width/2, by = b.top - box.top + b.height/2;
+      var path = document.createElementNS('http://www.w3.org/2000/svg','path');
+      var my = (ay+by)/2 - 22;
+      path.setAttribute('d', 'M'+ax+' '+ay+' Q '+((ax+bx)/2)+' '+my+', '+bx+' '+by);
+      path.setAttribute('fill','none'); path.setAttribute('stroke','#9b6bff'); path.setAttribute('stroke-width','1.8'); path.setAttribute('opacity','.75');
+      if(!reduce) path.style.strokeDasharray = '4 4';
+      svg.appendChild(path);
+    });
+  }
+
+  var current = -1;
+  function show(i, btn){
+    current = i;
+    clearLit();
+    var targets = LINKS[i];
+    btn.classList.add('lit'); btn.setAttribute('aria-pressed','true');
+    targets.forEach(function(t){ els[t.to].classList.add('lit'); });
+    draw(i, targets);
+    readout.innerHTML = '';
+    var who = document.createElement('span'); who.className = 'who'; who.textContent = '"' + WORDS[i] + '" leans on:';
+    readout.appendChild(who);
+    if(!targets.length){
+      var p = document.createElement('div'); p.className = 'link'; p.textContent = 'Nothing — other words lean on this one instead.';
+      readout.appendChild(p);
+    }
+    targets.forEach(function(t){
+      var row = document.createElement('div'); row.className = 'link';
+      row.innerHTML = '<b>' + WORDS[t.to] + '</b><span class="dim">' + t.why + '</span>';
+      readout.appendChild(row);
+    });
+  }
+
+  window.addEventListener('resize', function(){
+    if(current >= 0) draw(current, LINKS[current]);
+  });
+})();
+</script>
+
+</body>
+</html>

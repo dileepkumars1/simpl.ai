@@ -1,0 +1,355 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Module 4.2 — three workarounds for a desk that gets wiped, only one of which survives the night.">
+<meta name="color-scheme" content="dark">
+<style>:root{color-scheme:dark}html{background:#100e1a}</style>
+<title>Three Answers To A Wiped Desk</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;600&family=Manrope:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>:root{
+  --ground:#100e1a; --ground-2:#0b0913;
+  --surface:#181428; --surface-2:#1e1934;
+  --line:#2a2340; --line-soft:#221c36;
+  --ink:#ECE9F5; --ink-dim:#9a92b6; --ink-faint:#6b6389;
+  --violet:#9b6bff; --teal:#45e0c4; --coral:#ff6f8f;
+  --violet-soft:rgba(155,107,255,.16); --teal-soft:rgba(69,224,196,.14); --coral-soft:rgba(255,111,143,.14);
+  --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px; --s7:48px; --s8:64px; --s9:96px;
+  --r-sm:6px; --r-md:12px; --r-lg:20px;
+  --display:'Unbounded',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --body:'Manrope',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,'SFMono-Regular',Menlo,monospace;
+  --wrap:1080px;
+}
+*,*::before,*::after{box-sizing:border-box}
+body{
+  margin:0; background:var(--ground); color:var(--ink);
+  font-family:var(--body); font-size:clamp(15px,.55vw + 13.6px,17px);
+  line-height:1.65; -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+h1,h2,h3{font-family:var(--display); font-weight:600; line-height:1.12; text-wrap:balance; margin:0}
+h1{font-size:clamp(30px,5.2vw,52px); letter-spacing:-.02em}
+h2{font-size:clamp(21px,2.7vw,30px); letter-spacing:-.01em}
+h3{font-size:clamp(16px,1.5vw,19px); letter-spacing:-.005em}
+p{margin:0; max-width:65ch; overflow-wrap:break-word}
+h1,h2,h3{overflow-wrap:break-word}
+.stack>*,.steps>*,.split>*,.two>*,.hero>*,.machine>*{min-width:0}
+.eyebrow{font-family:var(--mono); font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-faint); margin:0}
+.dim{color:var(--ink-dim)}
+.lede{font-size:clamp(17px,1.5vw,21px); line-height:1.5; color:var(--ink-dim)}
+.wrap{width:min(100% - 2*var(--s5), var(--wrap)); margin-inline:auto}
+@media (max-width:520px){ .wrap{width:min(100% - 2*var(--s4), var(--wrap))} }
+.stack{display:flex; flex-direction:column}
+.g2{gap:var(--s2)} .g3{gap:var(--s3)} .g4{gap:var(--s4)} .g5{gap:var(--s5)} .g6{gap:var(--s6)} .g7{gap:var(--s7)}
+section{padding-block:var(--s7)}
+section + section{border-top:1px solid var(--line-soft)}
+figure{margin:0}
+figcaption{font-size:13.5px; color:var(--ink-dim); margin-top:var(--s3); max-width:62ch}
+svg{max-width:100%; height:auto; display:block}
+.scroll-x{overflow-x:auto; -webkit-overflow-scrolling:touch}
+.card{background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); padding:var(--s5)}
+.tag{font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-faint)}
+/* site header / footer */
+.topbar{display:flex; flex-wrap:wrap; align-items:baseline; gap:var(--s3) var(--s4); padding-block:var(--s5) 0}
+.topbar .num{font-family:var(--mono); font-size:11px; letter-spacing:.16em; color:var(--violet)}
+.foot{padding-block:var(--s6); border-top:1px solid var(--line-soft); color:var(--ink-faint); font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase}
+/* controls */
+button{font-family:inherit; font-size:inherit; color:inherit}
+.btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:var(--s2);
+  min-height:44px; padding:0 var(--s4); border-radius:999px;
+  background:var(--surface-2); border:1px solid var(--line); color:var(--ink);
+  font-family:var(--mono); font-size:12.5px; letter-spacing:.04em;
+  cursor:pointer; transition:background .18s, border-color .18s, color .18s;
+}
+.btn:hover{background:#262046; border-color:#3a3160}
+.btn[aria-pressed="true"], .btn.on{background:var(--violet-soft); border-color:var(--violet); color:#d9c9ff}
+.btn:focus-visible, [tabindex]:focus-visible, input:focus-visible{outline:2px solid var(--teal); outline-offset:3px}
+.controls{display:flex; flex-wrap:wrap; gap:var(--s3); align-items:center}
+input[type="text"]{
+  min-height:44px; width:100%; padding:0 var(--s4); border-radius:999px;
+  background:var(--ground-2); border:1px solid var(--line); color:var(--ink);
+  font-family:var(--body); font-size:16px;
+}
+input[type="range"]{ -webkit-appearance:none; appearance:none; width:100%; height:44px; background:transparent; cursor:pointer }
+input[type="range"]::-webkit-slider-runnable-track{height:4px; border-radius:2px; background:linear-gradient(90deg,var(--teal),var(--violet),var(--coral))}
+input[type="range"]::-moz-range-track{height:4px; border-radius:2px; background:linear-gradient(90deg,var(--teal),var(--violet),var(--coral))}
+input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none; width:22px; height:22px; margin-top:-9px; border-radius:50%; background:var(--ink); border:3px solid var(--ground)}
+input[type="range"]::-moz-range-thumb{width:22px; height:22px; border-radius:50%; background:var(--ink); border:3px solid var(--ground); border-width:3px}
+.sr{position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0}
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important}
+}
+/* mechanism strip — a concept gets a drawing, not a paragraph */
+.mech{display:grid; gap:var(--s5)}
+@media (min-width:720px){ .mech.n2{grid-template-columns:repeat(2,1fr)} }
+@media (min-width:820px){ .mech.n3{grid-template-columns:repeat(3,1fr)} }
+.mech figure{display:flex; flex-direction:column; gap:var(--s3); min-width:0}
+.mech .art{
+  background:var(--ground-2); border:1px solid var(--line-soft); border-radius:var(--r-md);
+  padding:var(--s4); color:var(--ink-faint);
+}
+.mech .art svg{width:100%; height:auto}
+.mech .lab{font-family:var(--mono); font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:var(--violet)}
+.mech figcaption{font-size:14px; line-height:1.55; color:var(--ink-dim); margin-top:0}
+.mech figcaption b{color:var(--ink); font-weight:500; display:block; font-size:15px; margin-bottom:2px}
+.wide-art{background:var(--ground-2); border:1px solid var(--line-soft); border-radius:var(--r-md); padding:var(--s5); color:var(--ink-faint)}
+.wide-art svg{width:100%; height:auto}
+</style>
+<style>
+.rig{background:linear-gradient(165deg,#151125,#0c0a16); border:1px solid var(--line); border-radius:var(--r-lg); padding:var(--s5); display:flex; flex-direction:column; gap:var(--s5)}
+.stores{display:grid; gap:var(--s3)}
+@media (min-width:760px){ .stores{grid-template-columns:repeat(3,1fr)} }
+.store{border:1px solid var(--line); border-radius:var(--r-md); padding:var(--s4); display:flex; flex-direction:column; gap:var(--s3); min-height:140px; transition:border-color .3s, background .3s}
+.store .k{font-family:var(--mono); font-size:9.5px; letter-spacing:.15em; text-transform:uppercase; color:var(--ink-faint)}
+.store h3{font-size:15px}
+.store .slot{font-family:var(--mono); font-size:11.5px; line-height:1.5; color:var(--ink-faint); border-top:1px solid var(--line-soft); padding-top:var(--s3); min-height:44px}
+.store.short.hot{border-color:var(--teal); background:rgba(69,224,196,.07)}
+.store.short.hot .k{color:var(--teal)}
+.store.pad.hot{border-color:var(--violet); background:rgba(155,107,255,.08)}
+.store.pad.hot .k{color:var(--violet)}
+.store.long.hot{border-color:var(--coral); background:rgba(255,111,143,.06)}
+.store.long.hot .k{color:var(--coral)}
+.store.wiped{opacity:.35}
+.store.wiped .slot{text-decoration:line-through}
+.tl{display:flex; flex-direction:column; gap:var(--s2)}
+.tstep{display:grid; grid-template-columns:74px minmax(0,1fr); gap:var(--s3); align-items:baseline; padding:9px var(--s3);
+       border-radius:var(--r-sm); border:1px solid var(--line-soft); background:var(--ground-2); opacity:.25; transition:opacity .3s}
+.tstep.on{opacity:1}
+.tstep .w{font-family:var(--mono); font-size:9.5px; letter-spacing:.13em; text-transform:uppercase; color:var(--ink-faint)}
+.tstep .t{font-size:14px; line-height:1.5; min-width:0}
+.tstep.break{background:transparent; border-style:dashed; border-color:rgba(255,111,143,.5)}
+.tstep.break .w, .tstep.break .t{color:#ffb3c4}
+.mech .art{color:var(--ink-faint)}
+.sowhat{font-family:var(--display); font-size:clamp(19px,2.4vw,27px); line-height:1.35; letter-spacing:-.01em; max-width:28ch}
+.sowhat em{font-style:normal; color:var(--coral)}
+</style>
+</head>
+<body>
+
+
+<style>
+.pagenav{display:flex; flex-wrap:wrap; gap:var(--s4); justify-content:space-between; align-items:center; padding-block:var(--s6); border-top:1px solid var(--line-soft)}
+.pnbtn{display:flex; flex-direction:column; gap:2px; min-height:44px; justify-content:center; padding:var(--s2) var(--s4); border-radius:var(--r-md); text-decoration:none; color:inherit; transition:background .18s; max-width:280px}
+.pnbtn:hover{background:var(--surface-2)}
+.pnbtn.hub{flex-direction:row; align-items:center; background:var(--surface-2); border:1px solid var(--line); border-radius:999px; font-family:var(--mono); font-size:12.5px; letter-spacing:.04em; padding:0 var(--s4); flex:none}
+.pnbtn.next{text-align:right; align-items:flex-end; margin-left:auto}
+.pnk{font-family:var(--mono); font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--violet)}
+.pnt{font-size:14px; color:var(--ink-dim)}
+@media (max-width:640px){ .pagenav{flex-direction:column; align-items:stretch} .pnbtn{max-width:none} .pnbtn.hub{order:-1; justify-content:center} .pnbtn.next{text-align:left; align-items:flex-start; margin-left:0} }
+</style>
+<header class="wrap topbar">
+  <span class="num">MODULE 04 — AGENTIC AI · 14</span>
+  <span class="tag dim">AI Concepts</span>
+</header>
+
+<section class="wrap stack g6">
+  <div class="stack g4">
+    <h1>Memory in AI agents</h1>
+    <p class="lede">The desk is wiped when the chat ends. “Agent memory” is three different workarounds for that one fact — and only one of them survives the night.</p>
+  </div>
+
+  <div class="rig">
+    <div class="stores">
+      <div class="store short" id="sShort">
+        <span class="k">Store 1 · short-term</span>
+        <h3>This conversation</h3>
+        <span class="slot" id="slotShort">empty</span>
+      </div>
+      <div class="store pad" id="sPad">
+        <span class="k">Store 2 · scratchpad</span>
+        <h3>Notes mid-task</h3>
+        <span class="slot" id="slotPad">empty</span>
+      </div>
+      <div class="store long" id="sLong">
+        <span class="k">Store 3 · long-term</span>
+        <h3>A searchable store</h3>
+        <span class="slot" id="slotLong">empty</span>
+      </div>
+    </div>
+    <div class="tl" id="tl"></div>
+    <div class="controls">
+      <button class="btn" id="step" type="button">Step</button>
+      <button class="btn" id="run" type="button">Run</button>
+      <button class="btn" id="reset" type="button">Reset</button>
+    </div>
+    <p class="dim" style="font-size:13.5px" id="cap">Follow one fact — “no dairy” — from the moment it is said to the moment it is needed again next week.</p>
+  </div>
+</section>
+
+<section class="wrap stack g5">
+  <p class="eyebrow">The problem it solves</p>
+  <h2>Nothing carries over by itself</h2>
+  <div class="wide-art">
+    <svg viewBox="0 0 900 190" role="img" aria-label="At the end of a session the desk is cleared and nothing is retained. Any fact that must survive has to be deliberately written somewhere outside the conversation before the session ends.">
+      <rect x="0" y="34" width="300" height="88" rx="10" fill="#45e0c4" fill-opacity=".07" stroke="#45e0c4" stroke-opacity=".5"/>
+      <text x="150" y="26" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" letter-spacing="1.4" fill="#8ff0dd">MONDAY’S DESK</text>
+      <rect x="24" y="52" width="120" height="16" rx="3" fill="#45e0c4" fill-opacity=".55"/>
+      <rect x="24" y="76" width="176" height="16" rx="3" fill="#9b6bff" fill-opacity=".55"/>
+      <rect x="24" y="100" width="96" height="16" rx="3" fill="#45e0c4" fill-opacity=".55"/>
+      <line x1="330" y1="78" x2="386" y2="78" stroke="#ff6f8f" stroke-width="1.6"/><polygon points="394,78 386,74 386,82" fill="#ff6f8f"/>
+      <text x="362" y="66" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9.5" fill="#ffb3c4">close</text>
+      <rect x="410" y="34" width="300" height="88" rx="10" fill="none" stroke="currentColor" stroke-opacity=".3" stroke-dasharray="6 5"/>
+      <text x="560" y="26" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" letter-spacing="1.4" fill="currentColor">TUESDAY’S DESK</text>
+      <text x="560" y="84" text-anchor="middle" font-family="Manrope, sans-serif" font-size="14" fill="currentColor">empty, and unaware it ever wasn’t</text>
+      <text x="0" y="160" font-family="Manrope, sans-serif" font-size="14" fill="#ECE9F5">A fact only survives if something deliberately wrote it down before the desk was cleared.</text>
+      <text x="0" y="182" font-family="JetBrains Mono, monospace" font-size="10" fill="currentColor">that deliberate write is the whole of “memory”</text>
+    </svg>
+  </div>
+</section>
+
+<section class="wrap stack g5">
+  <p class="eyebrow">How it works</p>
+  <h2>Three stores, three jobs</h2>
+  <div class="mech n3">
+    <figure>
+      <div class="art">
+        <svg viewBox="0 0 240 112" role="img" aria-label="Short-term memory is simply the conversation on the desk, and it disappears with the session.">
+          <rect x="18" y="20" width="204" height="52" rx="7" fill="#45e0c4" fill-opacity=".08" stroke="#45e0c4" stroke-opacity=".55"/>
+          <rect x="32" y="32" width="90" height="12" rx="3" fill="#45e0c4" fill-opacity=".6"/>
+          <rect x="32" y="50" width="140" height="12" rx="3" fill="#9b6bff" fill-opacity=".6"/>
+          <text x="120" y="92" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="currentColor">free · automatic · gone at midnight</text>
+          <text x="120" y="106" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9.5" fill="#8ff0dd">it is just the desk</text>
+        </svg>
+      </div>
+      <figcaption><b>Short-term</b>Not a feature — the desk from <a href="04-context-window.html" title="The context window" style="color:var(--coral); text-decoration:underline; text-decoration-style:dotted; text-underline-offset:3px">page 4</a>, wiped when the chat ends.</figcaption>
+    </figure>
+    <figure>
+      <div class="art">
+        <svg viewBox="0 0 240 112" role="img" aria-label="A scratchpad holds notes the agent writes to itself mid-task so long work survives its own length.">
+          <rect x="46" y="14" width="148" height="80" rx="6" fill="#9b6bff" fill-opacity=".08" stroke="#9b6bff" stroke-opacity=".55"/>
+          <g stroke="#9b6bff" stroke-opacity=".45" stroke-width="1">
+            <line x1="60" y1="34" x2="180" y2="34"/><line x1="60" y1="50" x2="180" y2="50"/><line x1="60" y1="66" x2="150" y2="66"/>
+          </g>
+          <text x="60" y="30" font-family="JetBrains Mono, monospace" font-size="9" fill="#d3bcff">checked A, B</text>
+          <text x="60" y="46" font-family="JetBrains Mono, monospace" font-size="9" fill="#d3bcff">C still to do</text>
+          <text x="120" y="108" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9.5" fill="currentColor">so a long job survives its own length</text>
+        </svg>
+      </div>
+      <figcaption><b>Scratchpad</b>Notes it writes to itself, so step 40 still knows what step 3 found.</figcaption>
+    </figure>
+    <figure>
+      <div class="art">
+        <svg viewBox="0 0 240 112" role="img" aria-label="Long-term memory is a searchable store outside the conversation, read back by the same nearest-point search as retrieval.">
+          <rect x="18" y="16" width="120" height="76" rx="7" fill="#ff6f8f" fill-opacity=".06" stroke="#ff6f8f" stroke-opacity=".5"/>
+          <circle cx="44" cy="38" r="4" fill="#ff6f8f"/><circle cx="72" cy="30" r="4" fill="#ff6f8f"/>
+          <circle cx="60" cy="58" r="4" fill="#ff6f8f"/><circle cx="98" cy="48" r="4" fill="#ff6f8f"/>
+          <circle cx="82" cy="76" r="4" fill="#ff6f8f"/>
+          <text x="78" y="106" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="currentColor">a store, outside the chat</text>
+          <line x1="146" y1="54" x2="176" y2="54" stroke="currentColor" stroke-width="1.3"/><polygon points="182,54 176,51 176,57" fill="currentColor"/>
+          <text x="210" y="44" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="currentColor">searched</text>
+          <text x="210" y="57" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="currentColor">the same way</text>
+          <text x="210" y="70" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="currentColor">as page 9</text>
+        </svg>
+      </div>
+      <figcaption><b>Long-term</b>The coordinate store again — write facts in, search them back next session.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section class="wrap stack g5">
+  <p class="eyebrow">Where it goes wrong</p>
+  <h2>Nothing knows what is worth keeping</h2>
+  <div class="wide-art">
+    <svg viewBox="0 0 900 200" role="img" aria-label="Deciding what to save is done by the same model, with no reliable rule, so it saves passing remarks as permanent facts and drops things that mattered. Retrieving them later has the same failure as retrieval generally.">
+      <text x="0" y="18" font-family="JetBrains Mono, monospace" font-size="10" letter-spacing="1.4" fill="currentColor">WHAT GOT SAVED</text>
+      <rect x="0" y="32" width="380" height="30" rx="6" fill="#45e0c4" fill-opacity=".12" stroke="#45e0c4" stroke-opacity=".5"/>
+      <text x="16" y="52" font-family="Manrope, sans-serif" font-size="13" fill="#8ff0dd">“no dairy” — worth keeping forever</text>
+      <rect x="0" y="70" width="380" height="30" rx="6" fill="#ff6f8f" fill-opacity=".10" stroke="#ff6f8f" stroke-opacity=".5"/>
+      <text x="16" y="90" font-family="Manrope, sans-serif" font-size="13" fill="#ffb3c4">“I’m in a rush today” — saved as a trait</text>
+      <rect x="0" y="108" width="380" height="30" rx="6" fill="none" stroke="currentColor" stroke-opacity=".35" stroke-dasharray="4 4"/>
+      <text x="16" y="128" font-family="Manrope, sans-serif" font-size="13" fill="currentColor">“the deadline moved to the 9th” — dropped</text>
+      <line x1="424" y1="85" x2="470" y2="85" stroke="currentColor" stroke-width="1.5"/><polygon points="478,85 470,81 470,89" fill="currentColor"/>
+      <text x="450" y="74" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="currentColor">later</text>
+      <rect x="496" y="44" width="404" height="82" rx="9" fill="#9b6bff" fill-opacity=".07" stroke="#9b6bff" stroke-opacity=".45"/>
+      <text x="698" y="74" text-anchor="middle" font-family="Manrope, sans-serif" font-size="13.5" fill="#ECE9F5">and next week it confidently tells you</text>
+      <text x="698" y="98" text-anchor="middle" font-family="Manrope, sans-serif" font-size="13.5" fill="#ffb3c4">you are always in a hurry, and misses the deadline</text>
+      <text x="0" y="176" font-family="Manrope, sans-serif" font-size="14" fill="#ECE9F5">The model choosing what to remember has no more access to truth than it had on page 8.</text>
+    </svg>
+  </div>
+</section>
+
+<section class="wrap stack g4">
+  <p class="eyebrow">So what</p>
+  <p class="sowhat">An agent that “remembers you” is <em>a store of sentences somebody chose to keep, searched the same fallible way as any other document.</em></p>
+</section>
+
+<nav class="wrap pagenav" aria-label="Series navigation">
+  <a class="pnbtn prev" href="13-agentic.html"><span class="pnk">← Prev</span><span class="pnt">What makes AI “agentic”</span></a>
+  <a class="pnbtn hub" href="00-atlas.html">All topics</a>
+  <a class="pnbtn next" href="15-multi-agent.html"><span class="pnk">Next →</span><span class="pnt">Multi-agent systems</span></a>
+</nav>
+<footer class="wrap foot">Part of the AI Concepts series</footer>
+
+<script>
+(function(){
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var STEPS = [
+    { w:'Mon · you',   t:'“Plan me a week of dinners — no dairy, I react badly to it.”', short:'“no dairy” + the request', hot:'short' },
+    { w:'Mon · agent', t:'Reads it off the desk and plans seven dairy-free dinners.', short:'“no dairy” + the request', hot:'short' },
+    { w:'Mon · agent', t:'Mid-task note to itself: three dinners drafted, four to go.', pad:'3 done · 4 remaining', hot:'pad' },
+    { w:'Mon · agent', t:'Writes one durable fact to the store: prefers dairy-free.', long:'prefers dairy-free', hot:'long' },
+    { w:'—',           t:'Chat closed. The desk is cleared and the scratchpad goes with it.', wipe:true, hot:'none', brk:true },
+    { w:'Thu · you',   t:'“Something quick for tonight?”', short:'“something quick”', hot:'short' },
+    { w:'Thu · agent', t:'Searches the store before answering — the same nearest-point lookup as <a href="09-rag.html" title="Look it up before you answer" style="color:var(--coral); text-decoration:underline; text-decoration-style:dotted; text-underline-offset:3px">page 9</a>.', hot:'long' },
+    { w:'Thu · agent', t:'Pulls “prefers dairy-free” onto the desk, then suggests accordingly.', short:'“something quick” + prefers dairy-free', hot:'short' }
+  ];
+
+  var tl = document.getElementById('tl'), cap = document.getElementById('cap');
+  var sShort = document.getElementById('sShort'), sPad = document.getElementById('sPad'), sLong = document.getElementById('sLong');
+  var slShort = document.getElementById('slotShort'), slPad = document.getElementById('slotPad'), slLong = document.getElementById('slotLong');
+  var i = 0, timer = null, rows = [];
+
+  STEPS.forEach(function(s){
+    var r = document.createElement('div');
+    r.className = 'tstep' + (s.brk ? ' break' : '');
+    r.innerHTML = '<span class="w"></span><span class="t"></span>';
+    r.querySelector('.w').textContent = s.w;
+    r.querySelector('.t').innerHTML = s.t;
+    tl.appendChild(r); rows.push(r);
+  });
+
+  var state = { short:'empty', pad:'empty', long:'empty' };
+
+  function paint(hot, wiped){
+    [[sShort, 'short'], [sPad, 'pad'], [sLong, 'long']].forEach(function(p){
+      p[0].classList.toggle('hot', hot === p[1]);
+      p[0].classList.toggle('wiped', !!wiped && p[1] !== 'long');
+    });
+    slShort.textContent = state.short; slPad.textContent = state.pad; slLong.textContent = state.long;
+  }
+
+  function step(){
+    if(i >= STEPS.length){ stop(); cap.textContent = 'Only store 3 crossed the gap. The other two never survive a closed tab — which is why anything that matters has to be written out on purpose.'; return; }
+    var s = STEPS[i];
+    rows[i].classList.add('on');
+    if(s.short) state.short = s.short;
+    if(s.pad) state.pad = s.pad;
+    if(s.long) state.long = s.long;
+    if(s.wipe){ state.short = 'wiped'; state.pad = 'wiped'; }
+    paint(s.hot, s.wipe);
+    i++;
+  }
+  function stop(){ if(timer){ clearInterval(timer); timer = null; } document.getElementById('run').textContent = 'Run'; }
+
+  document.getElementById('step').addEventListener('click', function(){ stop(); step(); });
+  document.getElementById('run').addEventListener('click', function(){
+    if(timer){ stop(); return; }
+    this.textContent = 'Pause';
+    timer = setInterval(step, reduce ? 1100 : 780);
+  });
+  document.getElementById('reset').addEventListener('click', function(){
+    stop(); i = 0; state = { short:'empty', pad:'empty', long:'empty' };
+    rows.forEach(function(r){ r.classList.remove('on'); });
+    paint('none', false);
+    cap.textContent = 'Follow one fact — “no dairy” — from the moment it is said to the moment it is needed again next week.';
+  });
+  paint('none', false);
+})();
+</script>
+
+</body>
+</html>

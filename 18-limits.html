@@ -1,0 +1,349 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Module 5 — five places the map ends, each the shadow of a mechanism you have watched work.">
+<meta name="color-scheme" content="dark">
+<style>:root{color-scheme:dark}html{background:#100e1a}</style>
+<title>The Edge Of The Map</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;600&family=Manrope:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>:root{
+  --ground:#100e1a; --ground-2:#0b0913;
+  --surface:#181428; --surface-2:#1e1934;
+  --line:#2a2340; --line-soft:#221c36;
+  --ink:#ECE9F5; --ink-dim:#9a92b6; --ink-faint:#6b6389;
+  --violet:#9b6bff; --teal:#45e0c4; --coral:#ff6f8f;
+  --violet-soft:rgba(155,107,255,.16); --teal-soft:rgba(69,224,196,.14); --coral-soft:rgba(255,111,143,.14);
+  --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px; --s7:48px; --s8:64px; --s9:96px;
+  --r-sm:6px; --r-md:12px; --r-lg:20px;
+  --display:'Unbounded',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --body:'Manrope',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,'SFMono-Regular',Menlo,monospace;
+  --wrap:1080px;
+}
+*,*::before,*::after{box-sizing:border-box}
+body{
+  margin:0; background:var(--ground); color:var(--ink);
+  font-family:var(--body); font-size:clamp(15px,.55vw + 13.6px,17px);
+  line-height:1.65; -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+h1,h2,h3{font-family:var(--display); font-weight:600; line-height:1.12; text-wrap:balance; margin:0}
+h1{font-size:clamp(30px,5.2vw,52px); letter-spacing:-.02em}
+h2{font-size:clamp(21px,2.7vw,30px); letter-spacing:-.01em}
+h3{font-size:clamp(16px,1.5vw,19px); letter-spacing:-.005em}
+p{margin:0; max-width:65ch; overflow-wrap:break-word}
+h1,h2,h3{overflow-wrap:break-word}
+.stack>*,.steps>*,.split>*,.two>*,.hero>*,.machine>*{min-width:0}
+.eyebrow{font-family:var(--mono); font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-faint); margin:0}
+.dim{color:var(--ink-dim)}
+.lede{font-size:clamp(17px,1.5vw,21px); line-height:1.5; color:var(--ink-dim)}
+.wrap{width:min(100% - 2*var(--s5), var(--wrap)); margin-inline:auto}
+@media (max-width:520px){ .wrap{width:min(100% - 2*var(--s4), var(--wrap))} }
+.stack{display:flex; flex-direction:column}
+.g2{gap:var(--s2)} .g3{gap:var(--s3)} .g4{gap:var(--s4)} .g5{gap:var(--s5)} .g6{gap:var(--s6)} .g7{gap:var(--s7)}
+section{padding-block:var(--s7)}
+section + section{border-top:1px solid var(--line-soft)}
+figure{margin:0}
+figcaption{font-size:13.5px; color:var(--ink-dim); margin-top:var(--s3); max-width:62ch}
+svg{max-width:100%; height:auto; display:block}
+.scroll-x{overflow-x:auto; -webkit-overflow-scrolling:touch}
+.card{background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); padding:var(--s5)}
+.tag{font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-faint)}
+/* site header / footer */
+.topbar{display:flex; flex-wrap:wrap; align-items:baseline; gap:var(--s3) var(--s4); padding-block:var(--s5) 0}
+.topbar .num{font-family:var(--mono); font-size:11px; letter-spacing:.16em; color:var(--violet)}
+.foot{padding-block:var(--s6); border-top:1px solid var(--line-soft); color:var(--ink-faint); font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase}
+/* controls */
+button{font-family:inherit; font-size:inherit; color:inherit}
+.btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:var(--s2);
+  min-height:44px; padding:0 var(--s4); border-radius:999px;
+  background:var(--surface-2); border:1px solid var(--line); color:var(--ink);
+  font-family:var(--mono); font-size:12.5px; letter-spacing:.04em;
+  cursor:pointer; transition:background .18s, border-color .18s, color .18s;
+}
+.btn:hover{background:#262046; border-color:#3a3160}
+.btn[aria-pressed="true"], .btn.on{background:var(--violet-soft); border-color:var(--violet); color:#d9c9ff}
+.btn:focus-visible, [tabindex]:focus-visible, input:focus-visible{outline:2px solid var(--teal); outline-offset:3px}
+.controls{display:flex; flex-wrap:wrap; gap:var(--s3); align-items:center}
+input[type="text"]{
+  min-height:44px; width:100%; padding:0 var(--s4); border-radius:999px;
+  background:var(--ground-2); border:1px solid var(--line); color:var(--ink);
+  font-family:var(--body); font-size:16px;
+}
+input[type="range"]{ -webkit-appearance:none; appearance:none; width:100%; height:44px; background:transparent; cursor:pointer }
+input[type="range"]::-webkit-slider-runnable-track{height:4px; border-radius:2px; background:linear-gradient(90deg,var(--teal),var(--violet),var(--coral))}
+input[type="range"]::-moz-range-track{height:4px; border-radius:2px; background:linear-gradient(90deg,var(--teal),var(--violet),var(--coral))}
+input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none; width:22px; height:22px; margin-top:-9px; border-radius:50%; background:var(--ink); border:3px solid var(--ground)}
+input[type="range"]::-moz-range-thumb{width:22px; height:22px; border-radius:50%; background:var(--ink); border:3px solid var(--ground); border-width:3px}
+.sr{position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0}
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important}
+}
+/* mechanism strip — a concept gets a drawing, not a paragraph */
+.mech{display:grid; gap:var(--s5)}
+@media (min-width:720px){ .mech.n2{grid-template-columns:repeat(2,1fr)} }
+@media (min-width:820px){ .mech.n3{grid-template-columns:repeat(3,1fr)} }
+.mech figure{display:flex; flex-direction:column; gap:var(--s3); min-width:0}
+.mech .art{
+  background:var(--ground-2); border:1px solid var(--line-soft); border-radius:var(--r-md);
+  padding:var(--s4); color:var(--ink-faint);
+}
+.mech .art svg{width:100%; height:auto}
+.mech .lab{font-family:var(--mono); font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:var(--violet)}
+.mech figcaption{font-size:14px; line-height:1.55; color:var(--ink-dim); margin-top:0}
+.mech figcaption b{color:var(--ink); font-weight:500; display:block; font-size:15px; margin-bottom:2px}
+.wide-art{background:var(--ground-2); border:1px solid var(--line-soft); border-radius:var(--r-md); padding:var(--s5); color:var(--ink-faint)}
+.wide-art svg{width:100%; height:auto}
+</style>
+<style>
+.rig{background:linear-gradient(165deg,#151125,#0c0a16); border:1px solid var(--line); border-radius:var(--r-lg); padding:var(--s5); display:flex; flex-direction:column; gap:var(--s5)}
+.bench{display:grid; gap:var(--s5)}
+@media (min-width:880px){ .bench{grid-template-columns:minmax(0,1fr) 290px; gap:var(--s6); align-items:start} }
+.terr{width:100%}
+.terr .mk{transition:fill .3s, r .3s}
+.picks{display:flex; flex-direction:column; gap:var(--s2)}
+.picks .btn{justify-content:flex-start; text-align:left; text-transform:none; letter-spacing:0;
+            font-family:var(--body); font-size:14px; padding:var(--s3) var(--s4); border-radius:var(--r-md); min-height:48px}
+.picks .btn .i{font-family:var(--mono); font-size:11px; color:var(--ink-faint); margin-right:var(--s3)}
+.picks .btn.on .i{color:var(--coral)}
+.detail{display:grid; gap:var(--s5); border-top:1px solid var(--line-soft); padding-top:var(--s5)}
+@media (min-width:760px){ .detail{grid-template-columns:280px minmax(0,1fr); gap:var(--s6)} }
+.dart{background:var(--ground-2); border:1px solid var(--line-soft); border-radius:var(--r-md); padding:var(--s4); color:var(--ink-faint)}
+.dart svg{width:100%; height:auto}
+.dtext{display:flex; flex-direction:column; gap:var(--s3); min-width:0}
+.dtext h3{font-size:clamp(18px,2.2vw,23px)}
+.dtext .line{font-size:15px; line-height:1.6; color:var(--ink-dim)}
+.because{display:flex; align-items:center; gap:var(--s3); padding:var(--s3) var(--s4); border-radius:var(--r-md);
+         background:rgba(155,107,255,.08); border:1px solid rgba(155,107,255,.35); font-size:14px; color:#d9c9ff}
+.because b{font-family:var(--mono); font-size:10px; letter-spacing:.13em; text-transform:uppercase; color:var(--violet); font-weight:400; flex:0 0 auto}
+.sowhat{font-family:var(--display); font-size:clamp(19px,2.4vw,27px); line-height:1.35; letter-spacing:-.01em; max-width:28ch}
+.sowhat em{font-style:normal; color:var(--coral)}
+</style>
+</head>
+<body>
+
+
+<style>
+.pagenav{display:flex; flex-wrap:wrap; gap:var(--s4); justify-content:space-between; align-items:center; padding-block:var(--s6); border-top:1px solid var(--line-soft)}
+.pnbtn{display:flex; flex-direction:column; gap:2px; min-height:44px; justify-content:center; padding:var(--s2) var(--s4); border-radius:var(--r-md); text-decoration:none; color:inherit; transition:background .18s; max-width:280px}
+.pnbtn:hover{background:var(--surface-2)}
+.pnbtn.hub{flex-direction:row; align-items:center; background:var(--surface-2); border:1px solid var(--line); border-radius:999px; font-family:var(--mono); font-size:12.5px; letter-spacing:.04em; padding:0 var(--s4); flex:none}
+.pnbtn.next{text-align:right; align-items:flex-end; margin-left:auto}
+.pnk{font-family:var(--mono); font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--violet)}
+.pnt{font-size:14px; color:var(--ink-dim)}
+@media (max-width:640px){ .pagenav{flex-direction:column; align-items:stretch} .pnbtn{max-width:none} .pnbtn.hub{order:-1; justify-content:center} .pnbtn.next{text-align:left; align-items:flex-start; margin-left:0} }
+</style>
+<header class="wrap topbar">
+  <span class="num">MODULE 05 — REALITY CHECK · 18</span>
+  <span class="tag dim">AI Concepts</span>
+</header>
+
+<section class="wrap stack g6">
+  <div class="stack g4">
+    <h1>What AI still can’t do</h1>
+    <p class="lede">Not a list of things it is bad at. Five places where the map simply ends — each one the direct shadow of a mechanism you have already watched work.</p>
+  </div>
+
+  <div class="rig">
+    <div class="bench">
+      <svg class="terr" id="terr" viewBox="0 0 620 380" role="img"
+           aria-label="A map of what the machine can do, with five numbered markers sitting on its outer edge, each one a limit."></svg>
+      <div class="picks" id="picks"></div>
+    </div>
+    <div class="detail">
+      <div class="dart" id="dart"></div>
+      <div class="dtext">
+        <h3 id="dTitle"></h3>
+        <p class="line" id="dLine"></p>
+        <div class="because"><b>because</b><span id="dBecause"></span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="wrap stack g5">
+  <p class="eyebrow">The pattern</p>
+  <h2>None of these is a bug</h2>
+  <div class="wide-art">
+    <svg viewBox="0 0 900 240" role="img" aria-label="Each limit traces back to a design decision: predicting text rather than checking it, a fixed window rather than memory, frozen weights rather than live knowledge. A larger model moves none of these lines.">
+      <text x="0" y="18" font-family="JetBrains Mono, monospace" font-size="10" letter-spacing="1.4" fill="currentColor">THE MECHANISM</text>
+      <text x="470" y="18" font-family="JetBrains Mono, monospace" font-size="10" letter-spacing="1.4" fill="#ffb3c4">THE LIMIT IT PRODUCES</text>
+      <g font-family="Manrope, sans-serif" font-size="13" fill="#ECE9F5">
+        <text x="0" y="52">trained once, then frozen</text>
+        <text x="0" y="92">a fixed window, rebuilt each turn</text>
+        <text x="0" y="132">predicts plausible text</text>
+        <text x="0" y="172">output feeds back in as input</text>
+        <text x="0" y="212">no consequences reach it</text>
+      </g>
+      <g stroke="#ff6f8f" stroke-width="1.3" stroke-opacity=".7">
+        <line x1="380" y1="48" x2="452" y2="48"/><line x1="380" y1="88" x2="452" y2="88"/>
+        <line x1="380" y1="128" x2="452" y2="128"/><line x1="380" y1="168" x2="452" y2="168"/>
+        <line x1="380" y1="208" x2="452" y2="208"/>
+      </g>
+      <g fill="#ff6f8f">
+        <polygon points="460,48 452,44 452,52"/><polygon points="460,88 452,84 452,92"/>
+        <polygon points="460,128 452,124 452,132"/><polygon points="460,168 452,164 452,172"/>
+        <polygon points="460,208 452,204 452,212"/>
+      </g>
+      <g font-family="Manrope, sans-serif" font-size="13" fill="#ffb3c4">
+        <text x="470" y="52">cannot know today</text>
+        <text x="470" y="92">cannot remember you</text>
+        <text x="470" y="132">cannot tell true from plausible</text>
+        <text x="470" y="172">early errors harden into facts</text>
+        <text x="470" y="212">cannot feel that it matters</text>
+      </g>
+      <line x1="0" y1="228" x2="900" y2="228" stroke="currentColor" stroke-opacity=".2"/>
+    </svg>
+  </div>
+  <p class="dim">A bigger model shifts none of these lines. Each one is answered by adding a mechanism from the outside — a lookup, a store, a check, a person.</p>
+</section>
+
+<section class="wrap stack g4">
+  <p class="eyebrow">So what</p>
+  <p class="sowhat">You can now predict where it will fail before you watch it fail — which is <em>the whole difference between being impressed by it and being able to use it.</em></p>
+</section>
+
+<nav class="wrap pagenav" aria-label="Series navigation">
+  <a class="pnbtn prev" href="17-use-cases.html"><span class="pnk">← Prev</span><span class="pnt">Where agents actually work</span></a>
+  <a class="pnbtn hub" href="00-atlas.html">All topics</a>
+  <a class="pnbtn next" href="19-first-app.html"><span class="pnk">Next →</span><span class="pnt">Create your first AI app</span></a>
+</nav>
+<footer class="wrap foot">Part of the AI Concepts series</footer>
+
+<script>
+(function(){
+  var NS = 'http://www.w3.org/2000/svg';
+  var C = '#ff6f8f', V = '#9b6bff', T = '#45e0c4';
+  var LIMITS = [
+    { n:1, x:452, y:96, k:'No live ground truth',
+      title:'It cannot know what happened today',
+      line:'Everything it knows was fixed on a date, and nothing since then reached it. Asked about after that line, it answers from the shape of the question rather than the world.',
+      because:'training writes to the numbers once, and using never writes back — <a href="05-training-vs-using.html" title="Training vs. using" style="color:var(--violet); text-decoration:underline; text-decoration-style:dotted; text-underline-offset:3px">page 5</a>',
+      art:'<svg viewBox="0 0 240 120" role="img" aria-label="A timeline with a hard line across it; everything to the right of the line is unreachable.">' +
+          '<line x1="16" y1="60" x2="224" y2="60" stroke="currentColor" stroke-width="1.5"/>' +
+          '<line x1="140" y1="24" x2="140" y2="96" stroke="' + C + '" stroke-width="2.5"/>' +
+          '<circle cx="46" cy="60" r="5" fill="' + T + '"/><circle cx="80" cy="60" r="5" fill="' + T + '"/><circle cx="114" cy="60" r="5" fill="' + T + '"/>' +
+          '<circle cx="168" cy="60" r="5" fill="none" stroke="currentColor" stroke-dasharray="2 2"/>' +
+          '<circle cx="200" cy="60" r="5" fill="none" stroke="currentColor" stroke-dasharray="2 2"/>' +
+          '<text x="78" y="40" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9.5" fill="#8ff0dd">known</text>' +
+          '<text x="186" y="40" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9.5" fill="currentColor">never arrived</text>' +
+          '<text x="140" y="112" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="' + C + '">cutoff</text></svg>' },
+    { n:2, x:520, y:170, k:'No memory of you',
+      title:'It cannot remember you between chats',
+      line:'The desk is rebuilt from nothing each session and swept when you close it. Anything that survives was deliberately written to a store outside the conversation.',
+      because:'the context window is re-read, not retained — <a href="04-context-window.html" title="The context window" style="color:var(--violet); text-decoration:underline; text-decoration-style:dotted; text-underline-offset:3px">page 4</a> and <a href="14-agent-memory.html" title="Memory in AI agents" style="color:var(--violet); text-decoration:underline; text-decoration-style:dotted; text-underline-offset:3px">14</a>',
+      art:'<svg viewBox="0 0 240 120" role="img" aria-label="A full desk on the left, an empty one on the right, with a sweep between them.">' +
+          '<rect x="12" y="30" width="92" height="58" rx="7" fill="' + T + '" fill-opacity=".1" stroke="' + T + '" stroke-opacity=".55"/>' +
+          '<rect x="24" y="42" width="60" height="10" rx="2" fill="' + T + '" fill-opacity=".6"/>' +
+          '<rect x="24" y="58" width="68" height="10" rx="2" fill="' + V + '" fill-opacity=".6"/>' +
+          '<rect x="24" y="74" width="46" height="10" rx="2" fill="' + T + '" fill-opacity=".6"/>' +
+          '<line x1="116" y1="59" x2="140" y2="59" stroke="' + C + '" stroke-width="1.5"/><polygon points="147,59 139,55 139,63" fill="' + C + '"/>' +
+          '<rect x="154" y="30" width="74" height="58" rx="7" fill="none" stroke="currentColor" stroke-opacity=".35" stroke-dasharray="5 4"/>' +
+          '<text x="191" y="64" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9.5" fill="currentColor">empty</text>' +
+          '<text x="128" y="106" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="' + C + '">and unaware it ever wasn’t</text></svg>' },
+    { n:3, x:474, y:250, k:'Cannot check itself',
+      title:'It cannot tell true from plausible',
+      line:'There is no step anywhere in the machine that compares what it is about to say against the world. Fluency and accuracy come from two different places, and only one of them is installed.',
+      because:'the fact-check box in the pipeline has no wires — <a href="08-hallucination.html" title="Why AI hallucinates" style="color:var(--violet); text-decoration:underline; text-decoration-style:dotted; text-underline-offset:3px">page 8</a>',
+      art:'<svg viewBox="0 0 240 120" role="img" aria-label="A pipeline from model to reader with an unconnected check-a-source box beneath it.">' +
+          '<rect x="16" y="34" width="76" height="32" rx="7" fill="' + V + '" fill-opacity=".16" stroke="' + V + '"/>' +
+          '<text x="54" y="55" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9.5" fill="#d3bcff">machine</text>' +
+          '<line x1="98" y1="50" x2="140" y2="50" stroke="' + V + '" stroke-width="1.5"/><polygon points="147,50 139,46 139,54" fill="' + V + '"/>' +
+          '<rect x="154" y="34" width="70" height="32" rx="7" fill="none" stroke="currentColor" stroke-opacity=".5"/>' +
+          '<text x="189" y="55" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9.5" fill="#ECE9F5">you</text>' +
+          '<rect x="72" y="84" width="104" height="26" rx="6" fill="none" stroke="currentColor" stroke-opacity=".3" stroke-dasharray="4 4"/>' +
+          '<text x="124" y="101" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="currentColor">check a source</text>' +
+          '<text x="124" y="78" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="8.5" fill="' + C + '">not wired to anything</text></svg>' },
+    { n:4, x:352, y:300, k:'Errors compound',
+      title:'An early mistake becomes a later fact',
+      line:'Each step is appended to the desk and re-read as established truth by every step after it. Nothing revisits step one, so a small wrong turn is quietly built upon for the rest of the run.',
+      because:'the agent loop feeds its own output back in — <a href="13-agentic.html" title="What makes AI &quot;agentic&quot;" style="color:var(--violet); text-decoration:underline; text-decoration-style:dotted; text-underline-offset:3px">page 13</a> and <a href="04-context-window.html" title="The context window" style="color:var(--violet); text-decoration:underline; text-decoration-style:dotted; text-underline-offset:3px">4</a>',
+      art:'<svg viewBox="0 0 240 120" role="img" aria-label="A chain of steps where a small error at the first step grows through each following step.">' +
+          '<g>' +
+          '<rect x="14" y="52" width="34" height="16" rx="3" fill="' + C + '" fill-opacity=".4"/>' +
+          '<rect x="56" y="48" width="40" height="24" rx="3" fill="' + C + '" fill-opacity=".45"/>' +
+          '<rect x="104" y="42" width="48" height="36" rx="3" fill="' + C + '" fill-opacity=".55"/>' +
+          '<rect x="160" y="34" width="62" height="52" rx="3" fill="' + C + '" fill-opacity=".65"/>' +
+          '</g>' +
+          '<text x="31" y="44" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="8.5" fill="' + C + '">slip</text>' +
+          '<text x="191" y="26" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="8.5" fill="' + C + '">now the premise</text>' +
+          '<text x="120" y="106" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="currentColor">nothing ever goes back to step one</text></svg>' },
+    { n:5, x:230, y:296, k:'No sense of stakes',
+      title:'It cannot feel that this one matters',
+      line:'A trivial request and a consequential one are the same shape on the desk. It has no way to slow down for the second, because nothing that happens afterwards ever reaches it.',
+      because:'no consequence is fed back — the loop on <a href="13-agentic.html" title="What makes AI &quot;agentic&quot;" style="color:var(--violet); text-decoration:underline; text-decoration-style:dotted; text-underline-offset:3px">page 13</a> ends at the answer',
+      art:'<svg viewBox="0 0 240 120" role="img" aria-label="Two requests of very different consequence look identical to the model, and nothing about the outcome ever returns to it.">' +
+          '<rect x="14" y="24" width="96" height="26" rx="5" fill="currentColor" fill-opacity=".16"/>' +
+          '<text x="62" y="41" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#ECE9F5">“rename this file”</text>' +
+          '<rect x="14" y="58" width="96" height="26" rx="5" fill="currentColor" fill-opacity=".16"/>' +
+          '<text x="62" y="75" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#ECE9F5">“email 4,000 people”</text>' +
+          '<text x="62" y="102" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="currentColor">identical, to it</text>' +
+          '<line x1="126" y1="54" x2="164" y2="54" stroke="currentColor" stroke-width="1.4" stroke-dasharray="4 4"/>' +
+          '<g stroke="' + C + '" stroke-width="2"><line x1="172" y1="46" x2="188" y2="62"/><line x1="188" y1="46" x2="172" y2="62"/></g>' +
+          '<text x="196" y="86" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="8.5" fill="' + C + '">no outcome</text>' +
+          '<text x="196" y="98" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="8.5" fill="' + C + '">comes back</text></svg>' }
+  ];
+
+  var terr = document.getElementById('terr'), picks = document.getElementById('picks');
+  var dart = document.getElementById('dart'), dT = document.getElementById('dTitle');
+  var dL = document.getElementById('dLine'), dB = document.getElementById('dBecause');
+  var marks = [];
+
+  function el(n, a){ var e = document.createElementNS(NS, n); for(var k in a) e.setAttribute(k, a[k]); return e; }
+  (function build(){
+    terr.appendChild(el('path', {
+      d: 'M40,86 C150,36 330,44 430,92 C500,126 528,206 494,266 C456,332 300,352 190,332 C86,314 26,240 34,168 Z',
+      fill: 'rgba(155,107,255,.09)', stroke: '#9b6bff', 'stroke-opacity': .5, 'stroke-width': 1.5
+    }));
+    var t = el('text', { x:216, y:196, 'text-anchor':'middle', 'font-family':'Manrope, sans-serif', 'font-size':17, fill:'#ECE9F5' });
+    t.textContent = 'what it can do';
+    terr.appendChild(t);
+    var t2 = el('text', { x:216, y:220, 'text-anchor':'middle', 'font-family':'JetBrains Mono, monospace', 'font-size':10, fill:'#6b6389' });
+    t2.textContent = 'everything in modules 1 to 4';
+    terr.appendChild(t2);
+
+    LIMITS.forEach(function(l){
+      var g = el('g', {});
+      g.appendChild(el('circle', { cx:l.x, cy:l.y, r:15, fill:'rgba(255,111,143,.14)' }));
+      var c = el('circle', { cx:l.x, cy:l.y, r:9, fill:'#251622', stroke:'#ff6f8f', 'stroke-width':2, class:'mk' });
+      g.appendChild(c);
+      var n = el('text', { x:l.x, y:l.y + 4, 'text-anchor':'middle', 'font-family':'JetBrains Mono, monospace', 'font-size':10, fill:'#ffb3c4' });
+      n.textContent = l.n;
+      g.appendChild(n);
+      terr.appendChild(g);
+      marks.push(c);
+    });
+  })();
+
+  function show(l, btn){
+    Array.prototype.forEach.call(picks.children, function(b){
+      b.classList.toggle('on', b === btn); b.setAttribute('aria-pressed', b === btn);
+    });
+    marks.forEach(function(m, i){
+      var on = LIMITS[i] === l;
+      m.setAttribute('fill', on ? '#ff6f8f' : '#251622');
+      m.setAttribute('r', on ? 10 : 9);
+    });
+    dart.innerHTML = l.art;
+    dT.textContent = l.title;
+    dL.textContent = l.line;
+    dB.innerHTML = l.because;
+  }
+
+  LIMITS.forEach(function(l){
+    var b = document.createElement('button');
+    b.className = 'btn'; b.type = 'button'; b.setAttribute('aria-pressed','false');
+    b.innerHTML = '<span class="i">' + l.n + '</span>' + l.k;
+    b.addEventListener('click', function(){ show(l, b); });
+    picks.appendChild(b);
+  });
+  show(LIMITS[0], picks.children[0]);
+})();
+</script>
+
+</body>
+</html>

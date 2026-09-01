@@ -1,0 +1,352 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Module 4.4 — you cannot make the model careful; you can decide which requests you honour.">
+<meta name="color-scheme" content="dark">
+<style>:root{color-scheme:dark}html{background:#100e1a}</style>
+<title>Checkpoints On The Loop</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;600&family=Manrope:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>:root{
+  --ground:#100e1a; --ground-2:#0b0913;
+  --surface:#181428; --surface-2:#1e1934;
+  --line:#2a2340; --line-soft:#221c36;
+  --ink:#ECE9F5; --ink-dim:#9a92b6; --ink-faint:#6b6389;
+  --violet:#9b6bff; --teal:#45e0c4; --coral:#ff6f8f;
+  --violet-soft:rgba(155,107,255,.16); --teal-soft:rgba(69,224,196,.14); --coral-soft:rgba(255,111,143,.14);
+  --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px; --s7:48px; --s8:64px; --s9:96px;
+  --r-sm:6px; --r-md:12px; --r-lg:20px;
+  --display:'Unbounded',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --body:'Manrope',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,'SFMono-Regular',Menlo,monospace;
+  --wrap:1080px;
+}
+*,*::before,*::after{box-sizing:border-box}
+body{
+  margin:0; background:var(--ground); color:var(--ink);
+  font-family:var(--body); font-size:clamp(15px,.55vw + 13.6px,17px);
+  line-height:1.65; -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+h1,h2,h3{font-family:var(--display); font-weight:600; line-height:1.12; text-wrap:balance; margin:0}
+h1{font-size:clamp(30px,5.2vw,52px); letter-spacing:-.02em}
+h2{font-size:clamp(21px,2.7vw,30px); letter-spacing:-.01em}
+h3{font-size:clamp(16px,1.5vw,19px); letter-spacing:-.005em}
+p{margin:0; max-width:65ch; overflow-wrap:break-word}
+h1,h2,h3{overflow-wrap:break-word}
+.stack>*,.steps>*,.split>*,.two>*,.hero>*,.machine>*{min-width:0}
+.eyebrow{font-family:var(--mono); font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-faint); margin:0}
+.dim{color:var(--ink-dim)}
+.lede{font-size:clamp(17px,1.5vw,21px); line-height:1.5; color:var(--ink-dim)}
+.wrap{width:min(100% - 2*var(--s5), var(--wrap)); margin-inline:auto}
+@media (max-width:520px){ .wrap{width:min(100% - 2*var(--s4), var(--wrap))} }
+.stack{display:flex; flex-direction:column}
+.g2{gap:var(--s2)} .g3{gap:var(--s3)} .g4{gap:var(--s4)} .g5{gap:var(--s5)} .g6{gap:var(--s6)} .g7{gap:var(--s7)}
+section{padding-block:var(--s7)}
+section + section{border-top:1px solid var(--line-soft)}
+figure{margin:0}
+figcaption{font-size:13.5px; color:var(--ink-dim); margin-top:var(--s3); max-width:62ch}
+svg{max-width:100%; height:auto; display:block}
+.scroll-x{overflow-x:auto; -webkit-overflow-scrolling:touch}
+.card{background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); padding:var(--s5)}
+.tag{font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-faint)}
+/* site header / footer */
+.topbar{display:flex; flex-wrap:wrap; align-items:baseline; gap:var(--s3) var(--s4); padding-block:var(--s5) 0}
+.topbar .num{font-family:var(--mono); font-size:11px; letter-spacing:.16em; color:var(--violet)}
+.foot{padding-block:var(--s6); border-top:1px solid var(--line-soft); color:var(--ink-faint); font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase}
+/* controls */
+button{font-family:inherit; font-size:inherit; color:inherit}
+.btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:var(--s2);
+  min-height:44px; padding:0 var(--s4); border-radius:999px;
+  background:var(--surface-2); border:1px solid var(--line); color:var(--ink);
+  font-family:var(--mono); font-size:12.5px; letter-spacing:.04em;
+  cursor:pointer; transition:background .18s, border-color .18s, color .18s;
+}
+.btn:hover{background:#262046; border-color:#3a3160}
+.btn[aria-pressed="true"], .btn.on{background:var(--violet-soft); border-color:var(--violet); color:#d9c9ff}
+.btn:focus-visible, [tabindex]:focus-visible, input:focus-visible{outline:2px solid var(--teal); outline-offset:3px}
+.controls{display:flex; flex-wrap:wrap; gap:var(--s3); align-items:center}
+input[type="text"]{
+  min-height:44px; width:100%; padding:0 var(--s4); border-radius:999px;
+  background:var(--ground-2); border:1px solid var(--line); color:var(--ink);
+  font-family:var(--body); font-size:16px;
+}
+input[type="range"]{ -webkit-appearance:none; appearance:none; width:100%; height:44px; background:transparent; cursor:pointer }
+input[type="range"]::-webkit-slider-runnable-track{height:4px; border-radius:2px; background:linear-gradient(90deg,var(--teal),var(--violet),var(--coral))}
+input[type="range"]::-moz-range-track{height:4px; border-radius:2px; background:linear-gradient(90deg,var(--teal),var(--violet),var(--coral))}
+input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none; width:22px; height:22px; margin-top:-9px; border-radius:50%; background:var(--ink); border:3px solid var(--ground)}
+input[type="range"]::-moz-range-thumb{width:22px; height:22px; border-radius:50%; background:var(--ink); border:3px solid var(--ground); border-width:3px}
+.sr{position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0}
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important}
+}
+/* mechanism strip — a concept gets a drawing, not a paragraph */
+.mech{display:grid; gap:var(--s5)}
+@media (min-width:720px){ .mech.n2{grid-template-columns:repeat(2,1fr)} }
+@media (min-width:820px){ .mech.n3{grid-template-columns:repeat(3,1fr)} }
+.mech figure{display:flex; flex-direction:column; gap:var(--s3); min-width:0}
+.mech .art{
+  background:var(--ground-2); border:1px solid var(--line-soft); border-radius:var(--r-md);
+  padding:var(--s4); color:var(--ink-faint);
+}
+.mech .art svg{width:100%; height:auto}
+.mech .lab{font-family:var(--mono); font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:var(--violet)}
+.mech figcaption{font-size:14px; line-height:1.55; color:var(--ink-dim); margin-top:0}
+.mech figcaption b{color:var(--ink); font-weight:500; display:block; font-size:15px; margin-bottom:2px}
+.wide-art{background:var(--ground-2); border:1px solid var(--line-soft); border-radius:var(--r-md); padding:var(--s5); color:var(--ink-faint)}
+.wide-art svg{width:100%; height:auto}
+</style>
+<style>
+.rig{background:linear-gradient(165deg,#151125,#0c0a16); border:1px solid var(--line); border-radius:var(--r-lg); padding:var(--s5); display:flex; flex-direction:column; gap:var(--s5)}
+.acts{display:flex; flex-wrap:wrap; gap:var(--s2)}
+.acts .btn{text-transform:none; letter-spacing:0; font-family:var(--body); font-size:14px}
+.pipe{display:flex; flex-direction:column; gap:0}
+.gatebox{display:grid; grid-template-columns:30px minmax(0,1fr) auto; gap:var(--s3); align-items:center;
+         padding:var(--s3) var(--s4); border:1px solid var(--line); border-radius:var(--r-md); background:var(--ground-2);
+         transition:border-color .3s, background .3s, opacity .3s}
+.gatebox.off{opacity:.3; border-style:dashed}
+.gatebox .n{font-family:var(--mono); font-size:9.5px; color:var(--ink-faint)}
+.gatebox .nm{font-size:14.5px; min-width:0}
+.gatebox .nm small{display:block; font-family:var(--mono); font-size:10.5px; color:var(--ink-faint); margin-top:2px}
+.gatebox .vd{font-family:var(--mono); font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-faint); white-space:nowrap}
+.gatebox.pass{border-color:rgba(69,224,196,.55); background:rgba(69,224,196,.06)}
+.gatebox.pass .vd{color:#8ff0dd}
+.gatebox.stop{border-color:var(--coral); background:rgba(255,111,143,.09)}
+.gatebox.stop .vd{color:#ffb3c4}
+.gatebox.ask{border-color:var(--violet); background:rgba(155,107,255,.09)}
+.gatebox.ask .vd{color:#d3bcff}
+.conn{width:2px; height:14px; background:var(--line); margin-left:calc(var(--s4) + 14px)}
+.outcome{border-radius:var(--r-md); padding:var(--s4); border:1px solid var(--line); background:var(--ground-2); font-size:15px; line-height:1.6; min-height:80px}
+.outcome.bad{border-color:var(--coral); background:rgba(255,111,143,.08); color:#ffb3c4}
+.outcome.good{border-color:var(--teal); background:rgba(69,224,196,.07); color:#8ff0dd}
+.outcome.held{border-color:var(--violet); background:rgba(155,107,255,.09); color:#d9c9ff}
+.mech .art{color:var(--ink-faint)}
+.sowhat{font-family:var(--display); font-size:clamp(19px,2.4vw,27px); line-height:1.35; letter-spacing:-.01em; max-width:28ch}
+.sowhat em{font-style:normal; color:var(--teal)}
+</style>
+</head>
+<body>
+
+
+<style>
+.pagenav{display:flex; flex-wrap:wrap; gap:var(--s4); justify-content:space-between; align-items:center; padding-block:var(--s6); border-top:1px solid var(--line-soft)}
+.pnbtn{display:flex; flex-direction:column; gap:2px; min-height:44px; justify-content:center; padding:var(--s2) var(--s4); border-radius:var(--r-md); text-decoration:none; color:inherit; transition:background .18s; max-width:280px}
+.pnbtn:hover{background:var(--surface-2)}
+.pnbtn.hub{flex-direction:row; align-items:center; background:var(--surface-2); border:1px solid var(--line); border-radius:999px; font-family:var(--mono); font-size:12.5px; letter-spacing:.04em; padding:0 var(--s4); flex:none}
+.pnbtn.next{text-align:right; align-items:flex-end; margin-left:auto}
+.pnk{font-family:var(--mono); font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--violet)}
+.pnt{font-size:14px; color:var(--ink-dim)}
+@media (max-width:640px){ .pagenav{flex-direction:column; align-items:stretch} .pnbtn{max-width:none} .pnbtn.hub{order:-1; justify-content:center} .pnbtn.next{text-align:left; align-items:flex-start; margin-left:0} }
+</style>
+<header class="wrap topbar">
+  <span class="num">MODULE 04 — AGENTIC AI · 16</span>
+  <span class="tag dim">AI Concepts</span>
+</header>
+
+<section class="wrap stack g6">
+  <div class="stack g4">
+    <h1>Guardrails &amp; human-in-the-loop</h1>
+    <p class="lede">The model cannot be made careful. The gap between what it asks for and what actually happens can be — and that gap is where every control lives.</p>
+  </div>
+
+  <div class="rig">
+    <div class="stack g3">
+      <p class="eyebrow">The agent asks to do something</p>
+      <div class="acts" id="acts"></div>
+    </div>
+    <div class="controls">
+      <button class="btn on" id="toggle" type="button" aria-pressed="true">Guardrails on</button>
+    </div>
+    <div class="pipe" id="pipe"></div>
+    <div class="outcome" id="outcome" aria-live="polite"></div>
+  </div>
+</section>
+
+<section class="wrap stack g5">
+  <p class="eyebrow">The problem it solves</p>
+  <h2>Some actions cannot be taken back</h2>
+  <div class="wide-art">
+    <svg viewBox="0 0 900 210" role="img" aria-label="Actions plotted by how reversible they are and how far they reach. Reading a file is reversible and narrow. Sending mail to a customer list or deleting production data is irreversible and wide, and only those need a human in the loop.">
+      <line x1="60" y1="176" x2="880" y2="176" stroke="currentColor" stroke-opacity=".3"/>
+      <line x1="60" y1="176" x2="60" y2="18" stroke="currentColor" stroke-opacity=".3"/>
+      <text x="60" y="198" font-family="JetBrains Mono, monospace" font-size="9.5" letter-spacing="1.2" fill="currentColor">EASY TO UNDO</text>
+      <text x="880" y="198" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="9.5" letter-spacing="1.2" fill="currentColor">IMPOSSIBLE TO UNDO →</text>
+      
+      <text transform="translate(34,176) rotate(-90)" font-family="JetBrains Mono, monospace" font-size="9.5" letter-spacing="1.2" fill="currentColor">NARROW REACH → WIDE</text>
+      <rect x="470" y="18" width="410" height="86" rx="10" fill="#ff6f8f" fill-opacity=".07" stroke="#ff6f8f" stroke-opacity=".45"/>
+      <text x="675" y="42" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9.5" letter-spacing="1.4" fill="#ffb3c4">ASK A HUMAN</text>
+      <circle cx="140" cy="150" r="6" fill="#45e0c4"/><text x="156" y="154" font-family="Manrope, sans-serif" font-size="12.5" fill="#ECE9F5">read a file</text>
+      <circle cx="250" cy="128" r="6" fill="#45e0c4"/><text x="266" y="132" font-family="Manrope, sans-serif" font-size="12.5" fill="#ECE9F5">draft a reply</text>
+      <circle cx="392" cy="106" r="6" fill="#9b6bff"/><text x="408" y="110" font-family="Manrope, sans-serif" font-size="12.5" fill="#ECE9F5">post to a shared doc</text>
+      <circle cx="600" cy="76" r="6" fill="#ff6f8f"/><text x="616" y="80" font-family="Manrope, sans-serif" font-size="12.5" fill="#ffb3c4">email 4,000 customers</text>
+      <circle cx="742" cy="52" r="6" fill="#ff6f8f"/><text x="758" y="56" font-family="Manrope, sans-serif" font-size="12.5" fill="#ffb3c4">delete the database</text>
+      <circle cx="560" cy="140" r="6" fill="#9b6bff"/><text x="576" y="144" font-family="Manrope, sans-serif" font-size="12.5" fill="#ECE9F5">issue one refund</text>
+      <text x="140" y="70" text-anchor="middle" font-family="Manrope, sans-serif" font-size="13" fill="#8ff0dd">let it run</text>
+    </svg>
+  </div>
+</section>
+
+<section class="wrap stack g5">
+  <p class="eyebrow">How it works</p>
+  <h2>Three gates and a doorbell</h2>
+  <div class="mech n3">
+    <figure>
+      <div class="art">
+        <svg viewBox="0 0 240 112" role="img" aria-label="An input filter inspects what arrives before it reaches the model.">
+          <rect x="12" y="42" width="56" height="28" rx="6" fill="none" stroke="currentColor" stroke-opacity=".45"/>
+          <text x="40" y="60" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9.5" fill="#ECE9F5">input</text>
+          <rect x="92" y="30" width="26" height="52" rx="4" fill="#45e0c4" fill-opacity=".18" stroke="#45e0c4"/>
+          <line x1="74" y1="56" x2="86" y2="56" stroke="currentColor" stroke-width="1.3"/><polygon points="92,56 86,53 86,59" fill="currentColor"/>
+          <line x1="124" y1="56" x2="150" y2="56" stroke="#45e0c4" stroke-width="1.3"/><polygon points="156,56 150,53 150,59" fill="#45e0c4"/>
+          <rect x="160" y="42" width="68" height="28" rx="6" fill="#9b6bff" fill-opacity=".16" stroke="#9b6bff" stroke-opacity=".6"/>
+          <text x="194" y="60" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9.5" fill="#d3bcff">the model</text>
+          <text x="105" y="98" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="currentColor">before it is read</text>
+        </svg>
+      </div>
+      <figcaption><b>Input gate</b>Screen what arrives before it ever reaches the desk.</figcaption>
+    </figure>
+    <figure>
+      <div class="art">
+        <svg viewBox="0 0 240 112" role="img" aria-label="An action gate sits between the model's request and the tool, allowing some and refusing others.">
+          <rect x="8" y="42" width="62" height="28" rx="6" fill="#9b6bff" fill-opacity=".16" stroke="#9b6bff" stroke-opacity=".6"/>
+          <text x="39" y="60" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9.5" fill="#d3bcff">asks</text>
+          <rect x="96" y="24" width="30" height="64" rx="5" fill="#ff6f8f" fill-opacity=".16" stroke="#ff6f8f"/>
+          <line x1="76" y1="56" x2="90" y2="56" stroke="currentColor" stroke-width="1.3"/><polygon points="96,56 90,53 90,59" fill="currentColor"/>
+          <line x1="132" y1="42" x2="164" y2="42" stroke="#45e0c4" stroke-width="1.3"/><polygon points="170,42 164,39 164,45" fill="#45e0c4"/>
+          <g stroke="#ff6f8f" stroke-width="1.6"><line x1="140" y1="64" x2="154" y2="78"/><line x1="154" y1="64" x2="140" y2="78"/></g>
+          <text x="196" y="46" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#8ff0dd">allowed</text>
+          <text x="196" y="76" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#ffb3c4">refused</text>
+          <text x="111" y="104" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="currentColor">an allow-list, not a plea</text>
+        </svg>
+      </div>
+      <figcaption><b>Action gate</b>A list of what this agent may do — enforced in your code, not requested of the model.</figcaption>
+    </figure>
+    <figure>
+      <div class="art">
+        <svg viewBox="0 0 240 112" role="img" aria-label="For the riskiest actions the loop pauses and waits for a person to approve or reject before continuing.">
+          <rect x="10" y="44" width="58" height="26" rx="6" fill="#9b6bff" fill-opacity=".16" stroke="#9b6bff" stroke-opacity=".6"/>
+          <text x="39" y="61" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9.5" fill="#d3bcff">asks</text>
+          <line x1="74" y1="57" x2="94" y2="57" stroke="currentColor" stroke-width="1.3"/><polygon points="100,57 94,54 94,60" fill="currentColor"/>
+          <circle cx="122" cy="57" r="16" fill="none" stroke="currentColor" stroke-opacity=".5" stroke-width="1.5"/>
+          <circle cx="122" cy="51" r="5" fill="currentColor" fill-opacity=".55"/>
+          <path d="M111 69 a11 8 0 0 1 22 0" fill="currentColor" fill-opacity=".55"/>
+          <text x="122" y="98" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="currentColor">the loop waits</text>
+          <line x1="146" y1="46" x2="176" y2="38" stroke="#45e0c4" stroke-width="1.3"/><polygon points="182,36 175,35 176,41" fill="#45e0c4"/>
+          <line x1="146" y1="68" x2="176" y2="76" stroke="#ff6f8f" stroke-width="1.3"/><polygon points="182,78 176,73 175,79" fill="#ff6f8f"/>
+          <text x="206" y="38" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#8ff0dd">go</text>
+          <text x="206" y="82" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#ffb3c4">no</text>
+        </svg>
+      </div>
+      <figcaption><b>The doorbell</b>For irreversible actions the loop stops and a person decides.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section class="wrap stack g4">
+  <p class="eyebrow">So what</p>
+  <p class="sowhat">You are not making the model trustworthy. You are <em>deciding, in advance and in code, which of its requests you are willing to honour.</em></p>
+</section>
+
+<nav class="wrap pagenav" aria-label="Series navigation">
+  <a class="pnbtn prev" href="15-multi-agent.html"><span class="pnk">← Prev</span><span class="pnt">Multi-agent systems</span></a>
+  <a class="pnbtn hub" href="00-atlas.html">All topics</a>
+  <a class="pnbtn next" href="17-use-cases.html"><span class="pnk">Next →</span><span class="pnt">Where agents actually work</span></a>
+</nav>
+<footer class="wrap foot">Part of the AI Concepts series</footer>
+
+<script>
+(function(){
+  var GATES = [
+    { id:'input',  nm:'Input filter',   sub:'screens what reaches the desk' },
+    { id:'action', nm:'Action gate',    sub:'checks the request against an allow-list' },
+    { id:'human',  nm:'Human approval', sub:'required for irreversible actions' },
+    { id:'output', nm:'Output check',   sub:'inspects what goes back to the person' }
+  ];
+  var ACTS = [
+    { k:'Read the support inbox', risk:0,
+      on:{ verdicts:['pass','pass','pass','pass'], cls:'good',
+           t:'Allowed straight through. Reading is reversible and narrow, so stopping it would only add friction with no safety gained.' },
+      off:{ cls:'good', t:'Runs. This one was never the problem.' } },
+    { k:'Draft a reply to one customer', risk:0,
+      on:{ verdicts:['pass','pass','pass','pass'], cls:'good',
+           t:'Allowed. A draft is not a send — nothing has left the building yet, so no approval is needed.' },
+      off:{ cls:'good', t:'Runs. Still fine.' } },
+    { k:'Send that reply to the customer', risk:1,
+      on:{ verdicts:['pass','pass','ask','—'], cls:'held',
+           t:'Held at the doorbell. Sending is irreversible and reaches a real person, so the loop stops until someone approves it.' },
+      off:{ cls:'bad', t:'Sent. It may be perfect. You found out at the same moment the customer did.' } },
+    { k:'Email the whole customer list', risk:2,
+      on:{ verdicts:['pass','stop','—','—'], cls:'bad',
+           t:'Refused at the action gate — mass send is not on this agent’s allow-list at all, so it never even reaches a human to rubber-stamp.' },
+      off:{ cls:'bad', t:'4,000 emails sent. No draft, no review, no undo.' } },
+    { k:'Delete the old records table', risk:2,
+      on:{ verdicts:['pass','stop','—','—'], cls:'bad',
+           t:'Refused. Destructive operations are simply absent from the tool list — the safest gate is a tool the agent was never given.' },
+      off:{ cls:'bad', t:'Table dropped. The agent reported success, which is technically accurate.' } }
+  ];
+
+  var on = true, current = ACTS[2];
+  var pipe = document.getElementById('pipe'), outcome = document.getElementById('outcome');
+  var box = document.getElementById('acts'), toggle = document.getElementById('toggle');
+
+  function render(){
+    pipe.textContent = '';
+    var v = on ? current.on.verdicts : null;
+    GATES.forEach(function(g, i){
+      var row = document.createElement('div');
+      var verdict = on ? v[i] : 'off';
+      var cls = 'gatebox';
+      if(!on) cls += ' off';
+      else if(verdict === 'pass') cls += ' pass';
+      else if(verdict === 'stop') cls += ' stop';
+      else if(verdict === 'ask') cls += ' ask';
+      row.className = cls;
+      row.innerHTML = '<span class="n">' + (i + 1) + '</span>' +
+        '<span class="nm"></span><span class="vd"></span>';
+      row.querySelector('.nm').innerHTML = g.nm + '<small>' + g.sub + '</small>';
+      row.querySelector('.vd').textContent = !on ? 'removed'
+        : verdict === 'pass' ? 'passed'
+        : verdict === 'stop' ? 'refused here'
+        : verdict === 'ask' ? 'waiting for a person'
+        : 'never reached';
+      pipe.appendChild(row);
+      if(i < GATES.length - 1){
+        var c = document.createElement('div'); c.className = 'conn'; pipe.appendChild(c);
+      }
+    });
+    var o = on ? current.on : current.off;
+    outcome.className = 'outcome ' + o.cls;
+    outcome.textContent = o.t;
+  }
+
+  ACTS.forEach(function(a){
+    var b = document.createElement('button');
+    b.className = 'btn' + (a === current ? ' on' : '');
+    b.type = 'button'; b.textContent = a.k;
+    b.setAttribute('aria-pressed', a === current);
+    b.addEventListener('click', function(){
+      current = a;
+      Array.prototype.forEach.call(box.children, function(x){
+        x.classList.toggle('on', x === b); x.setAttribute('aria-pressed', x === b);
+      });
+      render();
+    });
+    box.appendChild(b);
+  });
+
+  toggle.addEventListener('click', function(){
+    on = !on;
+    toggle.classList.toggle('on', on);
+    toggle.setAttribute('aria-pressed', on);
+    toggle.textContent = on ? 'Guardrails on' : 'Guardrails off';
+    render();
+  });
+  render();
+})();
+</script>
+
+</body>
+</html>

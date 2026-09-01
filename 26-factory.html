@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Module 7.5 — a model isn't trained in one step. It comes off a line of stations, each with its own inputs and outputs.">
+<meta name="color-scheme" content="dark">
+<style>:root{color-scheme:dark}html{background:#100e1a}</style>
+<title>The Factory Line</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;600&family=Manrope:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>:root{
+  --ground:#100e1a; --ground-2:#0b0913;
+  --surface:#181428; --surface-2:#1e1934;
+  --line:#2a2340; --line-soft:#221c36;
+  --ink:#ECE9F5; --ink-dim:#9a92b6; --ink-faint:#6b6389;
+  --violet:#9b6bff; --teal:#45e0c4; --coral:#ff6f8f;
+  --violet-soft:rgba(155,107,255,.16); --teal-soft:rgba(69,224,196,.14); --coral-soft:rgba(255,111,143,.14);
+  --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px; --s7:48px; --s8:64px; --s9:96px;
+  --r-sm:6px; --r-md:12px; --r-lg:20px;
+  --display:'Unbounded',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --body:'Manrope',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,'SFMono-Regular',Menlo,monospace;
+  --wrap:1080px;
+}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0; background:var(--ground); color:var(--ink); font-family:var(--body); font-size:clamp(15px,.55vw + 13.6px,17px); line-height:1.65; -webkit-font-smoothing:antialiased; overflow-x:hidden}
+h1,h2,h3{font-family:var(--display); font-weight:600; line-height:1.12; text-wrap:balance; margin:0}
+h1{font-size:clamp(30px,5.2vw,52px); letter-spacing:-.02em}
+h2{font-size:clamp(21px,2.7vw,30px); letter-spacing:-.01em}
+h3{font-size:clamp(16px,1.5vw,19px); letter-spacing:-.005em}
+p{margin:0; max-width:65ch; overflow-wrap:break-word}
+h1,h2,h3{overflow-wrap:break-word}
+.stack>*,.steps>*,.split>*,.two>*,.hero>*,.machine>*{min-width:0}
+.eyebrow{font-family:var(--mono); font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-faint); margin:0}
+.dim{color:var(--ink-dim)}
+.lede{font-size:clamp(17px,1.5vw,21px); line-height:1.5; color:var(--ink-dim)}
+.wrap{width:min(100% - 2*var(--s5), var(--wrap)); margin-inline:auto}
+@media (max-width:520px){ .wrap{width:min(100% - 2*var(--s4), var(--wrap))} }
+.stack{display:flex; flex-direction:column}
+.g2{gap:var(--s2)} .g3{gap:var(--s3)} .g4{gap:var(--s4)} .g5{gap:var(--s5)} .g6{gap:var(--s6)} .g7{gap:var(--s7)}
+section{padding-block:var(--s7)}
+section + section{border-top:1px solid var(--line-soft)}
+figure{margin:0}
+figcaption{font-size:13.5px; color:var(--ink-dim); margin-top:var(--s3); max-width:62ch}
+svg{max-width:100%; height:auto; display:block}
+.scroll-x{overflow-x:auto; -webkit-overflow-scrolling:touch}
+.card{background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); padding:var(--s5)}
+.tag{font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-faint)}
+.topbar{display:flex; flex-wrap:wrap; align-items:baseline; gap:var(--s3) var(--s4); padding-block:var(--s5) 0}
+.topbar .num{font-family:var(--mono); font-size:11px; letter-spacing:.16em; color:var(--violet)}
+.foot{padding-block:var(--s6); border-top:1px solid var(--line-soft); color:var(--ink-faint); font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase}
+button{font-family:inherit; font-size:inherit; color:inherit}
+.btn{display:inline-flex; align-items:center; justify-content:center; gap:var(--s2); min-height:44px; padding:0 var(--s4); border-radius:999px; background:var(--surface-2); border:1px solid var(--line); color:var(--ink); font-family:var(--mono); font-size:12.5px; letter-spacing:.04em; cursor:pointer; transition:background .18s, border-color .18s, color .18s}
+.btn:hover{background:#262046; border-color:#3a3160}
+.btn[aria-pressed="true"], .btn.on{background:var(--violet-soft); border-color:var(--violet); color:#d9c9ff}
+.btn:focus-visible, [tabindex]:focus-visible, input:focus-visible{outline:2px solid var(--teal); outline-offset:3px}
+.controls{display:flex; flex-wrap:wrap; gap:var(--s3); align-items:center}
+.sr{position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0}
+@media (prefers-reduced-motion: reduce){ *,*::before,*::after{animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important} }
+.mech{display:grid; gap:var(--s5)}
+@media (min-width:720px){ .mech.n2{grid-template-columns:repeat(2,1fr)} }
+@media (min-width:820px){ .mech.n3{grid-template-columns:repeat(3,1fr)} }
+.mech figure{display:flex; flex-direction:column; gap:var(--s3); min-width:0}
+.mech .art{background:var(--ground-2); border:1px solid var(--line-soft); border-radius:var(--r-md); padding:var(--s4); color:var(--ink-faint)}
+.mech .art svg{width:100%; height:auto}
+.mech .lab{font-family:var(--mono); font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:var(--violet)}
+.mech figcaption{font-size:14px; line-height:1.55; color:var(--ink-dim); margin-top:0}
+.mech figcaption b{color:var(--ink); font-weight:500; display:block; font-size:15px; margin-bottom:2px}
+.wide-art{background:var(--ground-2); border:1px solid var(--line-soft); border-radius:var(--r-md); padding:var(--s5); color:var(--ink-faint)}
+.wide-art svg{width:100%; height:auto}
+.sowhat{font-family:var(--display); font-size:clamp(19px,2.4vw,27px); line-height:1.35; letter-spacing:-.01em; max-width:28ch}
+.sowhat em{font-style:normal; color:var(--violet)}
+</style>
+<style>
+.line{display:flex; gap:0; overflow-x:auto; padding-bottom:var(--s2); -webkit-overflow-scrolling:touch}
+.station{flex:0 0 auto; display:flex; align-items:center}
+.station .node{
+  min-width:128px; min-height:64px; border-radius:var(--r-md); border:1px solid var(--line); background:var(--surface-2);
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; padding:var(--s3);
+  font-family:var(--mono); font-size:11.5px; text-align:center; cursor:pointer; transition:border-color .2s, background .2s;
+}
+.station .node .n{font-size:9.5px; letter-spacing:.12em; color:var(--ink-faint)}
+.station .node[aria-pressed="true"]{border-color:var(--violet); background:var(--violet-soft); color:#d9c9ff}
+.station .arrow{width:28px; height:2px; background:var(--line-soft); flex:0 0 28px}
+.detail{border:1px solid var(--line); border-radius:var(--r-lg); background:var(--surface); padding:var(--s5); display:flex; flex-direction:column; gap:var(--s4)}
+.io{display:grid; gap:var(--s4)}
+@media (min-width:640px){ .io{grid-template-columns:1fr 1fr} }
+.io div{background:var(--ground-2); border:1px solid var(--line-soft); border-radius:var(--r-md); padding:var(--s4)}
+.io .k{font-family:var(--mono); font-size:10px; letter-spacing:.14em; text-transform:uppercase; display:block; margin-bottom:6px}
+.io .in .k{color:var(--teal)} .io .out .k{color:var(--violet)}
+</style>
+</head>
+<body>
+
+<style>
+.pagenav{display:flex; flex-wrap:wrap; gap:var(--s4); justify-content:space-between; align-items:center; padding-block:var(--s6); border-top:1px solid var(--line-soft)}
+.pnbtn{display:flex; flex-direction:column; gap:2px; min-height:44px; justify-content:center; padding:var(--s2) var(--s4); border-radius:var(--r-md); text-decoration:none; color:inherit; transition:background .18s; max-width:280px}
+.pnbtn:hover{background:var(--surface-2)}
+.pnbtn.hub{flex-direction:row; align-items:center; background:var(--surface-2); border:1px solid var(--line); border-radius:999px; font-family:var(--mono); font-size:12.5px; letter-spacing:.04em; padding:0 var(--s4); flex:none}
+.pnbtn.next{text-align:right; align-items:flex-end; margin-left:auto}
+.pnk{font-family:var(--mono); font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--violet)}
+.pnt{font-size:14px; color:var(--ink-dim)}
+@media (max-width:640px){ .pagenav{flex-direction:column; align-items:stretch} .pnbtn{max-width:none} .pnbtn.hub{order:-1; justify-content:center} .pnbtn.next{text-align:left; align-items:flex-start; margin-left:0} }
+</style>
+<header class="wrap topbar">
+  <span class="num">MODULE 07 — THE LANDSCAPE · 26</span>
+  <span class="tag dim">AI Concepts</span>
+</header>
+
+<section class="wrap stack g6">
+  <div class="stack g4">
+    <h1>Where models come from</h1>
+    <p class="lede">The two-stage bar from <a href="06-why-assistant.html" title="Why it acts like an assistant" style="color:var(--violet); text-decoration:underline; text-decoration-style:dotted; text-underline-offset:3px">page 6</a>, expanded into the stations that actually run inside it — click a station to see what goes in and what comes out.</p>
+  </div>
+
+  <div class="line" id="line" role="group" aria-label="Training pipeline stations" tabindex="0"></div>
+
+  <div class="detail" id="detail">
+    <p class="eyebrow" id="stName">Station</p>
+    <div class="io">
+      <div class="in"><span class="k">In</span><span id="ioIn"></span></div>
+      <div class="out"><span class="k">Out</span><span id="ioOut"></span></div>
+    </div>
+    <p class="dim" id="stNote" style="font-size:14px"></p>
+  </div>
+</section>
+
+<section class="wrap stack g4">
+  <p class="eyebrow">So what</p>
+  <p class="sowhat">"Training" isn't one step — it's a <em>line</em>, and a model can be strong at one station and weak at another.</p>
+</section>
+
+<nav class="wrap pagenav" aria-label="Series navigation">
+  <a class="pnbtn prev" href="25-spec-card.html"><span class="pnk">← Prev</span><span class="pnt">How model families differ</span></a>
+  <a class="pnbtn hub" href="00-atlas.html">All topics</a>
+  <a class="pnbtn next" href="27-field-guide.html"><span class="pnk">Next →</span><span class="pnt">The AI tools field guide</span></a>
+</nav>
+<footer class="wrap foot">Part of the AI Concepts series</footer>
+
+<script>
+(function(){
+  var STATIONS = [
+    { t:'Raw data', in:'The open web, books, code, licensed sources.', out:'An enormous, messy pile of text.',
+      note:'Bigger than anyone could read — most of it never gets used as-is.' },
+    { t:'Cleaning', in:'The raw pile.', out:'Deduplicated, filtered, quality-scored text.',
+      note:'Removes spam, near-duplicates, and low-quality junk before a single number gets trained.' },
+    { t:'Pretraining', in:'Cleaned text, at scale.', out:'A base model — fluent, but only knows how to continue text.',
+      note:'This is <a href="24-three-finishes.html" title="One model, three finishes" style="color:var(--violet); text-decoration:underline; text-decoration-style:dotted; text-underline-offset:3px">page 24</a>’s "raw block": months of compute, no idea what a question is yet.' },
+    { t:'Instruction tuning', in:'The base model, plus curated examples of good replies.', out:'A model that treats a prompt as a request.',
+      note:'This is where "sanded & painted" happens — the shift <a href="06-why-assistant.html" title="Why it acts like an assistant" style="color:var(--violet); text-decoration:underline; text-decoration-style:dotted; text-underline-offset:3px">page 6</a> covers in full.' },
+    { t:'Preference tuning', in:'The instruct model, plus pairs of answers humans (or another model) ranked.', out:'A model nudged toward the style people preferred.',
+      note:'Not new facts — a preference for one kind of answer over another, at the margins.' },
+    { t:'Evaluation', in:'The tuned model.', out:'Standardized test scores (“benchmarks”) and problems found by people trying to break it (“red-teaming”).',
+      note:'<a href="32-benchmarks.html" title="A report card with an asterisk" style="color:var(--violet); text-decoration:underline; text-decoration-style:dotted; text-underline-offset:3px">Page 32</a>’s subject: scores that tell you something, and plenty they don’t.' },
+    { t:'Release', in:'A model that passed evaluation.', out:'The assistant behind an app or API.',
+      note:'The end of this line is where every other page in this series actually begins.' }
+  ];
+  var line = document.getElementById('line');
+  var stName = document.getElementById('stName'), ioIn = document.getElementById('ioIn'), ioOut = document.getElementById('ioOut'), stNote = document.getElementById('stNote');
+
+  function show(s, node){
+    Array.prototype.forEach.call(line.querySelectorAll('.node'), function(n){ n.setAttribute('aria-pressed', n === node); });
+    stName.textContent = s.t; ioIn.textContent = s.in; ioOut.textContent = s.out; stNote.innerHTML = s.note;
+  }
+
+  STATIONS.forEach(function(s, i){
+    var st = document.createElement('div'); st.className = 'station';
+    var node = document.createElement('button'); node.type = 'button'; node.className = 'node'; node.setAttribute('aria-pressed', i === 0 ? 'true' : 'false');
+    node.innerHTML = '<span class="n">' + (i+1) + '</span>' + s.t;
+    node.addEventListener('click', function(){ show(s, node); });
+    st.appendChild(node);
+    if (i < STATIONS.length - 1){ var ar = document.createElement('div'); ar.className = 'arrow'; st.appendChild(ar); }
+    line.appendChild(st);
+  });
+  show(STATIONS[0], line.querySelector('.node'));
+})();
+</script>
+
+</body>
+</html>

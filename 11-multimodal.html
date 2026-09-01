@@ -1,0 +1,392 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Module 3.1 — a photo, a word and a sound arrive by different doors and land in one place.">
+<meta name="color-scheme" content="dark">
+<style>:root{color-scheme:dark}html{background:#100e1a}</style>
+<title>One Space, Many Doors</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;600&family=Manrope:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>:root{
+  --ground:#100e1a; --ground-2:#0b0913;
+  --surface:#181428; --surface-2:#1e1934;
+  --line:#2a2340; --line-soft:#221c36;
+  --ink:#ECE9F5; --ink-dim:#9a92b6; --ink-faint:#6b6389;
+  --violet:#9b6bff; --teal:#45e0c4; --coral:#ff6f8f;
+  --violet-soft:rgba(155,107,255,.16); --teal-soft:rgba(69,224,196,.14); --coral-soft:rgba(255,111,143,.14);
+  --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px; --s7:48px; --s8:64px; --s9:96px;
+  --r-sm:6px; --r-md:12px; --r-lg:20px;
+  --display:'Unbounded',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --body:'Manrope',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,'SFMono-Regular',Menlo,monospace;
+  --wrap:1080px;
+}
+*,*::before,*::after{box-sizing:border-box}
+body{
+  margin:0; background:var(--ground); color:var(--ink);
+  font-family:var(--body); font-size:clamp(15px,.55vw + 13.6px,17px);
+  line-height:1.65; -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+h1,h2,h3{font-family:var(--display); font-weight:600; line-height:1.12; text-wrap:balance; margin:0}
+h1{font-size:clamp(30px,5.2vw,52px); letter-spacing:-.02em}
+h2{font-size:clamp(21px,2.7vw,30px); letter-spacing:-.01em}
+h3{font-size:clamp(16px,1.5vw,19px); letter-spacing:-.005em}
+p{margin:0; max-width:65ch; overflow-wrap:break-word}
+h1,h2,h3{overflow-wrap:break-word}
+.stack>*,.steps>*,.split>*,.two>*,.hero>*,.machine>*{min-width:0}
+.eyebrow{font-family:var(--mono); font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-faint); margin:0}
+.dim{color:var(--ink-dim)}
+.lede{font-size:clamp(17px,1.5vw,21px); line-height:1.5; color:var(--ink-dim)}
+.wrap{width:min(100% - 2*var(--s5), var(--wrap)); margin-inline:auto}
+@media (max-width:520px){ .wrap{width:min(100% - 2*var(--s4), var(--wrap))} }
+.stack{display:flex; flex-direction:column}
+.g2{gap:var(--s2)} .g3{gap:var(--s3)} .g4{gap:var(--s4)} .g5{gap:var(--s5)} .g6{gap:var(--s6)} .g7{gap:var(--s7)}
+section{padding-block:var(--s7)}
+section + section{border-top:1px solid var(--line-soft)}
+figure{margin:0}
+figcaption{font-size:13.5px; color:var(--ink-dim); margin-top:var(--s3); max-width:62ch}
+svg{max-width:100%; height:auto; display:block}
+.scroll-x{overflow-x:auto; -webkit-overflow-scrolling:touch}
+.card{background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); padding:var(--s5)}
+.tag{font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-faint)}
+/* site header / footer */
+.topbar{display:flex; flex-wrap:wrap; align-items:baseline; gap:var(--s3) var(--s4); padding-block:var(--s5) 0}
+.topbar .num{font-family:var(--mono); font-size:11px; letter-spacing:.16em; color:var(--violet)}
+.foot{padding-block:var(--s6); border-top:1px solid var(--line-soft); color:var(--ink-faint); font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase}
+/* controls */
+button{font-family:inherit; font-size:inherit; color:inherit}
+.btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:var(--s2);
+  min-height:44px; padding:0 var(--s4); border-radius:999px;
+  background:var(--surface-2); border:1px solid var(--line); color:var(--ink);
+  font-family:var(--mono); font-size:12.5px; letter-spacing:.04em;
+  cursor:pointer; transition:background .18s, border-color .18s, color .18s;
+}
+.btn:hover{background:#262046; border-color:#3a3160}
+.btn[aria-pressed="true"], .btn.on{background:var(--violet-soft); border-color:var(--violet); color:#d9c9ff}
+.btn:focus-visible, [tabindex]:focus-visible, input:focus-visible{outline:2px solid var(--teal); outline-offset:3px}
+.controls{display:flex; flex-wrap:wrap; gap:var(--s3); align-items:center}
+input[type="text"]{
+  min-height:44px; width:100%; padding:0 var(--s4); border-radius:999px;
+  background:var(--ground-2); border:1px solid var(--line); color:var(--ink);
+  font-family:var(--body); font-size:16px;
+}
+input[type="range"]{ -webkit-appearance:none; appearance:none; width:100%; height:44px; background:transparent; cursor:pointer }
+input[type="range"]::-webkit-slider-runnable-track{height:4px; border-radius:2px; background:linear-gradient(90deg,var(--teal),var(--violet),var(--coral))}
+input[type="range"]::-moz-range-track{height:4px; border-radius:2px; background:linear-gradient(90deg,var(--teal),var(--violet),var(--coral))}
+input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none; width:22px; height:22px; margin-top:-9px; border-radius:50%; background:var(--ink); border:3px solid var(--ground)}
+input[type="range"]::-moz-range-thumb{width:22px; height:22px; border-radius:50%; background:var(--ink); border:3px solid var(--ground); border-width:3px}
+.sr{position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0}
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important}
+}
+/* mechanism strip — a concept gets a drawing, not a paragraph */
+.mech{display:grid; gap:var(--s5)}
+@media (min-width:720px){ .mech.n2{grid-template-columns:repeat(2,1fr)} }
+@media (min-width:820px){ .mech.n3{grid-template-columns:repeat(3,1fr)} }
+.mech figure{display:flex; flex-direction:column; gap:var(--s3); min-width:0}
+.mech .art{
+  background:var(--ground-2); border:1px solid var(--line-soft); border-radius:var(--r-md);
+  padding:var(--s4); color:var(--ink-faint);
+}
+.mech .art svg{width:100%; height:auto}
+.mech .lab{font-family:var(--mono); font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:var(--violet)}
+.mech figcaption{font-size:14px; line-height:1.55; color:var(--ink-dim); margin-top:0}
+.mech figcaption b{color:var(--ink); font-weight:500; display:block; font-size:15px; margin-bottom:2px}
+.wide-art{background:var(--ground-2); border:1px solid var(--line-soft); border-radius:var(--r-md); padding:var(--s5); color:var(--ink-faint)}
+.wide-art svg{width:100%; height:auto}
+</style>
+<style>
+.rig{background:linear-gradient(165deg,#151125,#0c0a16); border:1px solid var(--line); border-radius:var(--r-lg); padding:var(--s5); display:flex; flex-direction:column; gap:var(--s5)}
+.subjects{display:flex; flex-wrap:wrap; gap:var(--s2)}
+.subjects .btn{text-transform:none; letter-spacing:0; font-family:var(--body); font-size:14px}
+.space{position:relative; aspect-ratio:1/.95; background:radial-gradient(125% 105% at 30% 25%,#191238,#0a0812 72%); border:1px solid var(--line); border-radius:var(--r-lg); overflow:hidden}
+@media (min-width:760px){ .space{aspect-ratio:16/9} }
+.space svg.links{position:absolute; inset:0; width:100%; height:100%}
+.pt{position:absolute; transform:translate(-50%,-50%); display:flex; align-items:center; gap:6px; padding:6px 10px 6px 7px; border-radius:999px;
+    background:rgba(24,20,40,.9); border:1px solid var(--line); white-space:nowrap; opacity:0; transition:opacity .4s, transform .4s}
+.pt.on{opacity:1}
+.pt.ghost{opacity:.3}
+.pt svg{width:15px; height:15px; flex:0 0 auto}
+.pt span{font-family:var(--mono); font-size:11px; color:var(--ink-dim)}
+.pt.live{border-color:var(--teal); background:rgba(69,224,196,.12)}
+.pt.live span{color:#8ff0dd}
+.halo{position:absolute; transform:translate(-50%,-50%); border-radius:50%; border:1px dashed rgba(69,224,196,.4); opacity:0; transition:opacity .4s}
+.halo.on{opacity:1}
+.halo b{position:absolute; left:50%; top:-9px; transform:translateX(-50%); background:var(--ground-2); padding:0 7px; font-family:var(--mono); font-size:9.5px; letter-spacing:.14em; text-transform:uppercase; color:#8ff0dd; font-weight:400}
+.doorrow{display:flex; flex-wrap:wrap; gap:var(--s4); font-family:var(--mono); font-size:11px; color:var(--ink-faint)}
+.doorrow i{display:inline-flex; align-items:center; gap:5px}
+.doorrow svg{width:13px; height:13px}
+.mech .art{color:var(--ink-faint)}
+.sowhat{font-family:var(--display); font-size:clamp(19px,2.4vw,27px); line-height:1.35; letter-spacing:-.01em; max-width:27ch}
+.sowhat em{font-style:normal; color:var(--teal)}
+</style>
+</head>
+<body>
+
+
+<style>
+.pagenav{display:flex; flex-wrap:wrap; gap:var(--s4); justify-content:space-between; align-items:center; padding-block:var(--s6); border-top:1px solid var(--line-soft)}
+.pnbtn{display:flex; flex-direction:column; gap:2px; min-height:44px; justify-content:center; padding:var(--s2) var(--s4); border-radius:var(--r-md); text-decoration:none; color:inherit; transition:background .18s; max-width:280px}
+.pnbtn:hover{background:var(--surface-2)}
+.pnbtn.hub{flex-direction:row; align-items:center; background:var(--surface-2); border:1px solid var(--line); border-radius:999px; font-family:var(--mono); font-size:12.5px; letter-spacing:.04em; padding:0 var(--s4); flex:none}
+.pnbtn.next{text-align:right; align-items:flex-end; margin-left:auto}
+.pnk{font-family:var(--mono); font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--violet)}
+.pnt{font-size:14px; color:var(--ink-dim)}
+@media (max-width:640px){ .pagenav{flex-direction:column; align-items:stretch} .pnbtn{max-width:none} .pnbtn.hub{order:-1; justify-content:center} .pnbtn.next{text-align:left; align-items:flex-start; margin-left:0} }
+</style>
+<header class="wrap topbar">
+  <span class="num">MODULE 03 — BEYOND TEXT · 11</span>
+  <span class="tag dim">AI Concepts</span>
+</header>
+
+<section class="wrap stack g6">
+  <div class="stack g4">
+    <h1>Multimodal AI</h1>
+    <p class="lede">A photo of a dog, the word “dog”, and the sound of barking arrive through three different doors — and land in the same neighbourhood.</p>
+  </div>
+
+  <div class="rig">
+    <div class="stack g3">
+      <p class="eyebrow">Send one thing in, four ways</p>
+      <div class="subjects" id="subjects"></div>
+    </div>
+    <div class="space" id="space">
+      <svg class="links" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><g id="links"></g></svg>
+    </div>
+    <div class="doorrow">
+      <i><svg viewBox="0 0 16 16" fill="none" stroke="#9a92b6" stroke-width="1.4"><rect x="1.5" y="3.5" width="13" height="10" rx="2"/><circle cx="8" cy="8.5" r="2.6"/></svg>image</i>
+      <i><svg viewBox="0 0 16 16" fill="none" stroke="#9a92b6" stroke-width="1.4"><path d="M2 6.5v3h2.5L8 12.5v-9L4.5 6.5H2z"/><path d="M11 6a3 3 0 0 1 0 4"/></svg>audio</i>
+      <i><svg viewBox="0 0 16 16" fill="none" stroke="#9a92b6" stroke-width="1.4"><path d="M2.5 4.5h11M5 4.5v7.5M8.5 8h5M11 8v4"/></svg>text</i>
+      <i><svg viewBox="0 0 16 16" fill="none" stroke="#9a92b6" stroke-width="1.4"><rect x="1.5" y="3.5" width="13" height="9" rx="1.5"/><path d="M1.5 6.5h13M4.5 3.5v3M11.5 3.5v3"/></svg>video</i>
+    </div>
+    <p class="dim" style="font-size:13.5px" id="cap">Each door has its own encoder — the part that turns that format into a point in the shared space. What comes out the other side is the same kind of thing either way.</p>
+  </div>
+</section>
+
+<section class="wrap stack g5">
+  <p class="eyebrow">The problem it solves</p>
+  <h2>Formats used to be islands</h2>
+  <div class="wide-art">
+    <svg viewBox="0 0 900 210" role="img" aria-label="Previously each format lived in its own store with no way to compare across them; now every format lands in one shared space where distance works between any two things.">
+      <text x="0" y="18" font-family="JetBrains Mono, monospace" font-size="10" letter-spacing="1.4" fill="currentColor">BEFORE — ONE STORE PER FORMAT</text>
+      <rect x="0" y="34" width="104" height="76" rx="9" fill="none" stroke="currentColor" stroke-opacity=".35"/>
+      <text x="52" y="78" text-anchor="middle" font-family="Manrope, sans-serif" font-size="13" fill="#ECE9F5">photos</text>
+      <rect x="118" y="34" width="104" height="76" rx="9" fill="none" stroke="currentColor" stroke-opacity=".35"/>
+      <text x="170" y="78" text-anchor="middle" font-family="Manrope, sans-serif" font-size="13" fill="#ECE9F5">text</text>
+      <rect x="236" y="34" width="104" height="76" rx="9" fill="none" stroke="currentColor" stroke-opacity=".35"/>
+      <text x="288" y="78" text-anchor="middle" font-family="Manrope, sans-serif" font-size="13" fill="#ECE9F5">audio</text>
+      <line x1="110" y1="72" x2="112" y2="72" stroke="#ff6f8f"/>
+      <g stroke="#ff6f8f" stroke-width="1.8">
+        <line x1="104" y1="64" x2="118" y2="80"/><line x1="118" y1="64" x2="104" y2="80"/>
+        <line x1="222" y1="64" x2="236" y2="80"/><line x1="236" y1="64" x2="222" y2="80"/>
+      </g>
+      <text x="170" y="134" text-anchor="middle" font-family="Manrope, sans-serif" font-size="13" fill="#ffb3c4">no way to ask “which photo matches this sentence?”</text>
+
+      <text x="470" y="18" font-family="JetBrains Mono, monospace" font-size="10" letter-spacing="1.4" fill="currentColor">NOW — ONE SHARED SPACE</text>
+      <rect x="470" y="34" width="414" height="126" rx="10" fill="#45e0c4" fill-opacity=".05" stroke="#45e0c4" stroke-opacity=".45"/>
+      <circle cx="560" cy="76" r="5" fill="#45e0c4"/><circle cx="586" cy="66" r="5" fill="#9b6bff"/><circle cx="574" cy="94" r="5" fill="#ff6f8f"/>
+      <circle cx="770" cy="118" r="5" fill="#45e0c4"/><circle cx="796" cy="106" r="5" fill="#9b6bff"/><circle cx="784" cy="134" r="5" fill="#ff6f8f"/>
+      <text x="573" y="46" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9.5" fill="#8ff0dd">everything “dog”</text>
+      <text x="784" y="90" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9.5" fill="#8ff0dd">everything “car”</text>
+      <text x="677" y="182" text-anchor="middle" font-family="Manrope, sans-serif" font-size="13.5" fill="#ECE9F5">distance now works between any two things, whatever their format</text>
+    </svg>
+  </div>
+</section>
+
+<section class="wrap stack g5">
+  <p class="eyebrow">How it works</p>
+  <h2>Different doors, identical output</h2>
+  <div class="mech n3">
+    <figure>
+      <div class="art">
+        <svg viewBox="0 0 240 112" role="img" aria-label="Each format passes through its own encoder, built for that format alone.">
+          <g font-family="JetBrains Mono, monospace" font-size="9.5">
+            <rect x="12" y="14" width="46" height="20" rx="4" fill="currentColor" fill-opacity=".18"/><text x="35" y="28" text-anchor="middle" fill="#ECE9F5">image</text>
+            <rect x="12" y="42" width="46" height="20" rx="4" fill="currentColor" fill-opacity=".18"/><text x="35" y="56" text-anchor="middle" fill="#ECE9F5">audio</text>
+            <rect x="12" y="70" width="46" height="20" rx="4" fill="currentColor" fill-opacity=".18"/><text x="35" y="84" text-anchor="middle" fill="#ECE9F5">text</text>
+            <rect x="86" y="14" width="58" height="20" rx="4" fill="#9b6bff" fill-opacity=".2" stroke="#9b6bff" stroke-opacity=".6"/><text x="115" y="28" text-anchor="middle" fill="#d3bcff">encoder</text>
+            <rect x="86" y="42" width="58" height="20" rx="4" fill="#9b6bff" fill-opacity=".2" stroke="#9b6bff" stroke-opacity=".6"/><text x="115" y="56" text-anchor="middle" fill="#d3bcff">encoder</text>
+            <rect x="86" y="70" width="58" height="20" rx="4" fill="#9b6bff" fill-opacity=".2" stroke="#9b6bff" stroke-opacity=".6"/><text x="115" y="84" text-anchor="middle" fill="#d3bcff">encoder</text>
+          </g>
+          <line x1="62" y1="24" x2="80" y2="24" stroke="currentColor" stroke-width="1.3"/><polygon points="86,24 80,21 80,27" fill="currentColor"/>
+          <line x1="62" y1="52" x2="80" y2="52" stroke="currentColor" stroke-width="1.3"/><polygon points="86,52 80,49 80,55" fill="currentColor"/>
+          <line x1="62" y1="80" x2="80" y2="80" stroke="currentColor" stroke-width="1.3"/><polygon points="86,80 80,77 80,83" fill="currentColor"/>
+          <text x="196" y="48" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="currentColor">built for one</text>
+          <text x="196" y="60" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="currentColor">format each</text>
+        </svg>
+      </div>
+      <figcaption><b>Its own door</b>Pixels, waveforms and letters need genuinely different handling.</figcaption>
+    </figure>
+    <figure>
+      <div class="art">
+        <svg viewBox="0 0 240 112" role="img" aria-label="Whatever went in, what comes out is a list of numbers of exactly the same shape.">
+          <g font-family="JetBrains Mono, monospace" font-size="9.5">
+            <rect x="14" y="16" width="52" height="18" rx="4" fill="#9b6bff" fill-opacity=".2" stroke="#9b6bff" stroke-opacity=".6"/><text x="40" y="29" text-anchor="middle" fill="#d3bcff">encoder</text>
+            <rect x="14" y="46" width="52" height="18" rx="4" fill="#9b6bff" fill-opacity=".2" stroke="#9b6bff" stroke-opacity=".6"/><text x="40" y="59" text-anchor="middle" fill="#d3bcff">encoder</text>
+            <rect x="14" y="76" width="52" height="18" rx="4" fill="#9b6bff" fill-opacity=".2" stroke="#9b6bff" stroke-opacity=".6"/><text x="40" y="89" text-anchor="middle" fill="#d3bcff">encoder</text>
+          </g>
+          <line x1="70" y1="25" x2="96" y2="46" stroke="#45e0c4" stroke-width="1.3"/><line x1="70" y1="55" x2="96" y2="53" stroke="#45e0c4" stroke-width="1.3"/><line x1="70" y1="85" x2="96" y2="60" stroke="#45e0c4" stroke-width="1.3"/>
+          <rect x="102" y="36" width="122" height="36" rx="6" fill="#45e0c4" fill-opacity=".14" stroke="#45e0c4"/>
+          <text x="163" y="52" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9.5" fill="#8ff0dd">[0.21, −0.07, …]</text>
+          <text x="163" y="66" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="currentColor">same shape, always</text>
+        </svg>
+      </div>
+      <figcaption><b>Identical output</b>Every door produces a list of numbers of the same length.</figcaption>
+    </figure>
+    <figure>
+      <div class="art">
+        <svg viewBox="0 0 240 112" role="img" aria-label="Because everything is the same kind of point, distance can be measured between a picture and a sentence.">
+          <rect x="14" y="14" width="212" height="72" rx="7" fill="#45e0c4" fill-opacity=".05" stroke="currentColor" stroke-opacity=".3"/>
+          <circle cx="74" cy="40" r="6" fill="#9b6bff"/><circle cx="104" cy="56" r="6" fill="#45e0c4"/>
+          <line x1="74" y1="40" x2="104" y2="56" stroke="#8ff0dd" stroke-width="1.3" stroke-dasharray="2 2"/>
+          <text x="89" y="34" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#8ff0dd">near</text>
+          <circle cx="184" cy="70" r="6" fill="#ff6f8f"/>
+          <line x1="104" y1="56" x2="184" y2="70" stroke="currentColor" stroke-width="1" stroke-dasharray="2 3"/>
+          <text x="146" y="82" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="currentColor">far</text>
+          <text x="120" y="104" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="currentColor">a photo and a sentence can now be compared</text>
+        </svg>
+      </div>
+      <figcaption><b>Distance works across formats</b>“Find photos of a dog on a beach” becomes a nearest-point search.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section class="wrap stack g5">
+  <p class="eyebrow">The modern version</p>
+  <h2>Or: skip the doors entirely</h2>
+  <div class="wide-art">
+    <svg viewBox="0 0 900 190" role="img" aria-label="Newer models cut the image into patches and the audio into slices, turn each into a token, and interleave them with the text tokens in one single stream fed to one model.">
+      <text x="0" y="18" font-family="JetBrains Mono, monospace" font-size="10" letter-spacing="1.4" fill="currentColor">CUT EVERYTHING INTO TOKENS AND INTERLEAVE</text>
+      <g>
+        <rect x="0" y="36" width="58" height="42" rx="5" fill="#9b6bff" fill-opacity=".18" stroke="#9b6bff" stroke-opacity=".55"/>
+        <text x="29" y="62" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9.5" fill="#d3bcff">a photo</text>
+        <rect x="0" y="94" width="58" height="42" rx="5" fill="#45e0c4" fill-opacity=".16" stroke="#45e0c4" stroke-opacity=".55"/>
+        <text x="29" y="120" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9.5" fill="#8ff0dd">a sentence</text>
+      </g>
+      <text x="82" y="62" font-family="JetBrains Mono, monospace" font-size="9" fill="currentColor">cut into patches</text>
+      <text x="82" y="120" font-family="JetBrains Mono, monospace" font-size="9" fill="currentColor">cut into chunks</text>
+      <g>
+        <rect x="212" y="76" width="24" height="20" rx="3" fill="#9b6bff" fill-opacity=".6"/>
+        <rect x="240" y="76" width="24" height="20" rx="3" fill="#9b6bff" fill-opacity=".6"/>
+        <rect x="268" y="76" width="24" height="20" rx="3" fill="#9b6bff" fill-opacity=".6"/>
+        <rect x="296" y="76" width="24" height="20" rx="3" fill="#45e0c4" fill-opacity=".6"/>
+        <rect x="324" y="76" width="24" height="20" rx="3" fill="#45e0c4" fill-opacity=".6"/>
+        <rect x="352" y="76" width="24" height="20" rx="3" fill="#9b6bff" fill-opacity=".6"/>
+        <rect x="380" y="76" width="24" height="20" rx="3" fill="#45e0c4" fill-opacity=".6"/>
+        <rect x="408" y="76" width="24" height="20" rx="3" fill="#45e0c4" fill-opacity=".6"/>
+      </g>
+      <text x="322" y="118" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9.5" fill="currentColor">one stream · picture and words side by side</text>
+      <line x1="446" y1="86" x2="516" y2="86" stroke="currentColor" stroke-width="1.5"/><polygon points="524,86 516,82 516,90" fill="currentColor"/>
+      <rect x="534" y="58" width="180" height="56" rx="9" fill="#9b6bff" fill-opacity=".14" stroke="#9b6bff"/>
+      <text x="624" y="84" text-anchor="middle" font-family="Manrope, sans-serif" font-size="14" fill="#ECE9F5">one model</text>
+      <text x="624" y="102" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9.5" fill="#d3bcff">the next-word machine again</text>
+      <text x="900" y="150" text-anchor="end" font-family="Manrope, sans-serif" font-size="13" fill="currentColor">no separate encoders, no shared map — just more kinds of token</text>
+    </svg>
+  </div>
+  <p class="dim">The shared-space picture above is the intuition. Today’s big models mostly do this instead — which is why a picture and a question about it fit on the same desk.</p>
+</section>
+
+<section class="wrap stack g4">
+  <p class="eyebrow">So what</p>
+  <p class="sowhat">Searching your photos by typing a sentence is not clever image recognition. It is <em>one nearest-point lookup, in a space that stopped caring what format things arrived in.</em></p>
+</section>
+
+<nav class="wrap pagenav" aria-label="Series navigation">
+  <a class="pnbtn prev" href="10-three-doors.html"><span class="pnk">← Prev</span><span class="pnt">Fine-tuning vs. RAG vs. prompting</span></a>
+  <a class="pnbtn hub" href="00-atlas.html">All topics</a>
+  <a class="pnbtn next" href="12-tool-use.html"><span class="pnk">Next →</span><span class="pnt">Tool use</span></a>
+</nav>
+<footer class="wrap foot">Part of the AI Concepts series</footer>
+
+<script>
+(function(){
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var ICON = {
+    image: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="1.5" y="3.5" width="13" height="10" rx="2"/><circle cx="8" cy="8.5" r="2.6"/></svg>',
+    audio: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M2 6.5v3h2.5L8 12.5v-9L4.5 6.5H2z"/><path d="M11 6a3 3 0 0 1 0 4"/></svg>',
+    text:  '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M2.5 4.5h11M5 4.5v7.5M8.5 8h5M11 8v4"/></svg>',
+    video: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="1.5" y="3.5" width="13" height="9" rx="1.5"/><path d="M1.5 6.5h13M4.5 3.5v3M11.5 3.5v3"/></svg>'
+  };
+  var SUBJECTS = [
+    { k:'a dog', cx:26, cy:32, r:15, items:[
+        ['image','photo of a dog', 18, 24],['text','“a dog”', 34, 22],
+        ['audio','barking', 16, 41],['video','clip of a dog running', 33, 43]] },
+    { k:'a car', cx:74, cy:64, r:15, items:[
+        ['image','photo of a car', 66, 56],['text','“a car”', 83, 55],
+        ['audio','engine noise', 64, 73],['video','dashcam clip', 82, 74]] },
+    { k:'rain', cx:70, cy:22, r:13, items:[
+        ['image','photo of rain', 62, 14],['text','“rain”', 79, 15],
+        ['audio','rainfall', 62, 30],['video','clip of a storm', 78, 30]] }
+  ];
+
+  var space = document.getElementById('space'), links = document.getElementById('links');
+  var box = document.getElementById('subjects'), cap = document.getElementById('cap');
+  var nodes = [], halos = [], timers = [];
+
+  SUBJECTS.forEach(function(s){
+    var h = document.createElement('div');
+    h.className = 'halo';
+    h.style.left = s.cx + '%'; h.style.top = s.cy + '%';
+    h.style.width = (s.r * 2) + '%'; h.style.height = (s.r * 2.05) + '%';
+    var b = document.createElement('b'); b.textContent = s.k;
+    h.appendChild(b);
+    space.appendChild(h); halos.push({ s: s, el: h });
+
+    s.items.forEach(function(it){
+      var p = document.createElement('div');
+      p.className = 'pt';
+      p.style.left = it[2] + '%'; p.style.top = it[3] + '%';
+      p.innerHTML = ICON[it[0]] + '<span>' + it[1] + '</span>';
+      space.appendChild(p);
+      nodes.push({ s: s, el: p, kind: it[0] });
+    });
+  });
+
+  function show(s, btn){
+    timers.forEach(clearTimeout); timers = [];
+    Array.prototype.forEach.call(box.children, function(b){
+      b.classList.toggle('on', b === btn); b.setAttribute('aria-pressed', b === btn);
+    });
+    links.textContent = '';
+    nodes.forEach(function(n){ n.el.className = 'pt'; });
+    halos.forEach(function(h){ h.el.classList.toggle('on', h.s === s); });
+
+    var mine = nodes.filter(function(n){ return n.s === s; });
+    var others = nodes.filter(function(n){ return n.s !== s; });
+    others.forEach(function(n){ n.el.classList.add('on','ghost'); });
+
+    mine.forEach(function(n, i){
+      var t = setTimeout(function(){
+        n.el.classList.add('on','live');
+        if(i > 0){
+          var prev = mine[0].s.items[0];
+          var ln = document.createElementNS('http://www.w3.org/2000/svg','line');
+          ln.setAttribute('x1', prev[2]); ln.setAttribute('y1', prev[3]);
+          ln.setAttribute('x2', s.items[i][2]); ln.setAttribute('y2', s.items[i][3]);
+          ln.setAttribute('stroke', '#45e0c4'); ln.setAttribute('stroke-width', '0.3');
+          ln.setAttribute('stroke-dasharray', '1.2 1.2');
+          ln.setAttribute('vector-effect', 'non-scaling-stroke');
+          links.appendChild(ln);
+        }
+      }, reduce ? 0 : i * 190);
+      timers.push(t);
+    });
+    cap.textContent = 'Four formats of “' + s.k + '” entered through four different doors and landed in one neighbourhood. Nothing translated them into words first.';
+  }
+
+  SUBJECTS.forEach(function(s){
+    var b = document.createElement('button');
+    b.className = 'btn'; b.type = 'button'; b.textContent = s.k; b.setAttribute('aria-pressed','false');
+    b.addEventListener('click', function(){ show(s, b); });
+    box.appendChild(b);
+  });
+  show(SUBJECTS[0], box.children[0]);
+})();
+</script>
+
+</body>
+</html>

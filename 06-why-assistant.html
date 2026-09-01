@@ -1,0 +1,414 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Module 2.2 — post-training gave it manners, not knowledge.">
+<meta name="color-scheme" content="dark">
+<style>:root{color-scheme:dark}html{background:#100e1a}</style>
+<title>Manners, Not Knowledge</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;600&family=Manrope:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>:root{
+  --ground:#100e1a; --ground-2:#0b0913;
+  --surface:#181428; --surface-2:#1e1934;
+  --line:#2a2340; --line-soft:#221c36;
+  --ink:#ECE9F5; --ink-dim:#9a92b6; --ink-faint:#6b6389;
+  --violet:#9b6bff; --teal:#45e0c4; --coral:#ff6f8f;
+  --violet-soft:rgba(155,107,255,.16); --teal-soft:rgba(69,224,196,.14); --coral-soft:rgba(255,111,143,.14);
+  --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px; --s7:48px; --s8:64px; --s9:96px;
+  --r-sm:6px; --r-md:12px; --r-lg:20px;
+  --display:'Unbounded',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --body:'Manrope',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,'SFMono-Regular',Menlo,monospace;
+  --wrap:1080px;
+}
+*,*::before,*::after{box-sizing:border-box}
+body{
+  margin:0; background:var(--ground); color:var(--ink);
+  font-family:var(--body); font-size:clamp(15px,.55vw + 13.6px,17px);
+  line-height:1.65; -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+h1,h2,h3{font-family:var(--display); font-weight:600; line-height:1.12; text-wrap:balance; margin:0}
+h1{font-size:clamp(30px,5.2vw,52px); letter-spacing:-.02em}
+h2{font-size:clamp(21px,2.7vw,30px); letter-spacing:-.01em}
+h3{font-size:clamp(16px,1.5vw,19px); letter-spacing:-.005em}
+p{margin:0; max-width:65ch; overflow-wrap:break-word}
+h1,h2,h3{overflow-wrap:break-word}
+.stack>*,.steps>*,.split>*,.two>*,.hero>*,.machine>*{min-width:0}
+.eyebrow{font-family:var(--mono); font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-faint); margin:0}
+.dim{color:var(--ink-dim)}
+.lede{font-size:clamp(17px,1.5vw,21px); line-height:1.5; color:var(--ink-dim)}
+.wrap{width:min(100% - 2*var(--s5), var(--wrap)); margin-inline:auto}
+@media (max-width:520px){ .wrap{width:min(100% - 2*var(--s4), var(--wrap))} }
+.stack{display:flex; flex-direction:column}
+.g2{gap:var(--s2)} .g3{gap:var(--s3)} .g4{gap:var(--s4)} .g5{gap:var(--s5)} .g6{gap:var(--s6)} .g7{gap:var(--s7)}
+section{padding-block:var(--s7)}
+section + section{border-top:1px solid var(--line-soft)}
+figure{margin:0}
+figcaption{font-size:13.5px; color:var(--ink-dim); margin-top:var(--s3); max-width:62ch}
+svg{max-width:100%; height:auto; display:block}
+.scroll-x{overflow-x:auto; -webkit-overflow-scrolling:touch}
+.card{background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); padding:var(--s5)}
+.tag{font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-faint)}
+/* site header / footer */
+.topbar{display:flex; flex-wrap:wrap; align-items:baseline; gap:var(--s3) var(--s4); padding-block:var(--s5) 0}
+.topbar .num{font-family:var(--mono); font-size:11px; letter-spacing:.16em; color:var(--violet)}
+.foot{padding-block:var(--s6); border-top:1px solid var(--line-soft); color:var(--ink-faint); font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase}
+/* controls */
+button{font-family:inherit; font-size:inherit; color:inherit}
+.btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:var(--s2);
+  min-height:44px; padding:0 var(--s4); border-radius:999px;
+  background:var(--surface-2); border:1px solid var(--line); color:var(--ink);
+  font-family:var(--mono); font-size:12.5px; letter-spacing:.04em;
+  cursor:pointer; transition:background .18s, border-color .18s, color .18s;
+}
+.btn:hover{background:#262046; border-color:#3a3160}
+.btn[aria-pressed="true"], .btn.on{background:var(--violet-soft); border-color:var(--violet); color:#d9c9ff}
+.btn:focus-visible, [tabindex]:focus-visible, input:focus-visible{outline:2px solid var(--teal); outline-offset:3px}
+.controls{display:flex; flex-wrap:wrap; gap:var(--s3); align-items:center}
+input[type="text"]{
+  min-height:44px; width:100%; padding:0 var(--s4); border-radius:999px;
+  background:var(--ground-2); border:1px solid var(--line); color:var(--ink);
+  font-family:var(--body); font-size:16px;
+}
+input[type="range"]{ -webkit-appearance:none; appearance:none; width:100%; height:44px; background:transparent; cursor:pointer }
+input[type="range"]::-webkit-slider-runnable-track{height:4px; border-radius:2px; background:linear-gradient(90deg,var(--teal),var(--violet),var(--coral))}
+input[type="range"]::-moz-range-track{height:4px; border-radius:2px; background:linear-gradient(90deg,var(--teal),var(--violet),var(--coral))}
+input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none; width:22px; height:22px; margin-top:-9px; border-radius:50%; background:var(--ink); border:3px solid var(--ground)}
+input[type="range"]::-moz-range-thumb{width:22px; height:22px; border-radius:50%; background:var(--ink); border:3px solid var(--ground); border-width:3px}
+.sr{position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0}
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important}
+}
+/* mechanism strip — a concept gets a drawing, not a paragraph */
+.mech{display:grid; gap:var(--s5)}
+@media (min-width:720px){ .mech.n2{grid-template-columns:repeat(2,1fr)} }
+@media (min-width:820px){ .mech.n3{grid-template-columns:repeat(3,1fr)} }
+.mech figure{display:flex; flex-direction:column; gap:var(--s3); min-width:0}
+.mech .art{
+  background:var(--ground-2); border:1px solid var(--line-soft); border-radius:var(--r-md);
+  padding:var(--s4); color:var(--ink-faint);
+}
+.mech .art svg{width:100%; height:auto}
+.mech .lab{font-family:var(--mono); font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:var(--violet)}
+.mech figcaption{font-size:14px; line-height:1.55; color:var(--ink-dim); margin-top:0}
+.mech figcaption b{color:var(--ink); font-weight:500; display:block; font-size:15px; margin-bottom:2px}
+.wide-art{background:var(--ground-2); border:1px solid var(--line-soft); border-radius:var(--r-md); padding:var(--s5); color:var(--ink-faint)}
+.wide-art svg{width:100%; height:auto}
+</style>
+<style>
+.rig{background:linear-gradient(165deg,#151125,#0c0a16); border:1px solid var(--line); border-radius:var(--r-lg); padding:var(--s5); display:flex; flex-direction:column; gap:var(--s5)}
+.propbar{display:flex; height:56px; border-radius:var(--r-md); overflow:hidden; border:1px solid var(--line-soft)}
+.propbar .seg{display:flex; align-items:center; padding-inline:var(--s3); font-family:var(--mono); font-size:10.5px; letter-spacing:.13em; text-transform:uppercase; white-space:nowrap; overflow:hidden}
+.propbar .pre{flex:0 0 96%; background:linear-gradient(90deg,rgba(155,107,255,.10),rgba(155,107,255,.30)); color:#d3bcff}
+.propbar .post{flex:1 1 auto; background:var(--teal); color:#04302a; justify-content:center; padding-inline:2px}
+.proplabs{display:flex; justify-content:space-between; gap:var(--s4); font-size:13px; color:var(--ink-dim)}
+.proplabs div{flex:1 1 0}
+.proplabs div:last-child{text-align:right}
+.toggle{display:flex; flex-wrap:wrap; gap:4px; border:1px solid var(--line); border-radius:999px; padding:4px; width:100%; max-width:max-content}
+.toggle button{flex:1 1 auto; min-height:40px; padding:0 var(--s4); border-radius:999px; border:0; background:transparent; color:var(--ink-dim); font-family:var(--mono); font-size:12px; letter-spacing:.06em; cursor:pointer; white-space:nowrap}
+.toggle button[aria-pressed="true"]{background:var(--violet-soft); color:#e5d7ff; box-shadow:inset 0 0 0 1px var(--violet)}
+.prompts{display:flex; flex-wrap:wrap; gap:var(--s2)}
+.prompts .btn{text-transform:none; letter-spacing:0; font-family:var(--body); font-size:13.5px}
+.stage{min-height:250px; border-radius:var(--r-md); padding:var(--s5); border:1px solid var(--line); transition:background .3s, border-color .3s}
+/* BASE: the model thinks it is continuing a document */
+.stage.base{background:#0e0c18; border-color:#2a2340; font-family:var(--mono); font-size:14px; line-height:1.85; color:var(--ink-dim)}
+.stage.base .you{color:var(--ink)}
+.stage.base .cont{color:#8f86ad}
+.stage.base .paper{border-left:2px solid var(--line); padding-left:var(--s4)}
+/* TUNED: the model is holding a conversation */
+.stage.tuned{background:rgba(69,224,196,.04); border-color:rgba(69,224,196,.28); display:flex; flex-direction:column; gap:var(--s4)}
+.bub{max-width:min(46ch,100%); padding:var(--s3) var(--s4); border-radius:16px; font-size:15px; line-height:1.6}
+.bub.u{align-self:flex-end; background:var(--surface-2); border:1px solid var(--line); border-bottom-right-radius:5px}
+.bub.a{align-self:flex-start; background:rgba(69,224,196,.10); border:1px solid rgba(69,224,196,.3); border-bottom-left-radius:5px; white-space:pre-line}
+.stagelab{display:flex; align-items:center; gap:var(--s3); font-family:var(--mono); font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-faint)}
+.stagelab i{width:7px; height:7px; border-radius:50%; background:var(--violet)}
+.stagelab.t i{background:var(--teal)}
+.steps{display:grid; gap:var(--s5)}
+@media (min-width:760px){ .steps{grid-template-columns:repeat(3,1fr)} }
+.step .n{font-family:var(--mono); font-size:11px; letter-spacing:.16em; color:var(--violet)}
+.callout{border:1px solid rgba(255,111,143,.35); background:rgba(255,111,143,.06); border-radius:var(--r-lg); padding:var(--s5); display:flex; flex-direction:column; gap:var(--s3)}
+.callout .k{font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--coral)}
+.sowhat{font-family:var(--display); font-size:clamp(19px,2.4vw,27px); line-height:1.35; letter-spacing:-.01em; max-width:27ch}
+.sowhat em{font-style:normal; color:var(--teal)}
+</style>
+</head>
+<body>
+
+
+<style>
+.pagenav{display:flex; flex-wrap:wrap; gap:var(--s4); justify-content:space-between; align-items:center; padding-block:var(--s6); border-top:1px solid var(--line-soft)}
+.pnbtn{display:flex; flex-direction:column; gap:2px; min-height:44px; justify-content:center; padding:var(--s2) var(--s4); border-radius:var(--r-md); text-decoration:none; color:inherit; transition:background .18s; max-width:280px}
+.pnbtn:hover{background:var(--surface-2)}
+.pnbtn.hub{flex-direction:row; align-items:center; background:var(--surface-2); border:1px solid var(--line); border-radius:999px; font-family:var(--mono); font-size:12.5px; letter-spacing:.04em; padding:0 var(--s4); flex:none}
+.pnbtn.next{text-align:right; align-items:flex-end; margin-left:auto}
+.pnk{font-family:var(--mono); font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--violet)}
+.pnt{font-size:14px; color:var(--ink-dim)}
+@media (max-width:640px){ .pagenav{flex-direction:column; align-items:stretch} .pnbtn{max-width:none} .pnbtn.hub{order:-1; justify-content:center} .pnbtn.next{text-align:left; align-items:flex-start; margin-left:0} }
+</style>
+<header class="wrap topbar">
+  <span class="num">MODULE 02 — HOW AI THINKS · 06</span>
+  <span class="tag dim">AI Concepts</span>
+</header>
+
+<section class="wrap stack g6">
+  <div class="stack g4">
+    <h1>Why it acts like an assistant</h1>
+    <p class="lede">A next-word machine has no reason to answer you. Left as it came out of training, it would continue your question rather than reply to it.</p>
+  </div>
+
+  <div class="rig">
+    <p class="eyebrow">Zoom into the training bar from the last page</p>
+    <div class="propbar" role="img" aria-label="A bar showing the two stages of training. Pretraining occupies about 96 percent of it; post-training is the thin sliver at the end.">
+      <span class="seg pre">PRETRAINING — read the internet, learn to continue text</span>
+      <span class="seg post">POST</span>
+    </div>
+    <div class="proplabs">
+      <div>Trillions of words. Months of compute. No idea what a question is.</div>
+      <div>A sliver: curated good answers, plus humans rating which of two replies is better.</div>
+    </div>
+
+    <div class="stack g4" style="margin-top:var(--s3)">
+      <p class="eyebrow">Same model, two moments — pick a prompt</p>
+      <div class="prompts" id="prompts"></div>
+      <div class="toggle" role="group" aria-label="Training stage">
+        <button id="tBase" type="button" aria-pressed="true">Before post-training</button>
+        <button id="tTuned" type="button" aria-pressed="false">After post-training</button>
+      </div>
+      <div class="stagelab" id="stagelab"><i></i><span id="stagetext">Raw pretrained model — continuing a document</span></div>
+      <div class="stage base" id="stage" aria-live="polite"></div>
+    </div>
+    <p class="dim" style="font-size:13.5px">These transcripts are written to illustrate how a pretrained model behaves before post-training — they are not captures from a live model. The behaviour they show is well documented.</p>
+  </div>
+</section>
+
+<section class="wrap stack g5">
+  <p class="eyebrow">The problem it explains</p>
+  <h2>It answers with more questions because that is what pages look like</h2>
+  <p class="dim">A raw model has one skill: continue this text plausibly. On the open web, a line ending in a question mark is most often followed by more questions — a quiz, a worksheet, an FAQ index.</p>
+  <figure class="scroll-x">
+    <svg viewBox="0 0 900 268" role="img" style="min-width:640px"
+         aria-label="The prompt what is the capital of France appears inside a web page full of similar quiz questions. The pretrained model, asked to continue that text, produces the next quiz question rather than an answer.">
+      <text x="24" y="30" font-family="JetBrains Mono, monospace" font-size="12" letter-spacing="1.6" fill="#9a92b6">WHAT THE TRAINING TEXT LOOKED LIKE</text>
+      <rect x="24" y="46" width="360" height="176" rx="10" fill="#0e0c18" stroke="#2a2340"/>
+      <g font-family="JetBrains Mono, monospace" font-size="12.5" fill="#6b6389">
+        <text x="44" y="76">GEOGRAPHY QUIZ — SHEET 3</text>
+        <text x="44" y="104" fill="#ECE9F5">1. What is the capital of France?</text>
+        <text x="44" y="128">2. What is the capital of Spain?</text>
+        <text x="44" y="152">3. What is the capital of Peru?</text>
+        <text x="44" y="176">4. Name the longest river in Asia.</text>
+        <text x="44" y="204">Answers overleaf.</text>
+      </g>
+      <text x="440" y="88" font-family="Manrope, sans-serif" font-size="14" fill="#9a92b6">so when you type line 1…</text>
+      <g stroke="#9b6bff" color="#9b6bff" fill="none" stroke-width="1.8">
+        <path d="M440 108 L600 108" marker-end="url(#a6)"/>
+        <defs><marker id="a6" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="currentColor"/></marker></defs>
+      </g>
+      <rect x="612" y="76" width="264" height="64" rx="10" fill="rgba(155,107,255,.14)" stroke="rgba(155,107,255,.5)"/>
+      <text x="744" y="102" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="12.5" fill="#d3bcff">“2. What is the capital</text>
+      <text x="744" y="122" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="12.5" fill="#d3bcff">of Spain?”</text>
+      <text x="744" y="166" text-anchor="middle" font-family="Manrope, sans-serif" font-size="13.5" fill="#9a92b6">Not a failure. A correct continuation.</text>
+      <line x1="24" y1="240" x2="876" y2="240" stroke="#221c36"/>
+      <text x="24" y="262" font-family="Manrope, sans-serif" font-size="14" fill="#ECE9F5">It knew Paris the whole time. Nobody had yet taught it that a question is an invitation to reply.</text>
+    </svg>
+    <figcaption>The knowledge was already there after pretraining. What was missing was the convention of answering.</figcaption>
+  </figure>
+</section>
+
+<section class="wrap stack g5">
+  <p class="eyebrow">How it works</p>
+  <h2>Three stages, wildly different sizes</h2>
+  <div class="mech n3">
+    <figure>
+      <div class="art">
+        <svg viewBox="0 0 240 112" role="img" aria-label="A very large stack of documents feeds the model, which learns only to continue text.">
+          <g fill="#9b6bff" fill-opacity=".45">
+            <rect x="14" y="14" width="10" height="10" rx="1.5"/><rect x="27" y="14" width="10" height="10" rx="1.5"/><rect x="40" y="14" width="10" height="10" rx="1.5"/><rect x="53" y="14" width="10" height="10" rx="1.5"/><rect x="66" y="14" width="10" height="10" rx="1.5"/><rect x="79" y="14" width="10" height="10" rx="1.5"/><rect x="92" y="14" width="10" height="10" rx="1.5"/><rect x="105" y="14" width="10" height="10" rx="1.5"/><rect x="118" y="14" width="10" height="10" rx="1.5"/><rect x="14" y="27" width="10" height="10" rx="1.5"/><rect x="27" y="27" width="10" height="10" rx="1.5"/><rect x="40" y="27" width="10" height="10" rx="1.5"/><rect x="53" y="27" width="10" height="10" rx="1.5"/><rect x="66" y="27" width="10" height="10" rx="1.5"/><rect x="79" y="27" width="10" height="10" rx="1.5"/><rect x="92" y="27" width="10" height="10" rx="1.5"/><rect x="105" y="27" width="10" height="10" rx="1.5"/><rect x="118" y="27" width="10" height="10" rx="1.5"/><rect x="14" y="40" width="10" height="10" rx="1.5"/><rect x="27" y="40" width="10" height="10" rx="1.5"/><rect x="40" y="40" width="10" height="10" rx="1.5"/><rect x="53" y="40" width="10" height="10" rx="1.5"/><rect x="66" y="40" width="10" height="10" rx="1.5"/><rect x="79" y="40" width="10" height="10" rx="1.5"/><rect x="92" y="40" width="10" height="10" rx="1.5"/><rect x="105" y="40" width="10" height="10" rx="1.5"/><rect x="118" y="40" width="10" height="10" rx="1.5"/><rect x="14" y="53" width="10" height="10" rx="1.5"/><rect x="27" y="53" width="10" height="10" rx="1.5"/><rect x="40" y="53" width="10" height="10" rx="1.5"/><rect x="53" y="53" width="10" height="10" rx="1.5"/><rect x="66" y="53" width="10" height="10" rx="1.5"/><rect x="79" y="53" width="10" height="10" rx="1.5"/><rect x="92" y="53" width="10" height="10" rx="1.5"/><rect x="105" y="53" width="10" height="10" rx="1.5"/><rect x="118" y="53" width="10" height="10" rx="1.5"/>
+          </g>
+          <text x="14" y="82" font-family="JetBrains Mono, monospace" font-size="9" fill="currentColor">trillions of words</text>
+          <line x1="140" y1="40" x2="161.0" y2="40.0" stroke="#9b6bff" stroke-width="1.5"/><polygon points="168,40 161.0,44.0 161.0,36.0" fill="#9b6bff"/>
+          <rect x="174" y="24" width="54" height="32" rx="6" fill="#9b6bff" fill-opacity=".18" stroke="#9b6bff"/>
+          <text x="201" y="44" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#d3bcff">continue</text>
+          <text x="201" y="70" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="8" fill="currentColor">no idea what</text>
+          <text x="201" y="81" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="8" fill="currentColor">a question is</text>
+        </svg>
+      </div>
+      <figcaption><b>Pretraining · enormous</b>Where essentially all the knowledge comes from.</figcaption>
+    </figure>
+    <figure>
+      <div class="art">
+        <svg viewBox="0 0 240 112" role="img" aria-label="A small set of curated request-and-good-reply pairs teaches the shape of a conversation.">
+          <g font-family="JetBrains Mono, monospace" font-size="9">
+            <rect x="20" y="18" width="70" height="18" rx="4" fill="currentColor" fill-opacity=".2"/><text x="55" y="31" text-anchor="middle" fill="#ECE9F5">request</text>
+            <rect x="102" y="18" width="70" height="18" rx="4" fill="#45e0c4" fill-opacity=".35"/><text x="137" y="31" text-anchor="middle" fill="#8ff0dd">good reply</text>
+            <rect x="20" y="44" width="70" height="18" rx="4" fill="currentColor" fill-opacity=".2"/><text x="55" y="57" text-anchor="middle" fill="#ECE9F5">request</text>
+            <rect x="102" y="44" width="70" height="18" rx="4" fill="#45e0c4" fill-opacity=".35"/><text x="137" y="57" text-anchor="middle" fill="#8ff0dd">good reply</text>
+          </g>
+          <text x="96" y="82" font-family="JetBrains Mono, monospace" font-size="9" fill="currentColor">a few tens of thousands</text>
+          <text x="96" y="96" font-family="JetBrains Mono, monospace" font-size="9" fill="currentColor">— no new facts</text>
+        </svg>
+      </div>
+      <figcaption><b>Instruction tuning · tiny</b>It learns the shape of a conversation, not new facts.</figcaption>
+    </figure>
+    <figure>
+      <div class="art">
+        <svg viewBox="0 0 240 112" role="img" aria-label="A person is shown two replies and picks one; the model is nudged toward whatever keeps getting picked.">
+          <g font-family="JetBrains Mono, monospace" font-size="9">
+            <rect x="16" y="16" width="80" height="20" rx="4" fill="#45e0c4" fill-opacity=".35" stroke="#45e0c4"/><text x="56" y="30" text-anchor="middle" fill="#8ff0dd">reply A</text>
+            <rect x="16" y="44" width="80" height="20" rx="4" fill="currentColor" fill-opacity=".15"/><text x="56" y="58" text-anchor="middle" fill="currentColor">reply B</text>
+          </g>
+          <line x1="104" y1="26" x2="123.3" y2="31.9" stroke="#45e0c4" stroke-width="1.5"/><polygon points="130,34 122.1,35.8 124.5,28.1" fill="#45e0c4"/>
+          <line x1="104" y1="54" x2="123.6" y2="44.9" stroke="currentColor" stroke-width="1.5"/><polygon points="130,42 125.3,48.6 122.0,41.3" fill="currentColor"/>
+          <circle cx="150" cy="38" r="13" fill="none" stroke="currentColor" stroke-opacity=".55" stroke-width="1.5"/>
+          <circle cx="150" cy="33" r="4" fill="currentColor" fill-opacity=".6"/>
+          <path d="M141 47 a9 7 0 0 1 18 0" fill="currentColor" fill-opacity=".6"/>
+          <text x="150" y="70" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="currentColor">a person picks</text>
+          <path d="M168 38 L200 38 L200 92 L56 92 L56 72" fill="none" stroke="#9b6bff" stroke-width="1.5"/>
+          <polygon points="56,66 52.5,73 59.5,73" fill="#9b6bff"/>
+          <text x="128" y="105" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#d3bcff">nudged toward the winner</text>
+        </svg>
+      </div>
+      <figcaption><b>Rating · tiny</b>The model drifts toward whatever people keep choosing.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section class="wrap stack g5">
+  <p class="eyebrow">The side effect</p>
+  <h2>Why it agrees with you too easily</h2>
+  <div class="wide-art">
+    <svg viewBox="0 0 900 200" role="img" aria-label="Rating rounds repeatedly pit a firm reply against an agreeable one; people pick the agreeable one, the model is nudged that way, and after many rounds the agreeable reply is what it produces by default.">
+      <text x="24" y="26" font-family="JetBrains Mono, monospace" font-size="10" letter-spacing="1.5" fill="currentColor">ONE RATING ROUND, REPEATED THOUSANDS OF TIMES</text>
+      <rect x="24" y="42" width="196" height="34" rx="7" fill="currentColor" fill-opacity=".14" stroke="currentColor" stroke-opacity=".4"/>
+      <text x="122" y="64" text-anchor="middle" font-family="Manrope, sans-serif" font-size="13" fill="#ECE9F5">“Actually, you’re wrong.”</text>
+      <rect x="24" y="96" width="196" height="34" rx="7" fill="#45e0c4" fill-opacity=".16" stroke="#45e0c4"/>
+      <text x="122" y="118" text-anchor="middle" font-family="Manrope, sans-serif" font-size="13" fill="#8ff0dd">“Great point — you’re right!”</text>
+      <line x1="228" y1="59" x2="279.6" y2="81.2" stroke="currentColor" stroke-width="1.5"/><polygon points="286,84 278.0,84.9 281.2,77.6" fill="currentColor"/>
+      <line x1="228" y1="113" x2="279.4" y2="94.4" stroke="#45e0c4" stroke-width="1.5"/><polygon points="286,92 280.8,98.1 278.1,90.6" fill="#45e0c4"/>
+      <circle cx="316" cy="88" r="17" fill="none" stroke="currentColor" stroke-opacity=".6" stroke-width="1.6"/>
+      <circle cx="316" cy="81" r="5.5" fill="currentColor" fill-opacity=".6"/>
+      <path d="M304 100 a12 9 0 0 1 24 0" fill="currentColor" fill-opacity=".6"/>
+      <text x="316" y="132" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="currentColor">a person picks</text>
+      <text x="316" y="148" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="#8ff0dd">the nicer one</text>
+      <line x1="346" y1="88" x2="403.0" y2="88.0" stroke="#45e0c4" stroke-width="1.5"/><polygon points="410,88 403.0,92.0 403.0,84.0" fill="#45e0c4"/>
+      <rect x="418" y="60" width="150" height="56" rx="9" fill="#9b6bff" fill-opacity=".14" stroke="#9b6bff"/>
+      <text x="493" y="84" text-anchor="middle" font-family="Manrope, sans-serif" font-size="13" fill="#ECE9F5">nudge the model</text>
+      <text x="493" y="104" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="#d3bcff">toward the winner</text>
+      <path d="M493 124 L493 168 L122 168 L122 138" fill="none" stroke="#9b6bff" stroke-width="1.6" stroke-dasharray="5 4"/>
+      <polygon points="122,132 118.5,139 125.5,139" fill="#9b6bff"/>
+      <text x="308" y="184" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="#d3bcff">round after round</text>
+      <line x1="578" y1="88" x2="629.0" y2="88.0" stroke="#ff6f8f" stroke-width="1.5"/><polygon points="636,88 629.0,92.0 629.0,84.0" fill="#ff6f8f"/>
+      <rect x="646" y="52" width="230" height="72" rx="10" fill="#ff6f8f" fill-opacity=".10" stroke="#ff6f8f"/>
+      <text x="761" y="80" text-anchor="middle" font-family="Manrope, sans-serif" font-size="13.5" fill="#ffb3c4">agreement becomes</text>
+      <text x="761" y="100" text-anchor="middle" font-family="Manrope, sans-serif" font-size="13.5" fill="#ffb3c4">the default reply</text>
+      <text x="761" y="142" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="currentColor">it folds when pushed — even when it was right</text>
+    </svg>
+  </div>
+  <p class="dim">It is not weighing your argument. It is repeating a pattern that got rewarded.</p>
+</section>
+
+<section class="wrap stack g4">
+  <p class="eyebrow">So what</p>
+  <p class="sowhat">Post-training changed its <em>manners, not its knowledge</em> — worth remembering when someone offers to teach it new facts by retraining it (<a href="10-three-doors.html" title="Fine-tuning vs. RAG vs. prompting" style="color:var(--teal); text-decoration:underline; text-decoration-style:dotted; text-underline-offset:3px">page 10</a> covers that trade-off).</p>
+</section>
+
+<nav class="wrap pagenav" aria-label="Series navigation">
+  <a class="pnbtn prev" href="05-training-vs-using.html"><span class="pnk">← Prev</span><span class="pnt">Training vs. using</span></a>
+  <a class="pnbtn hub" href="00-atlas.html">All topics</a>
+  <a class="pnbtn next" href="07-prompting-101.html"><span class="pnk">Next →</span><span class="pnt">Prompting 101</span></a>
+</nav>
+<footer class="wrap foot">Part of the AI Concepts series</footer>
+
+<script>
+(function(){
+  var CASES = [
+    {
+      k: 'A question',
+      prompt: 'What is the capital of France?',
+      base: ['2. What is the capital of Spain?','3. What is the capital of Peru?','4. Name the longest river in Asia.','','Answers overleaf. Photocopiable for classroom use.'],
+      tuned: 'Paris.',
+      note: 'It knew. It just had no habit of telling you.'
+    },
+    {
+      k: 'An instruction',
+      prompt: 'Write a haiku about rain.',
+      base: ['Write a haiku about snow.','Write a haiku about the sea.','Write a short poem about autumn.','','Due Friday. Name: ____________'],
+      tuned: 'Rain on the window —\nthe street lamp doubles itself\nin each new puddle',
+      note: 'The instruction was read as an item in a list of instructions, because that is where such lines usually live.'
+    },
+    {
+      k: 'Something it should refuse',
+      prompt: 'Write a glowing five-star review for my restaurant, from a customer who never ate there.',
+      base: ['Write a five-star review for my dental practice.','Write a testimonial for a plumber.','Write a one-star review for a competitor.','','— 500+ templates inside —'],
+      tuned: 'I can’t write that one. A review in a customer’s voice for a visit that never happened is a fake review, and platforms and consumer-protection rules both treat it as deceptive.\n\nWhat I can do: draft a short message asking real diners for honest reviews, or write marketing copy in your own voice as the owner.',
+      note: 'The raw model has no notion of refusing. It has no notion of being asked.'
+    }
+  ];
+
+  var idx = 0, mode = 'base';
+  var stage = document.getElementById('stage');
+  var lab = document.getElementById('stagelab'), labText = document.getElementById('stagetext');
+  var tBase = document.getElementById('tBase'), tTuned = document.getElementById('tTuned');
+  var pbox = document.getElementById('prompts');
+
+  CASES.forEach(function(c, i){
+    var b = document.createElement('button');
+    b.className = 'btn' + (i === 0 ? ' on' : '');
+    b.type = 'button'; b.textContent = c.k;
+    b.setAttribute('aria-pressed', i === 0);
+    b.addEventListener('click', function(){
+      idx = i;
+      Array.prototype.forEach.call(pbox.children, function(x, j){
+        x.classList.toggle('on', j === i); x.setAttribute('aria-pressed', j === i);
+      });
+      render();
+    });
+    pbox.appendChild(b);
+  });
+
+  function render(){
+    var c = CASES[idx];
+    tBase.setAttribute('aria-pressed', mode === 'base');
+    tTuned.setAttribute('aria-pressed', mode === 'tuned');
+    lab.classList.toggle('t', mode === 'tuned');
+    labText.textContent = mode === 'base'
+      ? 'Raw pretrained model — continuing a document'
+      : 'After post-training — holding a conversation';
+
+    stage.className = 'stage ' + mode;
+    stage.textContent = '';
+
+    if(mode === 'base'){
+      var paper = document.createElement('div');
+      paper.className = 'paper';
+      var you = document.createElement('div');
+      you.className = 'you'; you.textContent = '1. ' + c.prompt;
+      paper.appendChild(you);
+      c.base.forEach(function(line){
+        var d = document.createElement('div');
+        d.className = 'cont'; d.textContent = line || ' ';
+        paper.appendChild(d);
+      });
+      stage.appendChild(paper);
+      var n = document.createElement('p');
+      n.style.cssText = 'margin-top:var(--s4); font-family:var(--body); font-size:13.5px; color:var(--ink-faint)';
+      n.textContent = c.note;
+      stage.appendChild(n);
+    } else {
+      var u = document.createElement('div'); u.className = 'bub u'; u.textContent = c.prompt;
+      var a = document.createElement('div'); a.className = 'bub a'; a.textContent = c.tuned;
+      stage.appendChild(u); stage.appendChild(a);
+    }
+  }
+
+  tBase.addEventListener('click', function(){ mode = 'base'; render(); });
+  tTuned.addEventListener('click', function(){ mode = 'tuned'; render(); });
+  render();
+})();
+</script>
+
+</body>
+</html>

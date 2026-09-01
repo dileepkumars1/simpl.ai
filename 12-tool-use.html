@@ -1,0 +1,438 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Module 3.2 — the model writes a request; your code decides whether to honour it.">
+<meta name="color-scheme" content="dark">
+<style>:root{color-scheme:dark}html{background:#100e1a}</style>
+<title>Reaching For A Tool</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;600&family=Manrope:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>:root{
+  --ground:#100e1a; --ground-2:#0b0913;
+  --surface:#181428; --surface-2:#1e1934;
+  --line:#2a2340; --line-soft:#221c36;
+  --ink:#ECE9F5; --ink-dim:#9a92b6; --ink-faint:#6b6389;
+  --violet:#9b6bff; --teal:#45e0c4; --coral:#ff6f8f;
+  --violet-soft:rgba(155,107,255,.16); --teal-soft:rgba(69,224,196,.14); --coral-soft:rgba(255,111,143,.14);
+  --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px; --s7:48px; --s8:64px; --s9:96px;
+  --r-sm:6px; --r-md:12px; --r-lg:20px;
+  --display:'Unbounded',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --body:'Manrope',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,'SFMono-Regular',Menlo,monospace;
+  --wrap:1080px;
+}
+*,*::before,*::after{box-sizing:border-box}
+body{
+  margin:0; background:var(--ground); color:var(--ink);
+  font-family:var(--body); font-size:clamp(15px,.55vw + 13.6px,17px);
+  line-height:1.65; -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+h1,h2,h3{font-family:var(--display); font-weight:600; line-height:1.12; text-wrap:balance; margin:0}
+h1{font-size:clamp(30px,5.2vw,52px); letter-spacing:-.02em}
+h2{font-size:clamp(21px,2.7vw,30px); letter-spacing:-.01em}
+h3{font-size:clamp(16px,1.5vw,19px); letter-spacing:-.005em}
+p{margin:0; max-width:65ch; overflow-wrap:break-word}
+h1,h2,h3{overflow-wrap:break-word}
+.stack>*,.steps>*,.split>*,.two>*,.hero>*,.machine>*{min-width:0}
+.eyebrow{font-family:var(--mono); font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-faint); margin:0}
+.dim{color:var(--ink-dim)}
+.lede{font-size:clamp(17px,1.5vw,21px); line-height:1.5; color:var(--ink-dim)}
+.wrap{width:min(100% - 2*var(--s5), var(--wrap)); margin-inline:auto}
+@media (max-width:520px){ .wrap{width:min(100% - 2*var(--s4), var(--wrap))} }
+.stack{display:flex; flex-direction:column}
+.g2{gap:var(--s2)} .g3{gap:var(--s3)} .g4{gap:var(--s4)} .g5{gap:var(--s5)} .g6{gap:var(--s6)} .g7{gap:var(--s7)}
+section{padding-block:var(--s7)}
+section + section{border-top:1px solid var(--line-soft)}
+figure{margin:0}
+figcaption{font-size:13.5px; color:var(--ink-dim); margin-top:var(--s3); max-width:62ch}
+svg{max-width:100%; height:auto; display:block}
+.scroll-x{overflow-x:auto; -webkit-overflow-scrolling:touch}
+.card{background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); padding:var(--s5)}
+.tag{font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-faint)}
+/* site header / footer */
+.topbar{display:flex; flex-wrap:wrap; align-items:baseline; gap:var(--s3) var(--s4); padding-block:var(--s5) 0}
+.topbar .num{font-family:var(--mono); font-size:11px; letter-spacing:.16em; color:var(--violet)}
+.foot{padding-block:var(--s6); border-top:1px solid var(--line-soft); color:var(--ink-faint); font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase}
+/* controls */
+button{font-family:inherit; font-size:inherit; color:inherit}
+.btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:var(--s2);
+  min-height:44px; padding:0 var(--s4); border-radius:999px;
+  background:var(--surface-2); border:1px solid var(--line); color:var(--ink);
+  font-family:var(--mono); font-size:12.5px; letter-spacing:.04em;
+  cursor:pointer; transition:background .18s, border-color .18s, color .18s;
+}
+.btn:hover{background:#262046; border-color:#3a3160}
+.btn[aria-pressed="true"], .btn.on{background:var(--violet-soft); border-color:var(--violet); color:#d9c9ff}
+.btn:focus-visible, [tabindex]:focus-visible, input:focus-visible{outline:2px solid var(--teal); outline-offset:3px}
+.controls{display:flex; flex-wrap:wrap; gap:var(--s3); align-items:center}
+input[type="text"]{
+  min-height:44px; width:100%; padding:0 var(--s4); border-radius:999px;
+  background:var(--ground-2); border:1px solid var(--line); color:var(--ink);
+  font-family:var(--body); font-size:16px;
+}
+input[type="range"]{ -webkit-appearance:none; appearance:none; width:100%; height:44px; background:transparent; cursor:pointer }
+input[type="range"]::-webkit-slider-runnable-track{height:4px; border-radius:2px; background:linear-gradient(90deg,var(--teal),var(--violet),var(--coral))}
+input[type="range"]::-moz-range-track{height:4px; border-radius:2px; background:linear-gradient(90deg,var(--teal),var(--violet),var(--coral))}
+input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none; width:22px; height:22px; margin-top:-9px; border-radius:50%; background:var(--ink); border:3px solid var(--ground)}
+input[type="range"]::-moz-range-thumb{width:22px; height:22px; border-radius:50%; background:var(--ink); border:3px solid var(--ground); border-width:3px}
+.sr{position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0}
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important}
+}
+/* mechanism strip — a concept gets a drawing, not a paragraph */
+.mech{display:grid; gap:var(--s5)}
+@media (min-width:720px){ .mech.n2{grid-template-columns:repeat(2,1fr)} }
+@media (min-width:820px){ .mech.n3{grid-template-columns:repeat(3,1fr)} }
+.mech figure{display:flex; flex-direction:column; gap:var(--s3); min-width:0}
+.mech .art{
+  background:var(--ground-2); border:1px solid var(--line-soft); border-radius:var(--r-md);
+  padding:var(--s4); color:var(--ink-faint);
+}
+.mech .art svg{width:100%; height:auto}
+.mech .lab{font-family:var(--mono); font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:var(--violet)}
+.mech figcaption{font-size:14px; line-height:1.55; color:var(--ink-dim); margin-top:0}
+.mech figcaption b{color:var(--ink); font-weight:500; display:block; font-size:15px; margin-bottom:2px}
+.wide-art{background:var(--ground-2); border:1px solid var(--line-soft); border-radius:var(--r-md); padding:var(--s5); color:var(--ink-faint)}
+.wide-art svg{width:100%; height:auto}
+</style>
+<style>
+.rig{background:linear-gradient(165deg,#151125,#0c0a16); border:1px solid var(--line); border-radius:var(--r-lg); padding:var(--s5); display:flex; flex-direction:column; gap:var(--s5)}
+.qs{display:flex; flex-wrap:wrap; gap:var(--s2)}
+.qs .btn{text-transform:none; letter-spacing:0; font-family:var(--body); font-size:14px}
+.track{display:grid; gap:var(--s3)}
+.beat{display:grid; grid-template-columns:22px minmax(0,1fr); gap:var(--s3); align-items:start; opacity:.22; transition:opacity .35s}
+.beat.on{opacity:1}
+.beat .pip{width:22px; height:22px; border-radius:50%; border:1.5px solid var(--line); display:flex; align-items:center; justify-content:center;
+  font-family:var(--mono); font-size:10px; color:var(--ink-faint); margin-top:9px}
+.beat.on .pip{border-color:var(--violet); color:#d3bcff}
+.beat.tool.on .pip{border-color:var(--coral); color:#ffb3c4}
+.beat .body{border:1px solid var(--line); border-radius:var(--r-md); padding:var(--s3) var(--s4); min-width:0}
+.beat .who{font-family:var(--mono); font-size:9.5px; letter-spacing:.15em; text-transform:uppercase; color:var(--ink-faint); display:block; margin-bottom:4px}
+.beat .txt{font-size:14.5px; line-height:1.55}
+.beat.call .body{background:rgba(155,107,255,.08); border-color:rgba(155,107,255,.45); font-family:var(--mono); font-size:12.5px}
+.beat.call .txt{font-family:var(--mono); font-size:12.5px; color:#d3bcff; white-space:pre-line}
+.beat.tool .body{background:rgba(255,111,143,.07); border-color:rgba(255,111,143,.4)}
+.beat.tool .who{color:var(--coral)}
+.beat.result .body{background:rgba(69,224,196,.07); border-color:rgba(69,224,196,.4)}
+.beat.result .who{color:var(--teal)}
+.gate{display:flex; align-items:center; gap:var(--s3); padding:var(--s2) 0; font-family:var(--mono); font-size:10px; letter-spacing:.13em; text-transform:uppercase; color:var(--coral)}
+.gate .line{flex:1 1 auto; height:1px; background:repeating-linear-gradient(90deg,rgba(255,111,143,.55) 0 6px,transparent 6px 12px)}
+.mech .art{color:var(--ink-faint)}
+.sowhat{font-family:var(--display); font-size:clamp(19px,2.4vw,27px); line-height:1.35; letter-spacing:-.01em; max-width:28ch}
+.sowhat em{font-style:normal; color:var(--coral)}
+</style>
+</head>
+<body>
+
+
+<style>
+.pagenav{display:flex; flex-wrap:wrap; gap:var(--s4); justify-content:space-between; align-items:center; padding-block:var(--s6); border-top:1px solid var(--line-soft)}
+.pnbtn{display:flex; flex-direction:column; gap:2px; min-height:44px; justify-content:center; padding:var(--s2) var(--s4); border-radius:var(--r-md); text-decoration:none; color:inherit; transition:background .18s; max-width:280px}
+.pnbtn:hover{background:var(--surface-2)}
+.pnbtn.hub{flex-direction:row; align-items:center; background:var(--surface-2); border:1px solid var(--line); border-radius:999px; font-family:var(--mono); font-size:12.5px; letter-spacing:.04em; padding:0 var(--s4); flex:none}
+.pnbtn.next{text-align:right; align-items:flex-end; margin-left:auto}
+.pnk{font-family:var(--mono); font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--violet)}
+.pnt{font-size:14px; color:var(--ink-dim)}
+@media (max-width:640px){ .pagenav{flex-direction:column; align-items:stretch} .pnbtn{max-width:none} .pnbtn.hub{order:-1; justify-content:center} .pnbtn.next{text-align:left; align-items:flex-start; margin-left:0} }
+</style>
+<style>
+.recap{border:1px solid var(--line); border-radius:var(--r-lg); background:var(--surface); padding:var(--s5); display:flex; flex-direction:column; gap:var(--s5)}
+.recap-icons{display:flex; flex-wrap:wrap; gap:var(--s3)}
+.ricon{width:52px; height:52px; border-radius:var(--r-md); border:1.5px solid var(--line); background:var(--ground-2); display:flex; align-items:center; justify-content:center; color:var(--ink-dim); cursor:pointer; transition:border-color .2s, background .2s, opacity .2s; padding:0}
+.ricon svg{width:30px; height:30px}
+.ricon[aria-pressed="true"]{border-color:var(--violet); background:var(--violet-soft); color:var(--violet)}
+.ricon.solved{opacity:.25; pointer-events:none}
+.recap-cards{display:flex; flex-wrap:wrap; gap:var(--s3)}
+.rcard{min-height:44px; padding:0 var(--s4); border-radius:999px; border:1px solid var(--line); background:var(--surface-2); color:var(--ink); font-size:13.5px; cursor:pointer; text-align:left; transition:border-color .15s, background .15s, opacity .2s, transform .12s}
+.rcard.solved{opacity:.25; pointer-events:none}
+.rcard.wrong{animation:rshake .3s}
+@keyframes rshake{ 25%{transform:translateX(-4px)} 75%{transform:translateX(4px)} }
+.recap-chain{display:flex; flex-wrap:wrap; align-items:center; gap:0; min-height:52px}
+.rchain-item{width:44px; height:44px; border-radius:var(--r-md); background:var(--violet-soft); border:1.5px solid var(--violet); display:flex; align-items:center; justify-content:center; color:var(--violet); flex:none}
+.rchain-item svg{width:24px; height:24px}
+.rchain-link{width:20px; height:2px; background:var(--line); flex:none}
+.recap-done{display:none; flex-direction:column; gap:var(--s4); padding-top:var(--s4); border-top:1px solid var(--line-soft)}
+.recap-done.show{display:flex}
+.recap-done p{font-family:var(--display); font-size:clamp(17px,2vw,21px); line-height:1.4; max-width:60ch}
+@media (prefers-reduced-motion: reduce){ .rcard.wrong{animation:none} }
+</style>
+<header class="wrap topbar">
+  <span class="num">MODULE 03 — BEYOND TEXT · 12</span>
+  <span class="tag dim">AI Concepts</span>
+</header>
+
+<section class="wrap stack g6">
+  <div class="stack g4">
+    <h1>Tool use</h1>
+    <p class="lede">The model cannot check the weather. It can only write down a request for someone else to check it — and that distinction is the whole design.</p>
+  </div>
+
+  <div class="rig">
+    <div class="stack g3">
+      <p class="eyebrow">Ask it something</p>
+      <div class="qs" id="qs"></div>
+    </div>
+    <div class="track" id="track"></div>
+    <p class="dim" style="font-size:13.5px" id="cap"></p>
+  </div>
+</section>
+
+<section class="wrap stack g5">
+  <p class="eyebrow">The problem it explains</p>
+  <h2>Its only output is text</h2>
+  <div class="wide-art">
+    <svg viewBox="0 0 900 196" role="img" aria-label="The model's only possible output is text. Everything else — sending mail, querying a database, booking a room — sits behind a wall it cannot reach through. A structured request written as text is the only opening.">
+      <rect x="0" y="52" width="188" height="70" rx="10" fill="#9b6bff" fill-opacity=".14" stroke="#9b6bff"/>
+      <text x="94" y="84" text-anchor="middle" font-family="Manrope, sans-serif" font-size="14" fill="#ECE9F5">the model</text>
+      <text x="94" y="104" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="#d3bcff">produces tokens · nothing else</text>
+      <line x1="206" y1="87" x2="272" y2="87" stroke="#9b6bff" stroke-width="1.6"/><polygon points="280,87 272,83 272,91" fill="#9b6bff"/>
+      <text x="243" y="76" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9.5" fill="#d3bcff">text</text>
+      <line x1="330" y1="10" x2="330" y2="162" stroke="currentColor" stroke-opacity=".45" stroke-width="2" stroke-dasharray="7 6"/>
+      <text x="330" y="182" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9.5" letter-spacing="1.2" fill="currentColor">IT CANNOT CROSS THIS</text>
+      <g font-family="Manrope, sans-serif" font-size="13" fill="currentColor">
+        <text x="392" y="36">send an email</text>
+        <text x="392" y="66">query the database</text>
+        <text x="392" y="96">book the room</text>
+        <text x="392" y="126">read today’s prices</text>
+        <text x="392" y="156">run the deploy</text>
+      </g>
+      <g stroke="currentColor" stroke-opacity=".3" stroke-dasharray="3 4">
+        <line x1="340" y1="32" x2="384" y2="32"/><line x1="340" y1="62" x2="384" y2="62"/>
+        <line x1="340" y1="92" x2="384" y2="92"/><line x1="340" y1="122" x2="384" y2="122"/>
+        <line x1="340" y1="152" x2="384" y2="152"/>
+      </g>
+      <rect x="600" y="52" width="290" height="70" rx="10" fill="#45e0c4" fill-opacity=".08" stroke="#45e0c4"/>
+      <text x="745" y="80" text-anchor="middle" font-family="Manrope, sans-serif" font-size="13.5" fill="#8ff0dd">so the text it writes is a request</text>
+      <text x="745" y="102" text-anchor="middle" font-family="Manrope, sans-serif" font-size="13.5" fill="#8ff0dd">and your code does the doing</text>
+    </svg>
+  </div>
+</section>
+
+<section class="wrap stack g5">
+  <p class="eyebrow">How it works</p>
+  <h2>Notice, ask, resume</h2>
+  <div class="mech n3">
+    <figure>
+      <div class="art">
+        <svg viewBox="0 0 240 112" role="img" aria-label="The question needs something the model does not carry: a live figure, a private record, a calculation.">
+          <rect x="14" y="18" width="130" height="30" rx="6" fill="none" stroke="currentColor" stroke-opacity=".45"/>
+          <text x="79" y="37" text-anchor="middle" font-family="Manrope, sans-serif" font-size="12" fill="#ECE9F5">“is it raining there?”</text>
+          <rect x="34" y="62" width="90" height="34" rx="6" fill="#9b6bff" fill-opacity=".14" stroke="#9b6bff" stroke-opacity=".5"/>
+          <text x="79" y="83" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9.5" fill="#d3bcff">memory only</text>
+          <line x1="79" y1="52" x2="79" y2="56" stroke="currentColor" stroke-width="1.3"/><polygon points="79,62 75.5,56 82.5,56" fill="currentColor"/>
+          <g stroke="#ff6f8f" stroke-width="1.8"><line x1="150" y1="70" x2="166" y2="86"/><line x1="166" y1="70" x2="150" y2="86"/></g>
+          <text x="196" y="72" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#ffb3c4">not in</text>
+          <text x="196" y="85" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#ffb3c4">there</text>
+        </svg>
+      </div>
+      <figcaption><b>Notice the gap</b>The answer is live, private or computed — none of which live in the weights.</figcaption>
+    </figure>
+    <figure>
+      <div class="art">
+        <svg viewBox="0 0 240 112" role="img" aria-label="Instead of an answer it writes a small structured form naming a tool and its arguments.">
+          <rect x="24" y="20" width="192" height="70" rx="7" fill="#9b6bff" fill-opacity=".12" stroke="#9b6bff"/>
+          <text x="38" y="42" font-family="JetBrains Mono, monospace" font-size="11" fill="#d3bcff">tool: get_weather</text>
+          <text x="38" y="62" font-family="JetBrains Mono, monospace" font-size="11" fill="#d3bcff">city: “Kochi”</text>
+          <text x="38" y="80" font-family="JetBrains Mono, monospace" font-size="9" fill="currentColor">— still just text it wrote</text>
+          <text x="120" y="106" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="currentColor">a form, not an action</text>
+        </svg>
+      </div>
+      <figcaption><b>Write the request</b>A small structured form: which tool, and with what arguments.</figcaption>
+    </figure>
+    <figure>
+      <div class="art">
+        <svg viewBox="0 0 240 112" role="img" aria-label="The result comes back and is placed on the desk; the model carries on reading as if it had been there all along.">
+          <rect x="14" y="16" width="92" height="26" rx="5" fill="#45e0c4" fill-opacity=".2" stroke="#45e0c4"/>
+          <text x="60" y="33" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="#8ff0dd">22°C, clear</text>
+          <line x1="60" y1="48" x2="60" y2="58" stroke="#45e0c4" stroke-width="1.4"/><polygon points="60,64 56.5,58 63.5,58" fill="#45e0c4"/>
+          <rect x="14" y="66" width="212" height="30" rx="5" fill="#45e0c4" fill-opacity=".06" stroke="#45e0c4" stroke-opacity=".45"/>
+          <text x="120" y="85" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="currentColor">onto the desk, above the question</text>
+          <text x="176" y="33" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="currentColor">the real answer</text>
+        </svg>
+      </div>
+      <figcaption><b>Resume</b>It reads the result off the desk and answers ordinarily. No magic in this step.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section class="wrap stack g5">
+  <p class="eyebrow">The part people miss</p>
+  <h2>Who actually runs the tool</h2>
+  <div class="wide-art">
+    <svg viewBox="0 0 900 250" role="img" aria-label="The model writes a request; your own code receives it and decides whether to run it. Every safety control lives in that gap, not inside the model.">
+      <rect x="0" y="70" width="176" height="66" rx="10" fill="#9b6bff" fill-opacity=".14" stroke="#9b6bff"/>
+      <text x="88" y="98" text-anchor="middle" font-family="Manrope, sans-serif" font-size="13.5" fill="#ECE9F5">the model</text>
+      <text x="88" y="118" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="#d3bcff">asks</text>
+      <line x1="192" y1="103" x2="246" y2="103" stroke="#9b6bff" stroke-width="1.6"/><polygon points="254,103 246,99 246,107" fill="#9b6bff"/>
+      <rect x="264" y="56" width="220" height="94" rx="10" fill="#45e0c4" fill-opacity=".08" stroke="#45e0c4" stroke-width="2"/>
+      <text x="374" y="86" text-anchor="middle" font-family="Manrope, sans-serif" font-size="14" fill="#8ff0dd">your code</text>
+      <text x="374" y="108" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="currentColor">decides · validates · refuses</text>
+      <text x="374" y="128" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="currentColor">logs · asks a human</text>
+      <text x="374" y="40" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9.5" letter-spacing="1.4" fill="#8ff0dd">EVERY CONTROL LIVES HERE</text>
+      <line x1="492" y1="103" x2="546" y2="103" stroke="#45e0c4" stroke-width="1.6"/><polygon points="554,103 546,99 546,107" fill="#45e0c4"/>
+      <rect x="564" y="70" width="176" height="66" rx="10" fill="none" stroke="currentColor" stroke-opacity=".5"/>
+      <text x="652" y="98" text-anchor="middle" font-family="Manrope, sans-serif" font-size="13.5" fill="#ECE9F5">the real tool</text>
+      <text x="652" y="118" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="currentColor">does the thing</text>
+      <path d="M652 148 C652 190, 88 190, 88 146" fill="none" stroke="currentColor" stroke-width="1.4" stroke-dasharray="5 4"/>
+      <polygon points="88,140 84.5,147 91.5,147" fill="currentColor"/>
+      <text x="370" y="206" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="currentColor">result returns to the desk</text>
+      <text x="0" y="242" font-family="Manrope, sans-serif" font-size="14" fill="#ffb3c4">A model with tools has no more power than the code that chooses to honour its requests.</text>
+    </svg>
+  </div>
+</section>
+
+<section class="wrap stack g4">
+  <p class="eyebrow">So what</p>
+  <p class="sowhat">Everything an AI “does” in the world happens because <em>something outside it agreed to act on a sentence it wrote.</em></p>
+</section>
+
+<section class="wrap stack g5">
+  <p class="eyebrow">MODULE RECAP</p>
+  <h2>Before you move on</h2>
+  <p class="dim">Click an idea below, then click the card it matches.</p>
+  <div class="recap">
+    <div class="recap-icons" id="rIcons" role="group" aria-label="This module's ideas"></div>
+    <div class="recap-cards" id="rCards" role="group" aria-label="Match each idea to its card"></div>
+    <div class="recap-chain" id="rChain" aria-hidden="true"></div>
+    <p class="sr" id="rLive" aria-live="polite"></p>
+    <div class="recap-done" id="rDone">
+      <p>Different senses, same trick underneath — and the first time the model reaches outside itself for help.</p>
+      <a class="btn" href="13-agentic.html">Continue to Module 4 →</a>
+    </div>
+  </div>
+</section>
+<script>
+(function(){
+  var DATA = [
+    {m:'doors4', label:'Page 11', text:'One nearest-point lookup, in a space that stopped caring about format.'},
+    {m:'tool', label:'Page 12', text:'It “does” things because something outside it agreed to act.'}
+  ];
+  var MOTIF = {
+    doors4: '<rect x="4" y="7" width="9" height="7" rx="2" fill="currentColor" opacity=".75"/><rect x="4" y="17" width="9" height="7" rx="2" fill="currentColor" opacity=".55"/><rect x="4" y="27" width="9" height="7" rx="2" fill="currentColor" opacity=".35"/><circle cx="30" cy="20" r="4" fill="currentColor"/><g stroke="currentColor" stroke-width="1" opacity=".5"><line x1="15" y1="11" x2="26" y2="19"/><line x1="15" y1="21" x2="26" y2="20"/><line x1="15" y1="31" x2="26" y2="22"/></g>',
+    tool: '<rect x="3" y="14" width="12" height="12" rx="2" fill="currentColor" opacity=".7"/><line x1="20" y1="6" x2="20" y2="34" stroke="currentColor" stroke-width="1.6" stroke-dasharray="3 3"/><rect x="25" y="14" width="12" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="1.4"/>'
+  };
+  var icons = document.getElementById('rIcons'), cards = document.getElementById('rCards'), chain = document.getElementById('rChain');
+  var done = document.getElementById('rDone'), live = document.getElementById('rLive');
+  var selected = null, solvedCount = 0;
+
+  function shuffle(arr){ for(var i=arr.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=arr[i]; arr[i]=arr[j]; arr[j]=t; } return arr; }
+
+  DATA.forEach(function(d, idx){
+    var b = document.createElement('button');
+    b.type = 'button'; b.className = 'ricon'; b.setAttribute('aria-pressed', 'false'); b.setAttribute('aria-label', d.label);
+    b.innerHTML = '<svg viewBox="0 0 40 40" aria-hidden="true">' + MOTIF[d.m] + '</svg>';
+    b.addEventListener('click', function(){
+      if(b.classList.contains('solved')) return;
+      Array.prototype.forEach.call(icons.children, function(x){ x.setAttribute('aria-pressed', 'false'); });
+      b.setAttribute('aria-pressed', 'true');
+      selected = idx;
+    });
+    icons.appendChild(b);
+  });
+
+  var order = shuffle(DATA.map(function(d, i){ return i; }));
+  order.forEach(function(idx){
+    var d = DATA[idx];
+    var c = document.createElement('button');
+    c.type = 'button'; c.className = 'rcard'; c.textContent = d.text;
+    c.addEventListener('click', function(){
+      if(selected === null || c.classList.contains('solved')) return;
+      if(selected === idx){
+        var iconBtn = icons.children[selected];
+        iconBtn.classList.add('solved'); iconBtn.setAttribute('aria-pressed', 'false');
+        c.classList.add('solved');
+        if(chain.children.length){ var link = document.createElement('span'); link.className = 'rchain-link'; chain.appendChild(link); }
+        var chip = document.createElement('span'); chip.className = 'rchain-item'; chip.innerHTML = iconBtn.innerHTML;
+        chain.appendChild(chip);
+        live.textContent = 'Matched: ' + d.label;
+        selected = null;
+        solvedCount++;
+        if(solvedCount === DATA.length){
+          done.classList.add('show');
+          var f = done.querySelector('a'); if(f) f.focus();
+        }
+      } else {
+        c.classList.remove('wrong'); void c.offsetWidth; c.classList.add('wrong');
+        live.textContent = 'Not quite — try again';
+      }
+    });
+    cards.appendChild(c);
+  });
+})();
+</script>
+<nav class="wrap pagenav" aria-label="Series navigation">
+  <a class="pnbtn prev" href="11-multimodal.html"><span class="pnk">← Prev</span><span class="pnt">Multimodal AI</span></a>
+  <a class="pnbtn hub" href="00-atlas.html">All topics</a>
+  <a class="pnbtn next" href="13-agentic.html"><span class="pnk">Next →</span><span class="pnt">What makes AI “agentic”</span></a>
+</nav>
+<footer class="wrap foot">Part of the AI Concepts series</footer>
+
+<script>
+(function(){
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var CASES = [
+    { q:'What is 17% of 4,280?', cap:'Arithmetic is a calculation, not a memory. It writes the sum out and lets a calculator do it — which is why tool use fixed a whole class of maths mistakes.',
+      beats:[
+        ['user','You','What is 17% of 4,280?'],
+        ['call','Model writes','tool: calculator\nexpression: 4280 * 0.17'],
+        ['tool','Your code runs it','Calculator returns 727.6'],
+        ['result','Result onto the desk','727.6'],
+        ['model','Model resumes','17% of 4,280 is 727.6.']] },
+    { q:'Is it raining in Kochi right now?', cap:'“Right now” is on the far side of the cutoff from <a href="05-training-vs-using.html" title="Training vs. using" style="color:var(--coral); text-decoration:underline; text-decoration-style:dotted; text-underline-offset:3px">page 5</a>. Nothing in the weights can answer it, so it asks.',
+      beats:[
+        ['user','You','Is it raining in Kochi right now?'],
+        ['call','Model writes','tool: get_weather\ncity: "Kochi"'],
+        ['tool','Your code runs it','Weather API called'],
+        ['result','Result onto the desk','22°C, light rain, 14:30 local'],
+        ['model','Model resumes','Yes — light rain in Kochi at the moment, around 22°C.']] },
+    { q:'Who wrote Hamlet?', cap:'No tool call at all. It already had this, so reaching for a tool would only add delay and cost. Deciding *not* to is part of the skill.',
+      beats:[
+        ['user','You','Who wrote Hamlet?'],
+        ['model','Model answers directly','Shakespeare.']] }
+  ];
+
+  var track = document.getElementById('track'), box = document.getElementById('qs'), cap = document.getElementById('cap');
+  var timers = [];
+
+  function render(c, btn){
+    timers.forEach(clearTimeout); timers = [];
+    Array.prototype.forEach.call(box.children, function(b){
+      b.classList.toggle('on', b === btn); b.setAttribute('aria-pressed', b === btn);
+    });
+    track.textContent = '';
+    cap.innerHTML = c.cap;
+
+    c.beats.forEach(function(b, i){
+      if(b[0] === 'tool'){
+        var g = document.createElement('div');
+        g.className = 'gate';
+        g.innerHTML = '<span class="line"></span><span>the model stops here</span><span class="line"></span>';
+        track.appendChild(g);
+      }
+      var row = document.createElement('div');
+      row.className = 'beat ' + b[0];
+      row.innerHTML = '<span class="pip">' + (i + 1) + '</span>' +
+        '<div class="body"><span class="who"></span><span class="txt"></span></div>';
+      row.querySelector('.who').textContent = b[1];
+      row.querySelector('.txt').textContent = b[2];
+      track.appendChild(row);
+      timers.push(setTimeout(function(){ row.classList.add('on'); }, reduce ? 0 : 120 + i * 340));
+    });
+  }
+
+  CASES.forEach(function(c){
+    var b = document.createElement('button');
+    b.className = 'btn'; b.type = 'button'; b.textContent = c.q; b.setAttribute('aria-pressed','false');
+    b.addEventListener('click', function(){ render(c, b); });
+    box.appendChild(b);
+  });
+  render(CASES[1], box.children[1]);
+})();
+</script>
+
+</body>
+</html>

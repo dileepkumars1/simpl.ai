@@ -1,0 +1,426 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Module 4.5 — five jobs, one loop, five different ways of knowing it has finished.">
+<meta name="color-scheme" content="dark">
+<style>:root{color-scheme:dark}html{background:#100e1a}</style>
+<title>Same Loop, Five Jobs</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;600&family=Manrope:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>:root{
+  --ground:#100e1a; --ground-2:#0b0913;
+  --surface:#181428; --surface-2:#1e1934;
+  --line:#2a2340; --line-soft:#221c36;
+  --ink:#ECE9F5; --ink-dim:#9a92b6; --ink-faint:#6b6389;
+  --violet:#9b6bff; --teal:#45e0c4; --coral:#ff6f8f;
+  --violet-soft:rgba(155,107,255,.16); --teal-soft:rgba(69,224,196,.14); --coral-soft:rgba(255,111,143,.14);
+  --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px; --s7:48px; --s8:64px; --s9:96px;
+  --r-sm:6px; --r-md:12px; --r-lg:20px;
+  --display:'Unbounded',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --body:'Manrope',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,'SFMono-Regular',Menlo,monospace;
+  --wrap:1080px;
+}
+*,*::before,*::after{box-sizing:border-box}
+body{
+  margin:0; background:var(--ground); color:var(--ink);
+  font-family:var(--body); font-size:clamp(15px,.55vw + 13.6px,17px);
+  line-height:1.65; -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+h1,h2,h3{font-family:var(--display); font-weight:600; line-height:1.12; text-wrap:balance; margin:0}
+h1{font-size:clamp(30px,5.2vw,52px); letter-spacing:-.02em}
+h2{font-size:clamp(21px,2.7vw,30px); letter-spacing:-.01em}
+h3{font-size:clamp(16px,1.5vw,19px); letter-spacing:-.005em}
+p{margin:0; max-width:65ch; overflow-wrap:break-word}
+h1,h2,h3{overflow-wrap:break-word}
+.stack>*,.steps>*,.split>*,.two>*,.hero>*,.machine>*{min-width:0}
+.eyebrow{font-family:var(--mono); font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-faint); margin:0}
+.dim{color:var(--ink-dim)}
+.lede{font-size:clamp(17px,1.5vw,21px); line-height:1.5; color:var(--ink-dim)}
+.wrap{width:min(100% - 2*var(--s5), var(--wrap)); margin-inline:auto}
+@media (max-width:520px){ .wrap{width:min(100% - 2*var(--s4), var(--wrap))} }
+.stack{display:flex; flex-direction:column}
+.g2{gap:var(--s2)} .g3{gap:var(--s3)} .g4{gap:var(--s4)} .g5{gap:var(--s5)} .g6{gap:var(--s6)} .g7{gap:var(--s7)}
+section{padding-block:var(--s7)}
+section + section{border-top:1px solid var(--line-soft)}
+figure{margin:0}
+figcaption{font-size:13.5px; color:var(--ink-dim); margin-top:var(--s3); max-width:62ch}
+svg{max-width:100%; height:auto; display:block}
+.scroll-x{overflow-x:auto; -webkit-overflow-scrolling:touch}
+.card{background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); padding:var(--s5)}
+.tag{font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-faint)}
+/* site header / footer */
+.topbar{display:flex; flex-wrap:wrap; align-items:baseline; gap:var(--s3) var(--s4); padding-block:var(--s5) 0}
+.topbar .num{font-family:var(--mono); font-size:11px; letter-spacing:.16em; color:var(--violet)}
+.foot{padding-block:var(--s6); border-top:1px solid var(--line-soft); color:var(--ink-faint); font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase}
+/* controls */
+button{font-family:inherit; font-size:inherit; color:inherit}
+.btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:var(--s2);
+  min-height:44px; padding:0 var(--s4); border-radius:999px;
+  background:var(--surface-2); border:1px solid var(--line); color:var(--ink);
+  font-family:var(--mono); font-size:12.5px; letter-spacing:.04em;
+  cursor:pointer; transition:background .18s, border-color .18s, color .18s;
+}
+.btn:hover{background:#262046; border-color:#3a3160}
+.btn[aria-pressed="true"], .btn.on{background:var(--violet-soft); border-color:var(--violet); color:#d9c9ff}
+.btn:focus-visible, [tabindex]:focus-visible, input:focus-visible{outline:2px solid var(--teal); outline-offset:3px}
+.controls{display:flex; flex-wrap:wrap; gap:var(--s3); align-items:center}
+input[type="text"]{
+  min-height:44px; width:100%; padding:0 var(--s4); border-radius:999px;
+  background:var(--ground-2); border:1px solid var(--line); color:var(--ink);
+  font-family:var(--body); font-size:16px;
+}
+input[type="range"]{ -webkit-appearance:none; appearance:none; width:100%; height:44px; background:transparent; cursor:pointer }
+input[type="range"]::-webkit-slider-runnable-track{height:4px; border-radius:2px; background:linear-gradient(90deg,var(--teal),var(--violet),var(--coral))}
+input[type="range"]::-moz-range-track{height:4px; border-radius:2px; background:linear-gradient(90deg,var(--teal),var(--violet),var(--coral))}
+input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none; width:22px; height:22px; margin-top:-9px; border-radius:50%; background:var(--ink); border:3px solid var(--ground)}
+input[type="range"]::-moz-range-thumb{width:22px; height:22px; border-radius:50%; background:var(--ink); border:3px solid var(--ground); border-width:3px}
+.sr{position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0}
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important}
+}
+/* mechanism strip — a concept gets a drawing, not a paragraph */
+.mech{display:grid; gap:var(--s5)}
+@media (min-width:720px){ .mech.n2{grid-template-columns:repeat(2,1fr)} }
+@media (min-width:820px){ .mech.n3{grid-template-columns:repeat(3,1fr)} }
+.mech figure{display:flex; flex-direction:column; gap:var(--s3); min-width:0}
+.mech .art{
+  background:var(--ground-2); border:1px solid var(--line-soft); border-radius:var(--r-md);
+  padding:var(--s4); color:var(--ink-faint);
+}
+.mech .art svg{width:100%; height:auto}
+.mech .lab{font-family:var(--mono); font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:var(--violet)}
+.mech figcaption{font-size:14px; line-height:1.55; color:var(--ink-dim); margin-top:0}
+.mech figcaption b{color:var(--ink); font-weight:500; display:block; font-size:15px; margin-bottom:2px}
+.wide-art{background:var(--ground-2); border:1px solid var(--line-soft); border-radius:var(--r-md); padding:var(--s5); color:var(--ink-faint)}
+.wide-art svg{width:100%; height:auto}
+</style>
+<style>
+.rig{background:linear-gradient(165deg,#151125,#0c0a16); border:1px solid var(--line); border-radius:var(--r-lg); padding:var(--s5); display:flex; flex-direction:column; gap:var(--s5)}
+.jobs{display:flex; flex-wrap:wrap; gap:var(--s2)}
+.jobs .btn{text-transform:none; letter-spacing:0; font-family:var(--body); font-size:14px}
+.bench{display:grid; gap:var(--s5)}
+@media (min-width:880px){ .bench{grid-template-columns:290px minmax(0,1fr); gap:var(--s6); align-items:start} }
+.ring{width:100%; max-width:290px; margin-inline:auto}
+.slots{display:flex; flex-direction:column; gap:var(--s3)}
+.slot{display:grid; grid-template-columns:78px minmax(0,1fr); gap:var(--s3); align-items:baseline;
+      padding:10px var(--s4); border-radius:var(--r-md); border:1px solid var(--line); background:var(--ground-2)}
+.slot .k{font-family:var(--mono); font-size:9.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--violet)}
+.slot .v{font-size:14.5px; line-height:1.5; min-width:0}
+.slot.stop{border-color:rgba(69,224,196,.45); background:rgba(69,224,196,.05)}
+.slot.stop .k{color:var(--teal)}
+.fit{display:flex; flex-wrap:wrap; gap:var(--s2)}
+.pill{display:inline-flex; align-items:center; gap:6px; padding:6px 11px; border-radius:999px; font-family:var(--mono); font-size:11px; border:1px solid}
+.pill.y{border-color:rgba(69,224,196,.5); background:rgba(69,224,196,.09); color:#8ff0dd}
+.pill.n{border-color:rgba(255,111,143,.5); background:rgba(255,111,143,.08); color:#ffb3c4}
+.mech .art{color:var(--ink-faint)}
+.sowhat{font-family:var(--display); font-size:clamp(19px,2.4vw,27px); line-height:1.35; letter-spacing:-.01em; max-width:28ch}
+.sowhat em{font-style:normal; color:var(--teal)}
+</style>
+</head>
+<body>
+
+
+<style>
+.pagenav{display:flex; flex-wrap:wrap; gap:var(--s4); justify-content:space-between; align-items:center; padding-block:var(--s6); border-top:1px solid var(--line-soft)}
+.pnbtn{display:flex; flex-direction:column; gap:2px; min-height:44px; justify-content:center; padding:var(--s2) var(--s4); border-radius:var(--r-md); text-decoration:none; color:inherit; transition:background .18s; max-width:280px}
+.pnbtn:hover{background:var(--surface-2)}
+.pnbtn.hub{flex-direction:row; align-items:center; background:var(--surface-2); border:1px solid var(--line); border-radius:999px; font-family:var(--mono); font-size:12.5px; letter-spacing:.04em; padding:0 var(--s4); flex:none}
+.pnbtn.next{text-align:right; align-items:flex-end; margin-left:auto}
+.pnk{font-family:var(--mono); font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--violet)}
+.pnt{font-size:14px; color:var(--ink-dim)}
+@media (max-width:640px){ .pagenav{flex-direction:column; align-items:stretch} .pnbtn{max-width:none} .pnbtn.hub{order:-1; justify-content:center} .pnbtn.next{text-align:left; align-items:flex-start; margin-left:0} }
+</style>
+<style>
+.recap{border:1px solid var(--line); border-radius:var(--r-lg); background:var(--surface); padding:var(--s5); display:flex; flex-direction:column; gap:var(--s5)}
+.recap-icons{display:flex; flex-wrap:wrap; gap:var(--s3)}
+.ricon{width:52px; height:52px; border-radius:var(--r-md); border:1.5px solid var(--line); background:var(--ground-2); display:flex; align-items:center; justify-content:center; color:var(--ink-dim); cursor:pointer; transition:border-color .2s, background .2s, opacity .2s; padding:0}
+.ricon svg{width:30px; height:30px}
+.ricon[aria-pressed="true"]{border-color:var(--violet); background:var(--violet-soft); color:var(--violet)}
+.ricon.solved{opacity:.25; pointer-events:none}
+.recap-cards{display:flex; flex-wrap:wrap; gap:var(--s3)}
+.rcard{min-height:44px; padding:0 var(--s4); border-radius:999px; border:1px solid var(--line); background:var(--surface-2); color:var(--ink); font-size:13.5px; cursor:pointer; text-align:left; transition:border-color .15s, background .15s, opacity .2s, transform .12s}
+.rcard.solved{opacity:.25; pointer-events:none}
+.rcard.wrong{animation:rshake .3s}
+@keyframes rshake{ 25%{transform:translateX(-4px)} 75%{transform:translateX(4px)} }
+.recap-chain{display:flex; flex-wrap:wrap; align-items:center; gap:0; min-height:52px}
+.rchain-item{width:44px; height:44px; border-radius:var(--r-md); background:var(--violet-soft); border:1.5px solid var(--violet); display:flex; align-items:center; justify-content:center; color:var(--violet); flex:none}
+.rchain-item svg{width:24px; height:24px}
+.rchain-link{width:20px; height:2px; background:var(--line); flex:none}
+.recap-done{display:none; flex-direction:column; gap:var(--s4); padding-top:var(--s4); border-top:1px solid var(--line-soft)}
+.recap-done.show{display:flex}
+.recap-done p{font-family:var(--display); font-size:clamp(17px,2vw,21px); line-height:1.4; max-width:60ch}
+@media (prefers-reduced-motion: reduce){ .rcard.wrong{animation:none} }
+</style>
+<header class="wrap topbar">
+  <span class="num">MODULE 04 — AGENTIC AI · 17</span>
+  <span class="tag dim">AI Concepts</span>
+</header>
+
+<section class="wrap stack g6">
+  <div class="stack g4">
+    <h1>Where agents actually work</h1>
+    <p class="lede">Five jobs that look unrelated. Pick any of them and the same ring from <a href="13-agentic.html" title="What makes AI &quot;agentic&quot;" style="color:var(--teal); text-decoration:underline; text-decoration-style:dotted; text-underline-offset:3px">page 13</a> appears underneath, with different words in the same five slots.</p>
+  </div>
+
+  <div class="rig">
+    <div class="stack g3">
+      <p class="eyebrow">Pick a job</p>
+      <div class="jobs" id="jobs"></div>
+    </div>
+    <div class="bench">
+      <svg class="ring" id="ring" viewBox="0 0 260 260" role="img"
+           aria-label="The five-stage ring from page 13, relabelled for the selected job."></svg>
+      <div class="stack g4">
+        <div class="slots" id="slots"></div>
+        <div class="fit" id="fit"></div>
+      </div>
+    </div>
+    <p class="dim" style="font-size:13.5px" id="cap"></p>
+  </div>
+</section>
+
+<section class="wrap stack g5">
+  <p class="eyebrow">What the good ones share</p>
+  <h2>Three properties, or don’t bother</h2>
+  <div class="mech n3">
+    <figure>
+      <div class="art">
+        <svg viewBox="0 0 240 112" role="img" aria-label="A machine-checkable result: the test suite passes or fails, with no judgement required to tell which.">
+          <rect x="20" y="26" width="86" height="30" rx="6" fill="#45e0c4" fill-opacity=".16" stroke="#45e0c4"/>
+          <text x="63" y="46" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="#8ff0dd">tests pass</text>
+          <rect x="134" y="26" width="86" height="30" rx="6" fill="#ff6f8f" fill-opacity=".14" stroke="#ff6f8f" stroke-opacity=".7"/>
+          <text x="177" y="46" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="#ffb3c4">tests fail</text>
+          <text x="120" y="82" text-anchor="middle" font-family="Manrope, sans-serif" font-size="12.5" fill="#ECE9F5">no judgement needed</text>
+          <text x="120" y="100" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="currentColor">the loop can grade itself</text>
+        </svg>
+      </div>
+      <figcaption><b>A checkable result</b>Something outside the model can say whether it worked.</figcaption>
+    </figure>
+    <figure>
+      <div class="art">
+        <svg viewBox="0 0 240 112" role="img" aria-label="Cheap and reversible attempts: a failed try costs a retry, not an apology.">
+          <g>
+            <rect x="16" y="30" width="30" height="22" rx="4" fill="#ff6f8f" fill-opacity=".3"/>
+            <rect x="54" y="30" width="30" height="22" rx="4" fill="#ff6f8f" fill-opacity=".3"/>
+            <rect x="92" y="30" width="30" height="22" rx="4" fill="#ff6f8f" fill-opacity=".3"/>
+            <rect x="130" y="30" width="30" height="22" rx="4" fill="#45e0c4" fill-opacity=".5"/>
+          </g>
+          <text x="95" y="70" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9.5" fill="currentColor">3 failures, then one works</text>
+          <text x="88" y="92" text-anchor="middle" font-family="Manrope, sans-serif" font-size="12.5" fill="#ECE9F5">and nobody was harmed</text>
+          <text x="196" y="45" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#8ff0dd">retry is</text>
+          <text x="196" y="57" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#8ff0dd">free</text>
+        </svg>
+      </div>
+      <figcaption><b>Cheap, reversible attempts</b>Failure costs another go, not an apology to a customer.</figcaption>
+    </figure>
+    <figure>
+      <div class="art">
+        <svg viewBox="0 0 240 112" role="img" aria-label="A hard stopping rule: a budget of attempts, after which the loop halts and hands over.">
+          <circle cx="72" cy="56" r="34" fill="none" stroke="currentColor" stroke-opacity=".3" stroke-width="7"/>
+          <path d="M72 22 a34 34 0 0 1 29 51" fill="none" stroke="#9b6bff" stroke-width="7" stroke-linecap="round"/>
+          <text x="72" y="61" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="12" fill="#d3bcff">6/10</text>
+          <text x="176" y="42" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9.5" fill="currentColor">at 10 it stops</text>
+          <text x="176" y="58" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9.5" fill="currentColor">and hands over</text>
+          <text x="176" y="80" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#ffb3c4">never “until solved”</text>
+        </svg>
+      </div>
+      <figcaption><b>A hard stopping rule</b>A budget it cannot argue with, because judging “done” is its weakest skill.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section class="wrap stack g4">
+  <p class="eyebrow">So what</p>
+  <p class="sowhat">Nobody built five kinds of agent. They wired the same loop to <em>five different tools, and five different ways of knowing it had finished.</em></p>
+</section>
+
+<section class="wrap stack g5">
+  <p class="eyebrow">MODULE RECAP</p>
+  <h2>Before you move on</h2>
+  <p class="dim">Click an idea below, then click the card it matches.</p>
+  <div class="recap">
+    <div class="recap-icons" id="rIcons" role="group" aria-label="This module's ideas"></div>
+    <div class="recap-cards" id="rCards" role="group" aria-label="Match each idea to its card"></div>
+    <div class="recap-chain" id="rChain" aria-hidden="true"></div>
+    <p class="sr" id="rLive" aria-live="polite"></p>
+    <div class="recap-done" id="rDone">
+      <p>An agent is just this loop, with memory, teammates, and a leash — running on jobs you can actually name.</p>
+      <a class="btn" href="18-limits.html">Continue reading →</a>
+    </div>
+  </div>
+</section>
+<script>
+(function(){
+  var DATA = [
+    {m:'ring', label:'Page 13', text:'The same model, given a tool, a loop, and permission to stop.'},
+    {m:'mem', label:'Page 14', text:'A store of sentences someone chose to keep, searched fallibly.'},
+    {m:'org', label:'Page 15', text:'One model, roleplaying a meeting, paying for every seat.'},
+    {m:'gate', label:'Page 16', text:"Deciding in advance which of its requests you'll honour."},
+    {m:'jobs', label:'Page 17', text:"The same loop, wired to five tools and five ways to know it's done."}
+  ];
+  var MOTIF = {
+    gate: '<rect x="4" y="16" width="10" height="8" rx="2" fill="currentColor" opacity=".6"/><rect x="17" y="8" width="6" height="24" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><rect x="26" y="16" width="10" height="8" rx="2" fill="none" stroke="currentColor" stroke-width="1.4"/>',
+    jobs: '<circle cx="20" cy="20" r="11" fill="none" stroke="currentColor" stroke-width="1.4" opacity=".5"/><circle cx="20" cy="9" r="2.4" fill="currentColor"/><circle cx="30" cy="17" r="2.4" fill="currentColor"/><circle cx="26" cy="29" r="2.4" fill="currentColor"/><circle cx="14" cy="29" r="2.4" fill="currentColor"/><circle cx="10" cy="17" r="2.4" fill="currentColor"/>',
+    mem: '<rect x="3" y="12" width="10" height="16" rx="2" fill="currentColor" opacity=".35"/><rect x="15" y="12" width="10" height="16" rx="2" fill="currentColor" opacity=".6"/><rect x="27" y="12" width="10" height="16" rx="2" fill="currentColor" opacity=".85"/>',
+    org: '<rect x="14" y="4" width="12" height="7" rx="2" fill="currentColor"/><rect x="3" y="27" width="11" height="7" rx="2" fill="currentColor" opacity=".6"/><rect x="15" y="27" width="11" height="7" rx="2" fill="currentColor" opacity=".6"/><rect x="27" y="27" width="10" height="7" rx="2" fill="currentColor" opacity=".6"/><g stroke="currentColor" stroke-width="1" opacity=".5"><line x1="20" y1="11" x2="9" y2="27"/><line x1="20" y1="11" x2="20" y2="27"/><line x1="20" y1="11" x2="32" y2="27"/></g>',
+    ring: '<circle cx="20" cy="20" r="12" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="20" cy="8" r="2.8" fill="currentColor"/><circle cx="31" cy="16" r="2.8" fill="currentColor" opacity=".7"/><circle cx="27" cy="29" r="2.8" fill="currentColor" opacity=".7"/><circle cx="13" cy="29" r="2.8" fill="currentColor" opacity=".7"/><circle cx="9" cy="16" r="2.8" fill="currentColor" opacity=".7"/>'
+  };
+  var icons = document.getElementById('rIcons'), cards = document.getElementById('rCards'), chain = document.getElementById('rChain');
+  var done = document.getElementById('rDone'), live = document.getElementById('rLive');
+  var selected = null, solvedCount = 0;
+
+  function shuffle(arr){ for(var i=arr.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=arr[i]; arr[i]=arr[j]; arr[j]=t; } return arr; }
+
+  DATA.forEach(function(d, idx){
+    var b = document.createElement('button');
+    b.type = 'button'; b.className = 'ricon'; b.setAttribute('aria-pressed', 'false'); b.setAttribute('aria-label', d.label);
+    b.innerHTML = '<svg viewBox="0 0 40 40" aria-hidden="true">' + MOTIF[d.m] + '</svg>';
+    b.addEventListener('click', function(){
+      if(b.classList.contains('solved')) return;
+      Array.prototype.forEach.call(icons.children, function(x){ x.setAttribute('aria-pressed', 'false'); });
+      b.setAttribute('aria-pressed', 'true');
+      selected = idx;
+    });
+    icons.appendChild(b);
+  });
+
+  var order = shuffle(DATA.map(function(d, i){ return i; }));
+  order.forEach(function(idx){
+    var d = DATA[idx];
+    var c = document.createElement('button');
+    c.type = 'button'; c.className = 'rcard'; c.textContent = d.text;
+    c.addEventListener('click', function(){
+      if(selected === null || c.classList.contains('solved')) return;
+      if(selected === idx){
+        var iconBtn = icons.children[selected];
+        iconBtn.classList.add('solved'); iconBtn.setAttribute('aria-pressed', 'false');
+        c.classList.add('solved');
+        if(chain.children.length){ var link = document.createElement('span'); link.className = 'rchain-link'; chain.appendChild(link); }
+        var chip = document.createElement('span'); chip.className = 'rchain-item'; chip.innerHTML = iconBtn.innerHTML;
+        chain.appendChild(chip);
+        live.textContent = 'Matched: ' + d.label;
+        selected = null;
+        solvedCount++;
+        if(solvedCount === DATA.length){
+          done.classList.add('show');
+          var f = done.querySelector('a'); if(f) f.focus();
+        }
+      } else {
+        c.classList.remove('wrong'); void c.offsetWidth; c.classList.add('wrong');
+        live.textContent = 'Not quite — try again';
+      }
+    });
+    cards.appendChild(c);
+  });
+})();
+</script>
+<nav class="wrap pagenav" aria-label="Series navigation">
+  <a class="pnbtn prev" href="16-guardrails.html"><span class="pnk">← Prev</span><span class="pnt">Guardrails &amp; human-in-the-loop</span></a>
+  <a class="pnbtn hub" href="00-atlas.html">All topics</a>
+  <a class="pnbtn next" href="18-limits.html"><span class="pnk">Next →</span><span class="pnt">What AI still can’t do</span></a>
+</nav>
+<footer class="wrap foot">Part of the AI Concepts series</footer>
+
+<script>
+(function(){
+  var NS = 'http://www.w3.org/2000/svg';
+  var JOBS = [
+    { k:'Coding agent',
+      s:['Make the failing test pass','Read the error, find the file','Edit the file, run the suite','3 passing, 1 still red','Not green yet — go again'],
+      stop:'The test suite goes green.',
+      fit:[['y','result is machine-checked'],['y','edits are revertible'],['y','attempt budget'],],
+      cap:'The strongest fit in the list: a computer can tell it whether it succeeded, with no human in the loop at all.' },
+    { k:'Support triage',
+      s:['Sort tonight’s inbox','Read the ticket, find similar past ones','Tag it, route it, draft a reply','Confidence low on this one','Uncertain — hand it to a person'],
+      stop:'Queue empty, or confidence below the line.',
+      fit:[['y','reversible until sent'],['y','clear hand-off rule'],['n','“right answer” is a judgement']],
+      cap:'Drafting is safe; sending is the irreversible step, which is exactly where <a href="16-guardrails.html" title="Guardrails & human-in-the-loop" style="color:var(--teal); text-decoration:underline; text-decoration-style:dotted; text-underline-offset:3px">page 16</a>’s doorbell goes.' },
+    { k:'Research assistant',
+      s:['Summarise what is known about X','List the sub-questions','Search, open, extract','Two sources disagree','Gap remains — search again'],
+      stop:'Every sub-question has a cited source.',
+      fit:[['y','sources are checkable'],['n','no test for “complete”'],['n','confident irrelevance, page 9']],
+      cap:'The weakest fit: nothing can tell it when the research is finished, so the stopping rule has to be arbitrary.' },
+    { k:'Pipeline monitor',
+      s:['Keep the nightly job healthy','Watch for a failed run','Read logs, retry, escalate','Retry succeeded at 03:14','Healthy again — go back to watching'],
+      stop:'Job green, or a human is paged.',
+      fit:[['y','status is unambiguous'],['y','retry is cheap'],['y','escalation path']],
+      cap:'Fits well because the world tells it the answer: the job is either green or it is not.' },
+    { k:'Inbox handler',
+      s:['Keep my inbox at zero','Read, classify, decide','Archive, reply, or flag','Flagged three for you','Nothing left to sort'],
+      stop:'Inbox empty or everything flagged.',
+      fit:[['y','archiving is reversible'],['n','sending is not'],['n','your priorities are unstated']],
+      cap:'Sorting is safe. Replying on your behalf is the part that needs a person, for the reasons on <a href="16-guardrails.html" title="Guardrails & human-in-the-loop" style="color:var(--teal); text-decoration:underline; text-decoration-style:dotted; text-underline-offset:3px">page 16</a>.' }
+  ];
+  var STAGES = ['Goal','Plan','Act','Observe','Decide'];
+
+  var ring = document.getElementById('ring'), slots = document.getElementById('slots');
+  var box = document.getElementById('jobs'), fit = document.getElementById('fit'), cap = document.getElementById('cap');
+  var nodes = [];
+
+  function el(n, a){ var e = document.createElementNS(NS, n); for(var k in a) e.setAttribute(k, a[k]); return e; }
+  (function build(){
+    ring.appendChild(el('circle', { cx:130, cy:130, r:84, fill:'none', stroke:'#2a2340', 'stroke-width':1.5 }));
+    for(var s = 0; s < 5; s++){
+      var a = (-90 + s * 72) * Math.PI / 180;
+      var x = 130 + 84 * Math.cos(a), y = 130 + 84 * Math.sin(a);
+      ring.appendChild(el('circle', { cx:x, cy:y, r:13, fill:'rgba(155,107,255,.22)', stroke:'#9b6bff', 'stroke-width':1.5 }));
+      var lx = 130 + 114 * Math.cos(a), ly = 130 + 114 * Math.sin(a);
+      var t = el('text', { x:lx, y:ly + 4, 'text-anchor':'middle', 'font-family':'JetBrains Mono, monospace', 'font-size':11, fill:'#d3bcff' });
+      t.textContent = STAGES[s];
+      ring.appendChild(t);
+      var ah = (-90 + s * 72 + 36) * Math.PI / 180;
+      ring.appendChild(el('polygon', { points:'0,-4 7,0 0,4', fill:'#2a2340',
+        transform:'translate(' + (130 + 84 * Math.cos(ah)).toFixed(1) + ',' + (130 + 84 * Math.sin(ah)).toFixed(1) + ') rotate(' + (ah * 180 / Math.PI + 90).toFixed(1) + ')' }));
+      nodes.push(t);
+    }
+    var m = el('text', { x:130, y:134, 'text-anchor':'middle', 'font-family':'JetBrains Mono, monospace', 'font-size':10, fill:'#4d4668' });
+    m.textContent = 'the same ring';
+    ring.appendChild(m);
+  })();
+
+  function show(j, btn){
+    Array.prototype.forEach.call(box.children, function(b){
+      b.classList.toggle('on', b === btn); b.setAttribute('aria-pressed', b === btn);
+    });
+    slots.textContent = '';
+    STAGES.forEach(function(st, i){
+      var d = document.createElement('div');
+      d.className = 'slot';
+      d.innerHTML = '<span class="k"></span><span class="v"></span>';
+      d.querySelector('.k').textContent = st;
+      d.querySelector('.v').textContent = j.s[i];
+      slots.appendChild(d);
+    });
+    var d = document.createElement('div');
+    d.className = 'slot stop';
+    d.innerHTML = '<span class="k">Stops when</span><span class="v"></span>';
+    d.querySelector('.v').textContent = j.stop;
+    slots.appendChild(d);
+
+    fit.textContent = '';
+    j.fit.forEach(function(f){
+      var p = document.createElement('span');
+      p.className = 'pill ' + f[0];
+      p.textContent = (f[0] === 'y' ? '✓ ' : '✕ ') + f[1];
+      fit.appendChild(p);
+    });
+    cap.innerHTML = j.cap;
+  }
+
+  JOBS.forEach(function(j){
+    var b = document.createElement('button');
+    b.className = 'btn'; b.type = 'button'; b.textContent = j.k; b.setAttribute('aria-pressed','false');
+    b.addEventListener('click', function(){ show(j, b); });
+    box.appendChild(b);
+  });
+  show(JOBS[0], box.children[0]);
+})();
+</script>
+
+</body>
+</html>
