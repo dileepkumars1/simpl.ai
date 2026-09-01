@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="Module 6.1 — ten lines, five parts, and the annotated code is the diagram.">
+<meta name="description" content="Module 6.1 — the real path one message takes, from your screen to a reply and back.">
 <meta name="color-scheme" content="dark">
 <style>:root{color-scheme:dark}html{background:#100e1a}</style>
-<title>The Assembly Bench</title>
+<title>One Request, Start To Finish</title>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;600&family=Manrope:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap">
 <style>:root{
@@ -24,12 +24,7 @@
   --wrap:1080px;
 }
 *,*::before,*::after{box-sizing:border-box}
-body{
-  margin:0; background:var(--ground); color:var(--ink);
-  font-family:var(--body); font-size:clamp(15px,.55vw + 13.6px,17px);
-  line-height:1.65; -webkit-font-smoothing:antialiased;
-  overflow-x:hidden;
-}
+body{margin:0; background:var(--ground); color:var(--ink); font-family:var(--body); font-size:clamp(15px,.55vw + 13.6px,17px); line-height:1.65; -webkit-font-smoothing:antialiased; overflow-x:hidden}
 h1,h2,h3{font-family:var(--display); font-weight:600; line-height:1.12; text-wrap:balance; margin:0}
 h1{font-size:clamp(30px,5.2vw,52px); letter-spacing:-.02em}
 h2{font-size:clamp(21px,2.7vw,30px); letter-spacing:-.01em}
@@ -52,94 +47,48 @@ svg{max-width:100%; height:auto; display:block}
 .scroll-x{overflow-x:auto; -webkit-overflow-scrolling:touch}
 .card{background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); padding:var(--s5)}
 .tag{font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-faint)}
-/* site header / footer */
 .topbar{display:flex; flex-wrap:wrap; align-items:baseline; gap:var(--s3) var(--s4); padding-block:var(--s5) 0}
 .topbar .num{font-family:var(--mono); font-size:11px; letter-spacing:.16em; color:var(--violet)}
 .foot{padding-block:var(--s6); border-top:1px solid var(--line-soft); color:var(--ink-faint); font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase}
-/* controls */
 button{font-family:inherit; font-size:inherit; color:inherit}
-.btn{
-  display:inline-flex; align-items:center; justify-content:center; gap:var(--s2);
-  min-height:44px; padding:0 var(--s4); border-radius:999px;
-  background:var(--surface-2); border:1px solid var(--line); color:var(--ink);
-  font-family:var(--mono); font-size:12.5px; letter-spacing:.04em;
-  cursor:pointer; transition:background .18s, border-color .18s, color .18s;
-}
+.btn{display:inline-flex; align-items:center; justify-content:center; gap:var(--s2); min-height:44px; padding:0 var(--s4); border-radius:999px; background:var(--surface-2); border:1px solid var(--line); color:var(--ink); font-family:var(--mono); font-size:12.5px; letter-spacing:.04em; cursor:pointer; transition:background .18s, border-color .18s, color .18s}
 .btn:hover{background:#262046; border-color:#3a3160}
 .btn[aria-pressed="true"], .btn.on{background:var(--violet-soft); border-color:var(--violet); color:#d9c9ff}
 .btn:focus-visible, [tabindex]:focus-visible, input:focus-visible{outline:2px solid var(--teal); outline-offset:3px}
 .controls{display:flex; flex-wrap:wrap; gap:var(--s3); align-items:center}
-input[type="text"]{
-  min-height:44px; width:100%; padding:0 var(--s4); border-radius:999px;
-  background:var(--ground-2); border:1px solid var(--line); color:var(--ink);
-  font-family:var(--body); font-size:16px;
-}
-input[type="range"]{ -webkit-appearance:none; appearance:none; width:100%; height:44px; background:transparent; cursor:pointer }
-input[type="range"]::-webkit-slider-runnable-track{height:4px; border-radius:2px; background:linear-gradient(90deg,var(--teal),var(--violet),var(--coral))}
-input[type="range"]::-moz-range-track{height:4px; border-radius:2px; background:linear-gradient(90deg,var(--teal),var(--violet),var(--coral))}
-input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none; width:22px; height:22px; margin-top:-9px; border-radius:50%; background:var(--ink); border:3px solid var(--ground)}
-input[type="range"]::-moz-range-thumb{width:22px; height:22px; border-radius:50%; background:var(--ink); border:3px solid var(--ground); border-width:3px}
 .sr{position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0}
-@media (prefers-reduced-motion: reduce){
-  *,*::before,*::after{animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important}
-}
-/* mechanism strip — a concept gets a drawing, not a paragraph */
-.mech{display:grid; gap:var(--s5)}
-@media (min-width:720px){ .mech.n2{grid-template-columns:repeat(2,1fr)} }
-@media (min-width:820px){ .mech.n3{grid-template-columns:repeat(3,1fr)} }
-.mech figure{display:flex; flex-direction:column; gap:var(--s3); min-width:0}
-.mech .art{
-  background:var(--ground-2); border:1px solid var(--line-soft); border-radius:var(--r-md);
-  padding:var(--s4); color:var(--ink-faint);
-}
-.mech .art svg{width:100%; height:auto}
-.mech .lab{font-family:var(--mono); font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:var(--violet)}
-.mech figcaption{font-size:14px; line-height:1.55; color:var(--ink-dim); margin-top:0}
-.mech figcaption b{color:var(--ink); font-weight:500; display:block; font-size:15px; margin-bottom:2px}
+@media (prefers-reduced-motion: reduce){ *,*::before,*::after{animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important} }
 .wide-art{background:var(--ground-2); border:1px solid var(--line-soft); border-radius:var(--r-md); padding:var(--s5); color:var(--ink-faint)}
 .wide-art svg{width:100%; height:auto}
-</style>
-<style>
-.rig{background:linear-gradient(165deg,#151125,#0c0a16); border:1px solid var(--line); border-radius:var(--r-lg); padding:var(--s5); display:flex; flex-direction:column; gap:var(--s5)}
-.bench{position:relative; display:grid; gap:var(--s5)}
-@media (min-width:900px){ .bench{grid-template-columns:216px minmax(0,1fr); gap:var(--s7)} }
-#leads{position:absolute; inset:0; width:100%; height:100%; pointer-events:none; z-index:0}
-.parts{position:relative; z-index:1; display:flex; flex-direction:column; gap:var(--s2)}
-.part{display:grid; grid-template-columns:26px minmax(0,1fr); gap:var(--s3); align-items:center; min-height:48px;
-      padding:var(--s3); border-radius:var(--r-md); border:1px solid var(--line); background:var(--surface);
-      cursor:pointer; text-align:left; color:inherit; font:inherit; transition:border-color .2s, background .2s}
-.part .num{width:26px; height:26px; border-radius:50%; border:1.5px solid var(--line); display:flex; align-items:center; justify-content:center;
-           font-family:var(--mono); font-size:11px; color:var(--ink-faint)}
-.part .nm{font-size:14px; line-height:1.35}
-.part[aria-pressed="true"]{border-color:var(--violet); background:rgba(155,107,255,.1)}
-.part[aria-pressed="true"] .num{border-color:var(--violet); color:#d3bcff}
-.part:focus-visible{outline:2px solid var(--teal); outline-offset:2px}
-.codewrap{position:relative; z-index:1; background:#0b0913; border:1px solid var(--line); border-radius:var(--r-md); padding:var(--s4) var(--s3); overflow-x:auto}
-pre{margin:0; font-family:var(--mono); font-size:12.5px; line-height:1.85}
-.cl{display:block; padding:0 var(--s3); border-left:2px solid transparent; white-space:pre; transition:background .2s, border-color .2s}
-.cl.hi{background:rgba(155,107,255,.12); border-left-color:var(--violet)}
-.cl .kw{color:#c9a6ff} .cl .st{color:#8ff0dd} .cl .cm{color:#5f5880} .cl .fn{color:#ECE9F5}
-.explain{border:1px solid rgba(155,107,255,.4); background:rgba(155,107,255,.07); border-radius:var(--r-md); padding:var(--s4);
-         display:flex; flex-direction:column; gap:var(--s2); min-height:96px}
-.explain .k{font-family:var(--mono); font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--violet)}
-.explain .t{font-size:15px; line-height:1.6}
-.trace{display:flex; flex-direction:column; gap:var(--s2)}
-.tr{display:grid; grid-template-columns:70px minmax(0,1fr); gap:var(--s3); align-items:baseline; padding:9px var(--s3);
-    border-radius:var(--r-sm); border:1px solid var(--line-soft); background:var(--ground-2); opacity:.25; transition:opacity .3s}
-.tr.on{opacity:1}
-.tr .w{font-family:var(--mono); font-size:9.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-faint)}
-.tr .t{font-size:13.5px; line-height:1.5; min-width:0}
-.tr.out{border-color:rgba(69,224,196,.4)} .tr.out .w{color:var(--teal)}
-.tr.wire{border-color:rgba(155,107,255,.4)} .tr.wire .w{color:var(--violet)} .tr.wire .t{font-family:var(--mono); font-size:12px; color:#d3bcff}
-.fixbox{background:#0b0913; border:1px solid rgba(69,224,196,.4); border-radius:var(--r-md); padding:var(--s4) var(--s3); overflow-x:auto}
-.mech .art{color:var(--ink-faint)}
 .sowhat{font-family:var(--display); font-size:clamp(19px,2.4vw,27px); line-height:1.35; letter-spacing:-.01em; max-width:28ch}
 .sowhat em{font-style:normal; color:var(--violet)}
 </style>
-</head>
-<body>
-
-
+<style>
+.line{display:flex; gap:0; overflow-x:auto; padding-bottom:var(--s2); -webkit-overflow-scrolling:touch}
+.station{flex:0 0 auto; display:flex; align-items:center}
+.station .node{
+  min-width:120px; min-height:64px; border-radius:var(--r-md); border:1px solid var(--line); background:var(--surface-2);
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; padding:var(--s3);
+  font-family:var(--mono); font-size:11px; text-align:center; cursor:pointer; transition:border-color .2s, background .2s;
+}
+.station .node .n{font-size:9.5px; letter-spacing:.12em; color:var(--ink-faint)}
+.station .node[aria-pressed="true"]{border-color:var(--violet); background:var(--violet-soft); color:#d9c9ff}
+.station .node.extra{border-style:dashed; border-color:var(--teal)}
+.station .arrow{width:24px; height:2px; background:var(--line-soft); flex:0 0 24px}
+.detail{border:1px solid var(--line); border-radius:var(--r-lg); background:var(--surface); padding:var(--s5); display:flex; flex-direction:column; gap:var(--s4)}
+.io{display:grid; gap:var(--s4)}
+@media (min-width:640px){ .io{grid-template-columns:1fr 1fr} }
+.io div{background:var(--ground-2); border:1px solid var(--line-soft); border-radius:var(--r-md); padding:var(--s4)}
+.io .k{font-family:var(--mono); font-size:10px; letter-spacing:.14em; text-transform:uppercase; display:block; margin-bottom:6px}
+.io .in .k{color:var(--teal)} .io .out .k{color:var(--violet)}
+.turnbar{display:flex; flex-direction:column; gap:var(--s2)}
+.turnbar .lab{font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-faint)}
+.tb{display:flex; height:28px; border-radius:6px; overflow:hidden; border:1px solid var(--line-soft)}
+.tb .fresh{background:var(--violet)}
+.tb .cached{background:var(--surface-2); position:relative}
+.tb .cached::after{content:'reused from cache'; position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-family:var(--mono); font-size:9.5px; color:var(--ink-faint); white-space:nowrap; overflow:hidden}
+.tb .fresh::after{content:'fresh'; display:flex; align-items:center; justify-content:center; height:100%; font-family:var(--mono); font-size:9.5px; color:#0e0a1c; white-space:nowrap; overflow:hidden}
+</style>
 <style>
 .pagenav{display:flex; flex-wrap:wrap; gap:var(--s4); justify-content:space-between; align-items:center; padding-block:var(--s6); border-top:1px solid var(--line-soft)}
 .pnbtn{display:flex; flex-direction:column; gap:2px; min-height:44px; justify-content:center; padding:var(--s2) var(--s4); border-radius:var(--r-md); text-decoration:none; color:inherit; transition:background .18s; max-width:280px}
@@ -150,210 +99,118 @@ pre{margin:0; font-family:var(--mono); font-size:12.5px; line-height:1.85}
 .pnt{font-size:14px; color:var(--ink-dim)}
 @media (max-width:640px){ .pagenav{flex-direction:column; align-items:stretch} .pnbtn{max-width:none} .pnbtn.hub{order:-1; justify-content:center} .pnbtn.next{text-align:left; align-items:flex-start; margin-left:0} }
 </style>
+</head>
+<body>
+
 <header class="wrap topbar">
-  <span class="num">MODULE 06 — BUILD SOMETHING · 19</span>
-  <span class="tag" style="color:var(--coral); border:1px solid rgba(255,111,143,.45); border-radius:999px; padding:3px 9px">BUILDER</span>
+  <span class="num">MODULE 06 — UNDER THE HOOD · 19</span>
+  <span class="tag dim">AI Concepts</span>
 </header>
 
 <section class="wrap stack g6">
   <div class="stack g4">
-    <h1>Create your first AI app</h1>
-    <p class="lede">Ten lines, five parts. You have seen every one of them already — this page only shows where each sits in the file.</p>
+    <h1>One request, start to finish</h1>
+    <p class="lede">Every message you send takes the same real path, whether it's a chat app or something you'd build. Toggle retrieval on, and watch the path grow by one honest step.</p>
   </div>
 
-  <div class="rig">
-    <div class="bench" id="bench">
-      <svg id="leads" aria-hidden="true"><g id="leadG"></g></svg>
-      <div class="parts" id="parts"></div>
-      <div class="codewrap">
-        <pre id="code" aria-label="A ten-line Python program that calls a model and prints the reply."></pre>
-      </div>
-    </div>
-    <div class="explain">
-      <span class="k" id="eK"></span>
-      <span class="t" id="eT"></span>
-    </div>
+  <div class="controls" role="group" aria-label="Pipeline mode">
+    <button class="btn" id="mPlain" type="button" aria-pressed="true">Plain chat</button>
+    <button class="btn" id="mRag" type="button" aria-pressed="false">With retrieval (RAG)</button>
   </div>
-  <p class="dim" style="font-size:13.5px">Tap a part to light the line that implements it. The library shown is one of several — the five parts are the same whichever you use.</p>
-</section>
 
-<section class="wrap stack g5">
-  <p class="eyebrow">What happens when you run it</p>
-  <h2>One trip, and back</h2>
-  <div class="rig">
-    <div class="trace" id="trace"></div>
-    <div class="controls">
-      <button class="btn" id="run" type="button">Run it</button>
-      <button class="btn" id="reset" type="button">Reset</button>
+  <div class="line" id="pipe" role="group" aria-label="Request pipeline"></div>
+
+  <div class="detail">
+    <p class="eyebrow" id="stName">Station</p>
+    <div class="io">
+      <div class="in"><span class="k">In</span><span id="ioIn"></span></div>
+      <div class="out"><span class="k">Out</span><span id="ioOut"></span></div>
     </div>
+    <p class="dim" id="stNote" style="font-size:14px"></p>
   </div>
 </section>
 
 <section class="wrap stack g5">
-  <p class="eyebrow">The bug you just shipped</p>
-  <h2>It forgets everything, every turn</h2>
-  <div class="wide-art">
-    <svg viewBox="0 0 900 210" role="img" aria-label="Because the messages list is rebuilt from the newest question each turn, the desk sent to the model contains only that question. The previous exchange was never included, so the model has no way to know it happened.">
-      <text x="0" y="18" font-family="JetBrains Mono, monospace" font-size="10" letter-spacing="1.4" fill="currentColor">WHAT YOU SENT, TURN BY TURN</text>
-      <g font-family="JetBrains Mono, monospace" font-size="11">
-        <rect x="0" y="34" width="250" height="28" rx="5" fill="#45e0c4" fill-opacity=".2" stroke="#45e0c4" stroke-opacity=".5"/>
-        <text x="14" y="53" fill="#8ff0dd">“My name is Dileep.”</text>
-        <text x="266" y="53" fill="currentColor">turn 1 — one message on the desk</text>
-        <rect x="0" y="76" width="250" height="28" rx="5" fill="#45e0c4" fill-opacity=".2" stroke="#45e0c4" stroke-opacity=".5"/>
-        <text x="14" y="95" fill="#8ff0dd">“What is my name?”</text>
-        <text x="266" y="95" fill="#ffb3c4">turn 2 — one message on the desk, and it is not the first one</text>
-      </g>
-      <line x1="0" y1="126" x2="900" y2="126" stroke="currentColor" stroke-opacity=".2"/>
-      <text x="0" y="152" font-family="Manrope, sans-serif" font-size="14" fill="#ECE9F5">The model is not being forgetful. Turn 1 was never sent to it.</text>
-      <text x="0" y="180" font-family="Manrope, sans-serif" font-size="13.5" fill="currentColor">Page 4 said the desk is rebuilt every turn — this is the line of code that rebuilds it.</text>
-    </svg>
+  <p class="eyebrow">Why the follow-up feels instant</p>
+  <h2>The second message doesn't start from zero</h2>
+  <p class="dim">Reprocessing your whole conversation on every single turn would be slow and wasteful — a <b>KV cache</b> just keeps what it already worked out, and only does fresh work on what's new.</p>
+
+  <div class="stack g4">
+    <div class="turnbar">
+      <span class="lab">Turn 1 — "What's the capital of France?"</span>
+      <div class="tb"><span class="fresh" style="width:100%"></span></div>
+    </div>
+    <div class="turnbar">
+      <span class="lab">Turn 2 — "And its population?"</span>
+      <div class="tb"><span class="cached" style="width:78%"></span><span class="fresh" style="width:22%"></span></div>
+    </div>
   </div>
-  <div class="fixbox">
-    <pre style="font-size:12.5px"><span class="cl"><span class="cm"># keep one list and append to it, instead of building a new one each turn</span></span>
-<span class="cl">history = []</span>
-<span class="cl">history.append({<span class="st">"role"</span>: <span class="st">"user"</span>, <span class="st">"content"</span>: question})</span>
-<span class="cl">... messages=history ...</span>
-<span class="cl">history.append({<span class="st">"role"</span>: <span class="st">"assistant"</span>, <span class="st">"content"</span>: answer})</span></pre>
-  </div>
-  <p class="dim">That list is the desk. Everything in module 4 — memory, agents, retrieval — is a decision about what goes in it.</p>
+  <p class="dim" style="font-size:13.5px">Turn 2 still has the whole conversation on <a href="04-context-window.html" title="The context window" style="color:var(--violet); text-decoration:underline; text-decoration-style:dotted; text-underline-offset:3px">the desk</a> — it just doesn't redo the part it already processed.</p>
 </section>
 
 <section class="wrap stack g4">
   <p class="eyebrow">So what</p>
-  <p class="sowhat">There is no AI in your app. There is <em>a key, a string, an HTTP call, and a list you decide what to put in.</em></p>
+  <p class="sowhat">"Sending a message to AI" is never one step — it's a short pipeline, and <em>retrieval is just one more station on it.</em></p>
 </section>
 
 <nav class="wrap pagenav" aria-label="Series navigation">
-  <a class="pnbtn prev" href="18-limits.html"><span class="pnk">← Prev</span><span class="pnt">What AI still can’t do</span></a>
+  <a class="pnbtn prev" href="18-limits.html"><span class="pnk">← Prev</span><span class="pnt">What AI still can't do</span></a>
   <a class="pnbtn hub" href="00-atlas.html">All topics</a>
-  <a class="pnbtn next" href="20-local.html"><span class="pnk">Next →</span><span class="pnt">Running AI on your own computer</span></a>
+  <a class="pnbtn next" href="20-local.html"><span class="pnk">Next →</span><span class="pnt">Finding the right piece, twice</span></a>
 </nav>
 <footer class="wrap foot">Part of the AI Concepts series</footer>
 
 <script>
 (function(){
-  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var CODE = [
-    { h:'<span class="kw">import</span> os', p:null },
-    { h:'<span class="kw">from</span> openai <span class="kw">import</span> OpenAI', p:null },
-    { h:'', p:null },
-    { h:'client = <span class="fn">OpenAI</span>(api_key=os.environ[<span class="st">"API_KEY"</span>])', p:1 },
-    { h:'MODEL = <span class="st">"..."</span>  <span class="cm"># whichever model — see page 25</span>', p:1 },
-    { h:'', p:null },
-    { h:'<span class="kw">while</span> <span class="kw">True</span>:', p:5 },
-    { h:'    question = <span class="fn">input</span>(<span class="st">"You: "</span>)', p:2 },
-    { h:'    reply = client.chat.completions.<span class="fn">create</span>(', p:3 },
-    { h:'        model=MODEL,', p:3 },
-    { h:'        messages=[{<span class="st">"role"</span>: <span class="st">"user"</span>, <span class="st">"content"</span>: question}],', p:3 },
-    { h:'    )', p:3 },
-    { h:'    <span class="fn">print</span>(reply.choices[<span class="st">0</span>].message.content)', p:4 }
+  var PLAIN = [
+    { t:'Your message', in:'Whatever you type.', out:'Plain text, nothing added yet.', note:'The starting point — no different from typing into any text box.' },
+    { t:'API call', in:'Your message, packaged as data.', out:'A request sent over the internet to the model’s provider.', note:'An API is just an address a program can send requests to and get answers back — the same idea as the window on <a href="22-open-closed.html" title="Open vs. closed models" style="color:var(--violet); text-decoration:underline; text-decoration-style:dotted; text-underline-offset:3px">page 22</a>.' },
+    { t:'The model', in:'Your message, on the desk.', out:'A reply, generated one token at a time.', note:'This is the next-word machine from page 3, doing its one job.' },
+    { t:'Response', in:'The model’s generated tokens.', out:'Text on your screen.', note:'What you actually see — the pipeline’s only visible part.' }
   ];
-  var PARTS = [
-    { n:1, nm:'The key', k:'Part 1 · the key',
-      t:'Proof that the bill is yours. It never goes in the file itself — it lives in an environment variable so it does not end up in your repository.' },
-    { n:2, nm:'The prompt', k:'Part 2 · the prompt',
-      t:'A plain string. Everything on <a href="07-prompting-101.html" title="Prompting 101" style="color:var(--violet); text-decoration:underline; text-decoration-style:dotted; text-underline-offset:3px">page 7</a> about context, format and examples is about what you put in this variable.' },
-    { n:3, nm:'The model call', k:'Part 3 · the model call',
-      t:'An ordinary HTTP request over the internet. Your text goes out, tokens come back — the whole of module 1 happens on somebody else’s computer during this line.' },
-    { n:4, nm:'The response', k:'Part 4 · the response',
-      t:'Nested data, and the text is one field inside it. The rest carries token counts and the stop reason, which is how you check cost and truncation.' },
-    { n:5, nm:'The tiny UI', k:'Part 5 · the tiny UI',
-      t:'A loop, a prompt to type at, and a print. Every chat interface you have used is this, wearing better clothes.' }
+  var RAG = [
+    PLAIN[0],
+    { t:'Search your documents', in:'Your message, turned into a point in space.', out:'A handful of the closest-matching chunks.', note:'The same nearest-point lookup as <a href="09-rag.html" title="Look it up before you answer" style="color:var(--violet); text-decoration:underline; text-decoration-style:dotted; text-underline-offset:3px">page 9</a>’s map — this is the "vector store" part of "vector store + RAG."', extra:true },
+    PLAIN[1],
+    PLAIN[2],
+    PLAIN[3]
   ];
+  var pipe = document.getElementById('pipe');
+  var stName = document.getElementById('stName'), ioIn = document.getElementById('ioIn'), ioOut = document.getElementById('ioOut'), stNote = document.getElementById('stNote');
+  var mPlain = document.getElementById('mPlain'), mRag = document.getElementById('mRag');
 
-  var partsEl = document.getElementById('parts'), codeEl = document.getElementById('code');
-  var eK = document.getElementById('eK'), eT = document.getElementById('eT');
-  var leads = document.getElementById('leads'), leadG = document.getElementById('leadG');
-  var bench = document.getElementById('bench');
-  var active = 3, lineEls = [], partEls = [];
-
-  CODE.forEach(function(c, i){
-    var s = document.createElement('span');
-    s.className = 'cl'; s.innerHTML = c.h || ' ';
-    s.dataset.p = c.p == null ? '' : c.p;
-    codeEl.appendChild(s);
-    lineEls.push(s);
-  });
-
-  PARTS.forEach(function(p){
-    var b = document.createElement('button');
-    b.className = 'part'; b.type = 'button'; b.setAttribute('aria-pressed','false');
-    b.innerHTML = '<span class="num">' + p.n + '</span><span class="nm"></span>';
-    b.querySelector('.nm').textContent = p.nm;
-    b.addEventListener('click', function(){ select(p.n); });
-    partsEl.appendChild(b);
-    partEls.push(b);
-  });
-
-  function select(n){
-    active = n;
-    partEls.forEach(function(b, i){ b.setAttribute('aria-pressed', PARTS[i].n === n); });
-    lineEls.forEach(function(s){ s.classList.toggle('hi', s.dataset.p === String(n)); });
-    var p = PARTS.filter(function(x){ return x.n === n; })[0];
-    eK.textContent = p.k; eT.innerHTML = p.t;
-    requestAnimationFrame(drawLead);
+  function show(s){
+    stName.textContent = s.t; ioIn.innerHTML = s.in; ioOut.innerHTML = s.out; stNote.innerHTML = s.note;
   }
 
-  function drawLead(){
-    leadG.textContent = '';
-    var box = bench.getBoundingClientRect();
-    leads.setAttribute('viewBox', '0 0 ' + box.width + ' ' + box.height);
-    var pi = PARTS.map(function(x){ return x.n; }).indexOf(active);
-    if(pi < 0) return;
-    var pr = partEls[pi].getBoundingClientRect();
-    var target = lineEls.filter(function(s){ return s.dataset.p === String(active); })[0];
-    if(!target) return;
-    var tr = target.getBoundingClientRect();
-    if(box.width < 640) return; // stacked on narrow screens; the highlight carries it
-    var x1 = pr.right - box.left, y1 = pr.top - box.top + pr.height / 2;
-    var x2 = tr.left - box.left - 4, y2 = tr.top - box.top + tr.height / 2;
-    var mx = (x1 + x2) / 2;
-    var path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    path.setAttribute('d', 'M' + x1 + ' ' + y1 + ' C ' + mx + ' ' + y1 + ', ' + mx + ' ' + y2 + ', ' + x2 + ' ' + y2);
-    path.setAttribute('fill', 'none');
-    path.setAttribute('stroke', '#9b6bff');
-    path.setAttribute('stroke-width', '1.5');
-    leadG.appendChild(path);
-    var dot = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-    dot.setAttribute('cx', x2); dot.setAttribute('cy', y2); dot.setAttribute('r', 3.5);
-    dot.setAttribute('fill', '#9b6bff');
-    leadG.appendChild(dot);
+  function render(list){
+    pipe.textContent = '';
+    list.forEach(function(s, i){
+      var st = document.createElement('div'); st.className = 'station';
+      var node = document.createElement('button'); node.type = 'button'; node.className = 'node' + (s.extra ? ' extra' : '');
+      node.setAttribute('aria-pressed', i === 0 ? 'true' : 'false');
+      node.innerHTML = '<span class="n">' + (i+1) + '</span>' + s.t;
+      node.addEventListener('click', function(){
+        Array.prototype.forEach.call(pipe.querySelectorAll('.node'), function(n){ n.setAttribute('aria-pressed', n === node); });
+        show(s);
+      });
+      st.appendChild(node);
+      if(i < list.length - 1){ var ar = document.createElement('div'); ar.className = 'arrow'; st.appendChild(ar); }
+      pipe.appendChild(st);
+    });
+    show(list[0]);
   }
 
-  window.addEventListener('resize', function(){ requestAnimationFrame(drawLead); });
-  select(3);
+  mPlain.addEventListener('click', function(){
+    mPlain.setAttribute('aria-pressed','true'); mRag.setAttribute('aria-pressed','false');
+    render(PLAIN);
+  });
+  mRag.addEventListener('click', function(){
+    mRag.setAttribute('aria-pressed','true'); mPlain.setAttribute('aria-pressed','false');
+    render(RAG);
+  });
 
-  // ---- the run trace ----
-  var TRACE = [
-    { w:'you', c:'', t:'You: how do I boil an egg?' },
-    { w:'part 2', c:'wire', t:'question = "how do I boil an egg?"' },
-    { w:'part 3', c:'wire', t:'POST /chat/completions  →  { model, messages }' },
-    { w:'over there', c:'', t:'Their machine runs the next-word machine from <a href="03-what-is-an-llm.html" title="What is an LLM?" style="color:var(--violet); text-decoration:underline; text-decoration-style:dotted; text-underline-offset:3px">page 3</a>, a few hundred times.' },
-    { w:'part 4', c:'wire', t:'{ choices: [ { message: { content: "Bring water to…" } } ], usage: { tokens: 214 } }' },
-    { w:'part 5', c:'out', t:'Bring water to a rolling boil, lower the egg in, and set a timer…' },
-    { w:'part 5', c:'', t:'…and the loop comes round to input() again, with an empty desk.' }
-  ];
-  var traceEl = document.getElementById('trace'), rows = [], ti = 0, timer = null;
-  TRACE.forEach(function(x){
-    var r = document.createElement('div');
-    r.className = 'tr ' + (x.c || '');
-    r.innerHTML = '<span class="w"></span><span class="t"></span>';
-    r.querySelector('.w').textContent = x.w;
-    r.querySelector('.t').innerHTML = x.t;
-    traceEl.appendChild(r); rows.push(r);
-  });
-  function stop(){ if(timer){ clearInterval(timer); timer = null; } document.getElementById('run').textContent = 'Run it'; }
-  document.getElementById('run').addEventListener('click', function(){
-    if(timer){ stop(); return; }
-    this.textContent = 'Pause';
-    timer = setInterval(function(){
-      if(ti >= rows.length){ stop(); return; }
-      rows[ti].classList.add('on'); ti++;
-    }, reduce ? 900 : 620);
-  });
-  document.getElementById('reset').addEventListener('click', function(){
-    stop(); ti = 0; rows.forEach(function(r){ r.classList.remove('on'); });
-  });
+  render(PLAIN);
 })();
 </script>
 

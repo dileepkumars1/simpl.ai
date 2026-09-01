@@ -158,6 +158,7 @@ input[type="range"]::-moz-range-thumb{width:22px; height:22px; border-radius:50%
   <p class="eyebrow">Topic Atlas</p>
   <h1>Every page, in the order it makes sense</h1>
   <p class="lede">One node per idea. Each is a standalone page built around a single mechanism you can operate yourself.</p>
+  <p class="dim" style="font-size:14.5px; max-width:60ch">New here? Start with the first collection below, <b>AI Concepts</b> — it teaches how AI actually works, no coding or math required, for anyone who uses AI and wants to understand what's really happening under the hood. Open page 1 and read in order; each page builds on the one before it.</p>
 </header>
 
 <div class="wrap">
@@ -177,7 +178,7 @@ input[type="range"]::-moz-range-thumb{width:22px; height:22px; border-radius:50%
   <div class="legend">
     <i id="lgBuilt"><span class="sw built"></span>built — click to open</i>
     <i id="lgPlanned"><span class="sw soon"></span>planned</i>
-    <i><span class="sw" style="border-color:rgba(255,111,143,.5)"></span>builder track — has code</i>
+    <i id="lgBuilder"><span class="sw" style="border-color:rgba(255,111,143,.5)"></span>builder track — has code</i>
   </div>
 </main>
 
@@ -236,7 +237,9 @@ input[type="range"]::-moz-range-thumb{width:22px; height:22px; border-radius:50%
     dial2:'<circle cx="20" cy="20" r="14" fill="none" stroke="currentColor" stroke-width="1.6"/><line x1="20" y1="20" x2="20" y2="9" stroke="currentColor" stroke-width="2.2" transform="rotate(35 20 20)"/>',
     meter:'<rect x="5" y="24" width="6" height="10" rx="1.5" fill="currentColor" opacity=".4"/><rect x="14" y="16" width="6" height="18" rx="1.5" fill="currentColor" opacity=".6"/><rect x="23" y="8" width="6" height="26" rx="1.5" fill="currentColor" opacity=".85"/><rect x="32" y="18" width="6" height="16" rx="1.5" fill="currentColor" opacity=".55"/>',
     cuts: '<rect x="4" y="24" width="26" height="4" rx="2" fill="currentColor"/><rect x="4" y="16" width="18" height="4" rx="2" fill="currentColor" opacity=".7"/><rect x="4" y="8" width="10" height="4" rx="2" fill="currentColor" opacity=".45"/><line x1="24" y1="4" x2="24" y2="34" stroke="currentColor" stroke-width="1.4" stroke-dasharray="2 2" opacity=".8"/>',
-    report:'<rect x="5" y="6" width="30" height="28" rx="3" fill="none" stroke="currentColor" stroke-width="1.4"/><line x1="10" y1="14" x2="26" y2="14" stroke="currentColor" stroke-width="1.4" opacity=".6"/><line x1="10" y1="21" x2="22" y2="21" stroke="currentColor" stroke-width="1.4" opacity=".6"/><g stroke="#ff6f8f" stroke-width="1.6" stroke-linecap="round"><line x1="27" y1="24" x2="27" y2="30"/><line x1="24" y1="25.5" x2="30" y2="28.5"/><line x1="30" y1="25.5" x2="24" y2="28.5"/></g>'
+    report:'<rect x="5" y="6" width="30" height="28" rx="3" fill="none" stroke="currentColor" stroke-width="1.4"/><line x1="10" y1="14" x2="26" y2="14" stroke="currentColor" stroke-width="1.4" opacity=".6"/><line x1="10" y1="21" x2="22" y2="21" stroke="currentColor" stroke-width="1.4" opacity=".6"/><g stroke="#ff6f8f" stroke-width="1.6" stroke-linecap="round"><line x1="27" y1="24" x2="27" y2="30"/><line x1="24" y1="25.5" x2="30" y2="28.5"/><line x1="30" y1="25.5" x2="24" y2="28.5"/></g>',
+    pipe: '<circle cx="6" cy="20" r="4" fill="currentColor" opacity=".7"/><path d="M12 20 h10" stroke="currentColor" stroke-width="1.4"/><rect x="24" y="14" width="12" height="12" rx="3" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="30" cy="20" r="3" fill="currentColor"/>',
+    rerank:'<rect x="4" y="10" width="24" height="6" rx="2" fill="currentColor" opacity=".4"/><rect x="4" y="24" width="24" height="6" rx="2" fill="currentColor" opacity=".85"/><g stroke="currentColor" stroke-width="1.4" fill="none"><path d="M34 27 v-15"/><path d="M31 15 l3 -3 l3 3"/></g>'
   };
 
   // ---- the only thing that changes when a collection is added ----
@@ -245,10 +248,10 @@ input[type="range"]::-moz-range-thumb{width:22px; height:22px; border-radius:50%
       id:'ai-concepts',
       title:'AI Concepts',
       blurb:'How AI actually works, one mechanism per page.',
-      tracks:[{ id:'concept', label:'Concept' }, { id:'builder', label:'Builder' }],
+      tracks:[{ id:'concept', label:'Concept' }],
       modules:[
         { n:1, title:'Foundations', pages:[
-          { n:1,  t:'What is AI, really?',        m:'knn',   id:'e798f6bb-e28b-441d-86e3-0bfe7b467733' },
+          { n:1,  t:'What is AI, really?',        m:'knn',   id:'63d9aade-ebcc-4e60-91aa-ef4044c9455a' },
           { n:2,  t:'How AI reads language',      m:'chop',  id:'fef5fa5b-e9a0-4682-93d0-69422890ff1a' },
           { n:3,  t:'What is an LLM?',            m:'bars',  id:'195c1037-fc04-419c-a066-ccaa2b3f2b3e' },
           { n:4,  t:'The context window',         m:'desk',  id:'f2b5cfc3-777a-4e59-b9bd-75616eb83c23' }]},
@@ -260,20 +263,20 @@ input[type="range"]::-moz-range-thumb{width:22px; height:22px; border-radius:50%
           { n:9,  t:'RAG & vector databases',     m:'map',   id:'9844780f-9696-4eaf-8aca-66517d7e0b08' },
           { n:10, t:'Fine-tuning vs. RAG vs. prompting', m:'doors', id:'0a8147c6-f8dd-4963-b207-b88bd98617c0' }]},
         { n:3, title:'Beyond text', pages:[
-          { n:11, t:'Multimodal AI',              m:'doors4', id:'6a7cb275-8415-4a9d-8deb-8b2ca66f9fc5' },
+          { n:11, t:'Multimodal AI',              m:'doors4', id:'14712b89-f1d6-45d5-a960-abc0556c85cd' },
           { n:12, t:'Tool use',                   m:'tool',  id:'1129c6c3-3c36-49a5-a93f-d6e26ada75b7' }]},
         { n:4, title:'Agentic AI', pages:[
           { n:13, t:'What makes AI “agentic”',    m:'ring',  id:'cc25dbaa-a245-470e-b3a1-aec44b516be9' },
           { n:14, t:'Memory in AI agents',        m:'mem',   id:'3678abaf-78e8-451e-9bce-cfa770d518b2' },
           { n:15, t:'Multi-agent systems',        m:'org',   id:'dc75fc35-9e8f-4016-87a6-d861820999a4' },
-          { n:16, t:'Guardrails & human-in-the-loop', m:'gate', id:'92630006-f81c-4d5c-8b79-2249d65467d1' },
-          { n:17, t:'Where agents actually work', m:'jobs',  id:'ee5a1f20-b456-476b-8a56-911e00d9570f' }]},
+          { n:16, t:'Guardrails & human-in-the-loop', m:'gate', id:'f6b7bc3d-88c2-4fdf-9d6b-e7ae035c4885' },
+          { n:17, t:'Where agents actually work', m:'jobs',  id:'c41581fe-b42d-4bbd-9f78-b020428883e6' }]},
         { n:5, title:'Reality check', pages:[
-          { n:18, t:'What AI still can’t do',     m:'edge',  id:'c5422266-8b95-40ff-a09c-915a235adcfe' }]},
-        { n:6, title:'Build something', track:'builder', pages:[
-          { n:19, t:'Create your first AI app', m:'bench', id:'bd50469e-61e8-42e6-a515-94247e139e09', track:'builder' },
-          { n:20, t:'Running AI on your own computer', m:'homes', id:'3b75d2a6-669c-4e60-b665-122d2e8ef4a7', track:'builder' },
-          { n:21, t:'Anything on the desk gives orders', m:'poison', id:'19b0ace3-762b-4fbb-b4b2-79c2f2efc621', track:'builder' }]},
+          { n:18, t:'What AI still can’t do',     m:'edge',  id:'2e378ac5-1d8e-42f4-8234-2fb3b2f4f7b8' }]},
+        { n:6, title:'Under the hood', pages:[
+          { n:19, t:'One request, start to finish', m:'pipe', id:'fb9b9a51-dcda-4461-876f-da88fcc15eda' },
+          { n:20, t:'Finding the right piece, twice', m:'rerank', id:'93772d2e-2f0f-454d-b2c8-c4fc3e0123c4' },
+          { n:21, t:'Anything on the desk gives orders', m:'poison', id:'4f0b36f1-b0b4-42b8-b0c2-95c72224ca2f' }]},
         { n:7, title:'The landscape: models and tools', pages:[
           { n:22, t:'Open vs. closed models',            m:'bldg',    id:'9d43fa57-554d-4c63-bd6d-7eecf5dfd652' },
           { n:23, t:'Where your data goes',               m:'trail',   id:'11886f46-0f3e-4c94-9238-b14777326aa6' },
@@ -295,7 +298,11 @@ input[type="range"]::-moz-range-thumb{width:22px; height:22px; border-radius:50%
   var collsEl = document.getElementById('colls'), tracksEl = document.getElementById('tracks');
   var modsEl = document.getElementById('mods'), wires = document.getElementById('wires'), wireG = document.getElementById('wireG');
   var pLabel = document.getElementById('pLabel'), pFill = document.getElementById('pFill');
-  var lgBuilt = document.getElementById('lgBuilt'), lgPlanned = document.getElementById('lgPlanned');
+  var lgBuilt = document.getElementById('lgBuilt'), lgPlanned = document.getElementById('lgPlanned'), lgBuilder = document.getElementById('lgBuilder');
+
+  function hasBuilderPages(c){
+    return c.modules.some(function(m){ return m.pages.some(function(p){ return (p.track || m.track) === 'builder'; }); });
+  }
 
   function countBuilt(c){
     var b = 0, tot = 0;
@@ -390,6 +397,7 @@ input[type="range"]::-moz-range-thumb{width:22px; height:22px; border-radius:50%
     pLabel.parentElement.style.display = complete ? 'none' : '';
     lgBuilt.style.display = complete ? 'none' : '';
     lgPlanned.style.display = complete ? 'none' : '';
+    lgBuilder.style.display = hasBuilderPages(active) ? '' : 'none';
     if(complete) return;
     pLabel.textContent = n.built + ' of ' + n.total + ' built';
     pFill.style.width = (n.built / n.total * 100).toFixed(1) + '%';

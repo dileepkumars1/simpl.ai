@@ -191,7 +191,7 @@ input[type="range"]::-moz-range-thumb{width:22px; height:22px; border-radius:50%
 
 <section class="wrap stack g5">
   <p class="eyebrow">How it works</p>
-  <h2>Three gates and a doorbell</h2>
+  <h2>Four checkpoints, one human</h2>
   <div class="mech n3">
     <figure>
       <div class="art">
@@ -241,6 +241,22 @@ input[type="range"]::-moz-range-thumb{width:22px; height:22px; border-radius:50%
         </svg>
       </div>
       <figcaption><b>The doorbell</b>For irreversible actions the loop stops and a person decides.</figcaption>
+    </figure>
+    <figure>
+      <div class="art">
+        <svg viewBox="0 0 240 112" role="img" aria-label="An output gate inspects the model's reply before it reaches the user, letting most through and blocking anything unsafe or leaked.">
+          <rect x="8" y="42" width="62" height="28" rx="6" fill="#9b6bff" fill-opacity=".16" stroke="#9b6bff" stroke-opacity=".6"/>
+          <text x="39" y="60" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9.5" fill="#d3bcff">reply</text>
+          <rect x="96" y="24" width="30" height="64" rx="5" fill="#ff6f8f" fill-opacity=".16" stroke="#ff6f8f"/>
+          <line x1="76" y1="56" x2="90" y2="56" stroke="currentColor" stroke-width="1.3"/><polygon points="96,56 90,53 90,59" fill="currentColor"/>
+          <line x1="132" y1="42" x2="164" y2="42" stroke="#45e0c4" stroke-width="1.3"/><polygon points="170,42 164,39 164,45" fill="#45e0c4"/>
+          <g stroke="#ff6f8f" stroke-width="1.6"><line x1="140" y1="64" x2="154" y2="78"/><line x1="154" y1="64" x2="140" y2="78"/></g>
+          <text x="196" y="46" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#8ff0dd">shown to you</text>
+          <text x="196" y="76" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#ffb3c4">blocked</text>
+          <text x="111" y="104" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="currentColor">checks the reply, not the request</text>
+        </svg>
+      </div>
+      <figcaption><b>Output gate</b>Screens the model's own reply — catching a leaked secret or an unsafe answer before you ever see it.</figcaption>
     </figure>
   </div>
 </section>

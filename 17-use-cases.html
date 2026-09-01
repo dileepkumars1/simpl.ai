@@ -234,9 +234,40 @@ input[type="range"]::-moz-range-thumb{width:22px; height:22px; border-radius:50%
   </div>
 </section>
 
+<section class="wrap stack g5">
+  <p class="eyebrow">Not every AI use is a loop</p>
+  <h2>Two shapes, not one</h2>
+  <p class="dim">Everything above runs the ring until a check says stop. Plenty of AI use never loops at all — one prompt, one answer, done.</p>
+  <div class="mech n2">
+    <figure>
+      <div class="art">
+        <svg viewBox="0 0 240 112" role="img" aria-label="A ring shape, looping around, labelled: runs until a check says stop.">
+          <circle cx="120" cy="52" r="34" fill="none" stroke="#9b6bff" stroke-width="6" stroke-dasharray="10 8"/>
+          <circle cx="120" cy="18" r="4" fill="#9b6bff"/>
+          <text x="120" y="100" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="currentColor">runs until a check says stop</text>
+        </svg>
+      </div>
+      <figcaption><b>The ring</b>Coding agent, support triage, research, monitoring, inbox — every job on this page so far.</figcaption>
+    </figure>
+    <figure>
+      <div class="art">
+        <svg viewBox="0 0 240 112" role="img" aria-label="A single straight line: a prompt goes in, the model runs once, an answer comes out. No loop, no check.">
+          <circle cx="20" cy="52" r="6" fill="#45e0c4"/>
+          <line x1="30" y1="52" x2="90" y2="52" stroke="#45e0c4" stroke-width="1.6"/>
+          <rect x="94" y="34" width="52" height="36" rx="6" fill="none" stroke="#45e0c4" stroke-width="1.6"/>
+          <line x1="150" y1="52" x2="210" y2="52" stroke="#45e0c4" stroke-width="1.6"/>
+          <circle cx="216" cy="52" r="6" fill="#45e0c4"/>
+          <text x="120" y="100" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="currentColor">one prompt, one answer, done</text>
+        </svg>
+      </div>
+      <figcaption><b>One straight line</b>Turning a prompt into a picture, translating a sentence, summarising a page — no check, nothing to retry.</figcaption>
+    </figure>
+  </div>
+</section>
+
 <section class="wrap stack g4">
   <p class="eyebrow">So what</p>
-  <p class="sowhat">Nobody built five kinds of agent. They wired the same loop to <em>five different tools, and five different ways of knowing it had finished.</em></p>
+  <p class="sowhat">A loop is for jobs with no fixed endpoint. A single call is for jobs that already have one — <em>knowing which one you're building is the actual design decision.</em></p>
 </section>
 
 <section class="wrap stack g5">
@@ -261,7 +292,7 @@ input[type="range"]::-moz-range-thumb{width:22px; height:22px; border-radius:50%
     {m:'mem', label:'Page 14', text:'A store of sentences someone chose to keep, searched fallibly.'},
     {m:'org', label:'Page 15', text:'One model, roleplaying a meeting, paying for every seat.'},
     {m:'gate', label:'Page 16', text:"Deciding in advance which of its requests you'll honour."},
-    {m:'jobs', label:'Page 17', text:"The same loop, wired to five tools and five ways to know it's done."}
+    {m:'jobs', label:'Page 17', text:"A loop is for jobs with no fixed endpoint; a single call is for jobs that already have one."}
   ];
   var MOTIF = {
     gate: '<rect x="4" y="16" width="10" height="8" rx="2" fill="currentColor" opacity=".6"/><rect x="17" y="8" width="6" height="24" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><rect x="26" y="16" width="10" height="8" rx="2" fill="none" stroke="currentColor" stroke-width="1.4"/>',
@@ -339,11 +370,11 @@ input[type="range"]::-moz-range-thumb{width:22px; height:22px; border-radius:50%
       s:['Sort tonight’s inbox','Read the ticket, find similar past ones','Tag it, route it, draft a reply','Confidence low on this one','Uncertain — hand it to a person'],
       stop:'Queue empty, or confidence below the line.',
       fit:[['y','reversible until sent'],['y','clear hand-off rule'],['n','“right answer” is a judgement']],
-      cap:'Drafting is safe; sending is the irreversible step, which is exactly where <a href="16-guardrails.html" title="Guardrails & human-in-the-loop" style="color:var(--teal); text-decoration:underline; text-decoration-style:dotted; text-underline-offset:3px">page 16</a>’s doorbell goes.' },
+      cap:'Drafting is safe; sending is the irreversible step, which is exactly where <a href="16-guardrails.html" title="Guardrails & human-in-the-loop" style="color:var(--teal); text-decoration:underline; text-decoration-style:dotted; text-underline-offset:3px">page 16</a>’s doorbell goes. "Confidence" here just means a rough score of how sure the model is about its own tag.' },
     { k:'Research assistant',
       s:['Summarise what is known about X','List the sub-questions','Search, open, extract','Two sources disagree','Gap remains — search again'],
       stop:'Every sub-question has a cited source.',
-      fit:[['y','sources are checkable'],['n','no test for “complete”'],['n','confident irrelevance, page 9']],
+      fit:[['y','sources are checkable'],['n','no test for “complete”'],['n','can’t tell when it’s confidently off-topic (<a href="09-rag.html" title="Look it up before you answer" style="color:inherit; text-decoration:underline; text-decoration-style:dotted">page 9</a>)']],
       cap:'The weakest fit: nothing can tell it when the research is finished, so the stopping rule has to be arbitrary.' },
     { k:'Pipeline monitor',
       s:['Keep the nightly job healthy','Watch for a failed run','Read logs, retry, escalate','Retry succeeded at 03:14','Healthy again — go back to watching'],
@@ -406,7 +437,7 @@ input[type="range"]::-moz-range-thumb{width:22px; height:22px; border-radius:50%
     j.fit.forEach(function(f){
       var p = document.createElement('span');
       p.className = 'pill ' + f[0];
-      p.textContent = (f[0] === 'y' ? '✓ ' : '✕ ') + f[1];
+      p.innerHTML = (f[0] === 'y' ? '✓ ' : '✕ ') + f[1];
       fit.appendChild(p);
     });
     cap.innerHTML = j.cap;
