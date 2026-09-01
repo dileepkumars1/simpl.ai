@@ -175,8 +175,8 @@ input[type="range"]::-moz-range-thumb{width:22px; height:22px; border-radius:50%
   <svg id="wires" aria-hidden="true"><g id="wireG"></g></svg>
   <div id="mods"></div>
   <div class="legend">
-    <i><span class="sw built"></span>built — click to open</i>
-    <i><span class="sw soon"></span>planned</i>
+    <i id="lgBuilt"><span class="sw built"></span>built — click to open</i>
+    <i id="lgPlanned"><span class="sw soon"></span>planned</i>
     <i><span class="sw" style="border-color:rgba(255,111,143,.5)"></span>builder track — has code</i>
   </div>
 </main>
@@ -295,6 +295,7 @@ input[type="range"]::-moz-range-thumb{width:22px; height:22px; border-radius:50%
   var collsEl = document.getElementById('colls'), tracksEl = document.getElementById('tracks');
   var modsEl = document.getElementById('mods'), wires = document.getElementById('wires'), wireG = document.getElementById('wireG');
   var pLabel = document.getElementById('pLabel'), pFill = document.getElementById('pFill');
+  var lgBuilt = document.getElementById('lgBuilt'), lgPlanned = document.getElementById('lgPlanned');
 
   function countBuilt(c){
     var b = 0, tot = 0;
@@ -309,7 +310,7 @@ input[type="range"]::-moz-range-thumb{width:22px; height:22px; border-radius:50%
       var b = document.createElement('button');
       b.className = 'coll'; b.type = 'button';
       b.setAttribute('aria-pressed', c === active);
-      b.innerHTML = c.title + ' <span class="ct">' + n.built + '/' + n.total + '</span>';
+      b.innerHTML = c.title + (n.built < n.total ? ' <span class="ct">' + n.built + '/' + n.total + '</span>' : '');
       b.addEventListener('click', function(){ active = c; track = 'all'; renderAll(); });
       collsEl.appendChild(b);
     });
@@ -385,6 +386,11 @@ input[type="range"]::-moz-range-thumb{width:22px; height:22px; border-radius:50%
 
   function renderProgress(){
     var n = countBuilt(active);
+    var complete = n.built >= n.total;
+    pLabel.parentElement.style.display = complete ? 'none' : '';
+    lgBuilt.style.display = complete ? 'none' : '';
+    lgPlanned.style.display = complete ? 'none' : '';
+    if(complete) return;
     pLabel.textContent = n.built + ' of ' + n.total + ' built';
     pFill.style.width = (n.built / n.total * 100).toFixed(1) + '%';
   }
