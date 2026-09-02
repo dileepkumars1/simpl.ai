@@ -1,0 +1,292 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Intermediate Module 1.2 — one query word, four heads, four different answers.">
+<meta name="color-scheme" content="dark light">
+<script>(function(){try{if(localStorage.getItem('aic-theme')==='light')document.documentElement.setAttribute('data-theme','light');}catch(e){}})();</script>
+<style>:root{color-scheme:dark}html{background:#100e1a}html[data-theme="light"]{color-scheme:light;background:#f7f5fb}</style>
+<title>Four Heads, One Word</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;600&family=Manrope:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>:root{
+  --ground:#100e1a; --ground-2:#0b0913;
+  --surface:#181428; --surface-2:#1e1934;
+  --line:#2a2340; --line-soft:#221c36;
+  --ink:#ECE9F5; --ink-dim:#9a92b6; --ink-faint:#6b6389;
+  --violet:#9b6bff; --teal:#45e0c4; --coral:#ff6f8f;
+  --violet-soft:rgba(155,107,255,.16); --teal-soft:rgba(69,224,196,.14); --coral-soft:rgba(255,111,143,.14);
+  --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px; --s7:48px; --s8:64px; --s9:96px;
+  --r-sm:6px; --r-md:12px; --r-lg:20px;
+  --display:'Unbounded',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --body:'Manrope',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,'SFMono-Regular',Menlo,monospace;
+  --wrap:1080px;
+}
+:root[data-theme="light"]{
+  --ground:#f7f5fb; --surface:#ffffff; --surface-2:#efeaf9;
+  --ink:#231d38; --ink-dim:#57507a; --ink-faint:#7b7396;
+  --line:#ddd4f0;
+  --violet:#7c3aed; --teal:#0d9488; --coral:#e11d48;
+  --violet-soft:rgba(124,58,237,.12); --teal-soft:rgba(13,148,136,.12); --coral-soft:rgba(225,29,72,.12);
+}
+.themetoggle{margin-left:auto; gap:6px; padding:0 var(--s3); min-height:36px; font-size:11.5px}
+.themetoggle .ti-moon{display:none}
+[data-theme="light"] .themetoggle .ti-sun{display:none}
+[data-theme="light"] .themetoggle .ti-moon{display:inline-block}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0; background:var(--ground); color:var(--ink); font-family:var(--body); font-size:clamp(15px,.55vw + 13.6px,17px); line-height:1.65; -webkit-font-smoothing:antialiased; overflow-x:hidden}
+h1,h2,h3{font-family:var(--display); font-weight:600; line-height:1.12; text-wrap:balance; margin:0}
+h1{font-size:clamp(30px,5.2vw,52px); letter-spacing:-.02em}
+h2{font-size:clamp(21px,2.7vw,30px); letter-spacing:-.01em}
+h3{font-size:clamp(16px,1.5vw,19px); letter-spacing:-.005em}
+p{margin:0; max-width:65ch; overflow-wrap:break-word}
+h1,h2,h3{overflow-wrap:break-word}
+.stack>*,.steps>*,.split>*,.two>*,.hero>*,.machine>*{min-width:0}
+.eyebrow{font-family:var(--mono); font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-faint); margin:0}
+.dim{color:var(--ink-dim)}
+.lede{font-size:clamp(17px,1.5vw,21px); line-height:1.5; color:var(--ink-dim)}
+.wrap{width:min(100% - 2*var(--s5), var(--wrap)); margin-inline:auto}
+@media (max-width:520px){ .wrap{width:min(100% - 2*var(--s4), var(--wrap))} }
+.stack{display:flex; flex-direction:column}
+.g2{gap:var(--s2)} .g3{gap:var(--s3)} .g4{gap:var(--s4)} .g5{gap:var(--s5)} .g6{gap:var(--s6)} .g7{gap:var(--s7)}
+section{padding-block:var(--s7)}
+section + section{border-top:1px solid var(--line-soft)}
+figure{margin:0}
+figcaption{font-size:13.5px; color:var(--ink-dim); margin-top:var(--s3); max-width:62ch}
+svg{max-width:100%; height:auto; display:block}
+.scroll-x{overflow-x:auto; -webkit-overflow-scrolling:touch}
+.scroll-x > svg{background:var(--ground-2); border:1px solid var(--line-soft); border-radius:var(--r-md); padding:var(--s4) var(--s5)}
+.card{background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); padding:var(--s5)}
+.tag{font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-faint)}
+.topbar{display:flex; flex-wrap:wrap; align-items:baseline; gap:var(--s3) var(--s4); padding-block:var(--s5) 0}
+.topbar .num{font-family:var(--mono); font-size:11px; letter-spacing:.16em; color:var(--violet)}
+.foot{padding-block:var(--s6); border-top:1px solid var(--line-soft); color:var(--ink-faint); font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase}
+button{font-family:inherit; font-size:inherit; color:inherit}
+.btn{display:inline-flex; align-items:center; justify-content:center; gap:var(--s2); min-height:44px; padding:0 var(--s4); border-radius:999px; background:var(--surface-2); border:1px solid var(--line); color:var(--ink); font-family:var(--mono); font-size:12.5px; letter-spacing:.04em; cursor:pointer; transition:background .18s, border-color .18s, color .18s}
+.btn:hover{background:#262046; border-color:#3a3160}
+.btn{transition:background .18s, border-color .18s, color .18s, transform .18s, box-shadow .18s; box-shadow:0 1px 2px rgba(0,0,0,.16)}
+.btn:hover{transform:translateY(-1px); box-shadow:0 3px 8px rgba(0,0,0,.28)}
+[data-theme="light"] .btn:hover{background:#efeaf9; border-color:#c9baf0; box-shadow:0 3px 8px rgba(80,60,140,.14)}
+[data-theme="light"] .btn[aria-pressed="true"], [data-theme="light"] .btn.on{color:#3b1f8a}
+.btn[aria-pressed="true"], .btn.on{background:var(--violet-soft); border-color:var(--violet); color:#d9c9ff}
+.btn:focus-visible, [tabindex]:focus-visible, input:focus-visible{outline:2px solid var(--teal); outline-offset:3px}
+.sr{position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0}
+@media (prefers-reduced-motion: reduce){ *,*::before,*::after{animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important} }
+.mech{display:grid; gap:var(--s5)}
+@media (min-width:720px){ .mech.n2{grid-template-columns:repeat(2,1fr)} }
+@media (min-width:820px){ .mech.n3{grid-template-columns:repeat(3,1fr)} }
+.mech figure{display:flex; flex-direction:column; gap:var(--s3); min-width:0}
+.mech .art{background:var(--ground-2); border:1px solid var(--line-soft); border-radius:var(--r-md); padding:var(--s4); color:var(--ink-faint)}
+.mech .art svg{width:100%; height:auto}
+.mech .lab{font-family:var(--mono); font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:var(--violet)}
+.mech figcaption{font-size:14px; line-height:1.55; color:var(--ink-dim); margin-top:0}
+.mech figcaption b{color:var(--ink); font-weight:500; display:block; font-size:15px; margin-bottom:2px}
+.wide-art{background:var(--ground-2); border:1px solid var(--line-soft); border-radius:var(--r-md); padding:var(--s5); color:var(--ink-faint)}
+.wide-art svg{width:100%; height:auto}
+.sowhat{font-family:var(--display); font-size:clamp(19px,2.4vw,27px); line-height:1.35; letter-spacing:-.01em; max-width:28ch}
+.sowhat em{font-style:normal; color:var(--violet)}
+</style>
+<style>
+.sentwrap{position:relative; background:var(--ground-2); border:1px solid var(--line-soft); border-radius:var(--r-lg); padding:var(--s6) var(--s5); display:flex; flex-direction:column; gap:var(--s5); color:#ECE9F5}
+.sentline{position:relative; display:flex; flex-wrap:wrap; gap:10px 6px; font-family:var(--display); font-size:clamp(18px,2.4vw,24px); z-index:1}
+.sentline .w{padding:2px 6px; border-radius:6px; background:none; border:none; color:#9a92b6; cursor:default}
+.sentline .w.q{color:#0e0a1c; background:var(--violet)}
+#linesSvg{position:absolute; inset:0; width:100%; height:100%; pointer-events:none; z-index:0}
+.heads{display:grid; grid-template-columns:repeat(2,1fr); gap:var(--s2)}
+@media (min-width:640px){ .heads{grid-template-columns:repeat(4,1fr)} }
+.headbtn{display:flex; flex-direction:column; align-items:flex-start; gap:2px; padding:var(--s3); border-radius:var(--r-md); border:1px solid var(--line-soft); background:var(--ground-2); cursor:pointer; text-align:left; color:#9a92b6; transition:border-color .18s, transform .18s}
+.headbtn:hover{transform:translateY(-1px); border-color:#3a3160}
+.headbtn .hn{font-family:var(--mono); font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#8ff0dd}
+.headbtn .ht{font-size:13.5px; color:#ECE9F5}
+.headbtn[aria-pressed="true"]{border-color:var(--violet); background:var(--violet-soft)}
+.headbtn[aria-pressed="true"] .hn{color:#d3bcff}
+.note{font-size:14px; line-height:1.55; color:#9a92b6; min-height:2.6em}
+.note b{color:#ECE9F5; font-weight:500}
+</style>
+</head>
+<body>
+
+<style>
+.pagenav{display:flex; flex-wrap:wrap; gap:var(--s4); justify-content:space-between; align-items:center; padding-block:var(--s6); border-top:1px solid var(--line-soft)}
+.pnbtn{display:flex; flex-direction:column; gap:2px; min-height:44px; justify-content:center; padding:var(--s2) var(--s4); border-radius:var(--r-md); text-decoration:none; color:inherit; transition:background .18s; max-width:280px}
+.pnbtn:hover{background:var(--surface-2)}
+.pnbtn.hub{flex-direction:row; align-items:center; background:var(--surface-2); border:1px solid var(--line); border-radius:999px; font-family:var(--mono); font-size:12.5px; letter-spacing:.04em; padding:0 var(--s4); flex:none}
+.pnbtn.next{text-align:right; align-items:flex-end; margin-left:auto}
+.pnk{font-family:var(--mono); font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--violet)}
+.pnt{font-size:14px; color:var(--ink-dim)}
+@media (max-width:640px){ .pagenav{flex-direction:column; align-items:stretch} .pnbtn{max-width:none} .pnbtn.hub{order:-1; justify-content:center} .pnbtn.next{text-align:left; align-items:flex-start; margin-left:0} }
+</style>
+<header class="wrap topbar">
+  <span class="num">INTERMEDIATE · MODULE 01 — INSIDE THE TRANSFORMER · 34</span>
+  <span class="tag dim">AI Concepts: Intermediate</span>
+  <button class="btn themetoggle" id="themeToggle" type="button" aria-pressed="false" aria-label="Switch to light theme">
+    <svg class="ti ti-sun" viewBox="0 0 16 16" aria-hidden="true" width="15" height="15"><circle cx="8" cy="8" r="3.4" fill="none" stroke="currentColor" stroke-width="1.4"/><g stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><line x1="8" y1="0.5" x2="8" y2="2.3"/><line x1="8" y1="13.7" x2="8" y2="15.5"/><line x1="0.5" y1="8" x2="2.3" y2="8"/><line x1="13.7" y1="8" x2="15.5" y2="8"/><line x1="2.6" y1="2.6" x2="3.9" y2="3.9"/><line x1="12.1" y1="12.1" x2="13.4" y2="13.4"/><line x1="2.6" y1="13.4" x2="3.9" y2="12.1"/></g></svg>
+    <svg class="ti ti-moon" viewBox="0 0 16 16" aria-hidden="true" width="15" height="15"><path d="M13.5 9.5A6 6 0 1 1 6.5 2.5a4.8 4.8 0 1 0 7 7z" fill="currentColor"/></svg>
+    <span class="ti-label">Light</span>
+  </button>
+</header>
+<script>(function(){
+  var root=document.documentElement, btn=document.getElementById('themeToggle');
+  function sync(){
+    var isLight = root.getAttribute('data-theme')==='light';
+    btn.setAttribute('aria-pressed', isLight);
+    btn.setAttribute('aria-label', 'Switch to ' + (isLight?'dark':'light') + ' theme');
+    btn.querySelector('.ti-label').textContent = isLight ? 'Dark' : 'Light';
+  }
+  btn.addEventListener('click', function(){
+    var next = root.getAttribute('data-theme')==='light' ? 'dark' : 'light';
+    root.setAttribute('data-theme', next);
+    try{ localStorage.setItem('aic-theme', next); }catch(e){}
+    sync();
+  });
+  sync();
+})();</script>
+
+<section class="wrap stack g6">
+  <div class="stack g4">
+    <p class="eyebrow">Deepens page 33</p>
+    <h1>Why one head isn't enough</h1>
+    <p class="lede">The lookup from page 33 is one head, asking one kind of question. Run the same word through four heads and each one comes back with a different answer.</p>
+  </div>
+
+  <div class="sentwrap">
+    <div class="sentline" id="sent">
+      <svg id="linesSvg" aria-hidden="true"></svg>
+    </div>
+    <div class="heads" id="heads"></div>
+    <div class="note" id="note"></div>
+  </div>
+  <p class="dim" style="font-size:13px; color:#9a92b6">Hand-authored to illustrate a well-documented pattern — real heads specialize this cleanly only sometimes, and never with labels attached.</p>
+</section>
+
+<section class="wrap stack g5">
+  <p class="eyebrow">How it works</p>
+  <h2>Four lookups, glued back together</h2>
+  <div class="wide-art">
+    <svg viewBox="0 0 900 220" role="img" aria-label="The word her is run through four separate attention heads in parallel, each producing its own output vector, which are concatenated into one longer vector and projected back down to the model's normal width.">
+      <text x="20" y="26" font-family="JetBrains Mono, monospace" font-size="11" letter-spacing="1.2" fill="#d3bcff">"her" (one word)</text>
+      <rect x="20" y="36" width="90" height="36" rx="8" fill="rgba(155,107,255,.16)" stroke="#9b6bff"/>
+      <text x="65" y="58" text-anchor="middle" font-family="Manrope, sans-serif" font-size="12" fill="#ECE9F5">query</text>
+
+      <g font-family="JetBrains Mono, monospace" font-size="10">
+        <rect x="150" y="14" width="150" height="40" rx="7" fill="rgba(69,224,196,.14)" stroke="rgba(69,224,196,.5)"/>
+        <text x="225" y="38" text-anchor="middle" fill="#8ff0dd">head 1 → scientist</text>
+        <rect x="150" y="62" width="150" height="40" rx="7" fill="rgba(69,224,196,.14)" stroke="rgba(69,224,196,.5)"/>
+        <text x="225" y="86" text-anchor="middle" fill="#8ff0dd">head 2 → mentor</text>
+        <rect x="150" y="110" width="150" height="40" rx="7" fill="rgba(69,224,196,.14)" stroke="rgba(69,224,196,.5)"/>
+        <text x="225" y="134" text-anchor="middle" fill="#8ff0dd">head 3 → careful</text>
+        <rect x="150" y="158" width="150" height="40" rx="7" fill="rgba(69,224,196,.14)" stroke="rgba(69,224,196,.5)"/>
+        <text x="225" y="182" text-anchor="middle" fill="#8ff0dd">head 4 → the, for</text>
+      </g>
+
+      <g stroke="#9b6bff" stroke-width="1.4" fill="none" opacity=".7">
+        <path d="M110 54 L150 34"/>
+        <path d="M110 54 L150 82"/>
+        <path d="M110 54 L150 130"/>
+        <path d="M110 54 L150 178"/>
+      </g>
+
+      <line x1="300" y1="106" x2="360" y2="106" stroke="currentColor" stroke-width="1.5"/><polygon points="367,106 360,110 360,102" fill="currentColor"/>
+      <text x="380" y="70" font-family="JetBrains Mono, monospace" font-size="10" letter-spacing="1.2" fill="currentColor">CONCATENATE</text>
+      <rect x="380" y="80" width="160" height="52" rx="8" fill="#181428" stroke="currentColor" stroke-opacity=".4"/>
+      <g fill="#8ff0dd" fill-opacity=".6">
+        <rect x="392" y="92" width="32" height="28" rx="3"/><rect x="428" y="92" width="32" height="28" rx="3"/><rect x="464" y="92" width="32" height="28" rx="3"/><rect x="500" y="92" width="28" height="28" rx="3"/>
+      </g>
+
+      <line x1="540" y1="106" x2="600" y2="106" stroke="currentColor" stroke-width="1.5"/><polygon points="607,106 600,110 600,102" fill="currentColor"/>
+      <text x="620" y="70" font-family="JetBrains Mono, monospace" font-size="10" letter-spacing="1.2" fill="#ffb3c4">PROJECT BACK DOWN</text>
+      <rect x="620" y="82" width="160" height="48" rx="8" fill="rgba(255,111,143,.14)" stroke="#ff6f8f"/>
+      <text x="700" y="110" text-anchor="middle" font-family="Manrope, sans-serif" font-size="13" fill="#ECE9F5">one richer "her"</text>
+
+      <text x="450" y="205" text-anchor="middle" font-family="Manrope, sans-serif" font-size="13" fill="currentColor">Same width in and out — the model always works with a fixed-size vector per word</text>
+    </svg>
+  </div>
+  <p class="dim">Real models run 8, 16, sometimes over 100 heads per layer, and stack many layers — this shows the shape of the mechanism with a number small enough to actually look at.</p>
+</section>
+
+<section class="wrap stack g4">
+  <p class="eyebrow">So what</p>
+  <p class="sowhat">One head has to compromise into a single blurry average. <em>Several heads let the model hold several relationships at once</em> and combine them later.</p>
+</section>
+
+<nav class="wrap pagenav" aria-label="Series navigation">
+  <a class="pnbtn prev" href="33-attention-lookup.html"><span class="pnk">← Prev</span><span class="pnt">Attention, as a weighted lookup</span></a>
+  <a class="pnbtn hub" href="00-atlas.html">All topics</a>
+  <a class="pnbtn next" href="35-positional-encoding.html"><span class="pnk">Next →</span><span class="pnt">How order survives without a scanning eye</span></a>
+</nav>
+<footer class="wrap foot">Part of the AI Concepts: Intermediate series</footer>
+
+<script>
+(function(){
+  var WORDS = ['The','scientist','who','wrote','the','paper','thanked','her','mentor','for','the','careful','feedback','.'];
+  var QIDX = 7; // "her"
+
+  var HEADS = [
+    { name:'Head 1', label:'coreference', note:'Head 1 spends most of its weight tracking who "her" actually refers to.', targets:[{w:'scientist', pct:68},{w:'mentor', pct:10},{w:'careful',pct:6}] },
+    { name:'Head 2', label:'local syntax', note:'Head 2 barely looks past the next word — it tracks what "her" is directly attached to.', targets:[{w:'mentor', pct:71},{w:'scientist', pct:9},{w:'feedback',pct:5}] },
+    { name:'Head 3', label:'descriptive tone', note:'Head 3 reaches forward to the descriptive words later in the sentence.', targets:[{w:'careful', pct:44},{w:'feedback', pct:22},{w:'mentor',pct:10}] },
+    { name:'Head 4', label:'function words', note:'Head 4 mostly tracks grammatical scaffolding — less meaningful on its own, but still real.', targets:[{w:'the', pct:22},{w:'for', pct:18},{w:'who',pct:14}] }
+  ];
+
+  var sent = document.getElementById('sent'), svg = document.getElementById('linesSvg');
+  var headsBox = document.getElementById('heads'), note = document.getElementById('note');
+  var els = [];
+
+  WORDS.forEach(function(w, i){
+    var el = document.createElement('span');
+    el.className = 'w' + (i === QIDX ? ' q' : '');
+    el.textContent = w;
+    sent.appendChild(el);
+    els.push(el);
+  });
+
+  HEADS.forEach(function(h, i){
+    var b = document.createElement('button');
+    b.type = 'button'; b.className = 'headbtn'; b.setAttribute('aria-pressed', i === 0);
+    b.innerHTML = '<span class="hn">' + h.name + '</span><span class="ht">' + h.label + '</span>';
+    b.addEventListener('click', function(){ select(i); });
+    headsBox.appendChild(b);
+  });
+
+  function draw(targets){
+    var box = sent.getBoundingClientRect();
+    svg.setAttribute('viewBox', '0 0 ' + box.width + ' ' + box.height);
+    svg.textContent = '';
+    var a = els[QIDX].getBoundingClientRect();
+    var ax = a.left - box.left + a.width/2, ay = a.top - box.top + a.height/2;
+    targets.forEach(function(t){
+      var idx = WORDS.findIndex(function(w){ return w.toLowerCase() === t.w; });
+      if(idx < 0) return;
+      var b = els[idx].getBoundingClientRect();
+      var bx = b.left - box.left + b.width/2, by = b.top - box.top + b.height/2;
+      var path = document.createElementNS('http://www.w3.org/2000/svg','path');
+      var my = (ay+by)/2 - 20;
+      path.setAttribute('d', 'M'+ax+' '+ay+' Q '+((ax+bx)/2)+' '+my+', '+bx+' '+by);
+      path.setAttribute('fill','none'); path.setAttribute('stroke','#45e0c4');
+      path.setAttribute('stroke-width', 1 + (t.pct/100)*6);
+      path.setAttribute('opacity', 0.3 + (t.pct/100)*0.6);
+      svg.appendChild(path);
+    });
+  }
+
+  function select(i){
+    var h = HEADS[i];
+    Array.prototype.forEach.call(headsBox.children, function(b, j){ b.setAttribute('aria-pressed', j === i); });
+    note.innerHTML = '<b>' + h.name + '</b> — ' + h.note;
+    draw(h.targets);
+  }
+
+  select(0);
+  function redrawCurrent(){
+    var idx = Array.prototype.findIndex.call(headsBox.children, function(b){ return b.getAttribute('aria-pressed') === 'true'; });
+    draw(HEADS[idx < 0 ? 0 : idx].targets);
+  }
+  window.addEventListener('resize', redrawCurrent);
+  if(document.fonts && document.fonts.ready){ document.fonts.ready.then(redrawCurrent); }
+})();
+</script>
+
+</body>
+</html>

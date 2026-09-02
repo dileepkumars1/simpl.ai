@@ -4,8 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="description" content="Module 8.4 — temperature reshapes the odds. Top-p and top-k decide which of them you're even allowed to draw from.">
-<meta name="color-scheme" content="dark">
-<style>:root{color-scheme:dark}html{background:#100e1a}</style>
+<meta name="color-scheme" content="dark light">
+<script>(function(){try{if(localStorage.getItem('aic-theme')==='light')document.documentElement.setAttribute('data-theme','light');}catch(e){}})();</script>
+<style>:root{color-scheme:dark}html{background:#100e1a}html[data-theme="light"]{color-scheme:light;background:#f7f5fb}</style>
 <title>One Distribution, Three Cuts</title>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;600&family=Manrope:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap">
@@ -23,6 +24,17 @@
   --mono:'JetBrains Mono',ui-monospace,'SFMono-Regular',Menlo,monospace;
   --wrap:1080px;
 }
+:root[data-theme="light"]{
+  --ground:#f7f5fb; --surface:#ffffff; --surface-2:#efeaf9;
+  --ink:#231d38; --ink-dim:#57507a; --ink-faint:#7b7396;
+  --line:#ddd4f0;
+  --violet:#7c3aed; --teal:#0d9488; --coral:#e11d48;
+  --violet-soft:rgba(124,58,237,.12); --teal-soft:rgba(13,148,136,.12); --coral-soft:rgba(225,29,72,.12);
+}
+.themetoggle{margin-left:auto; gap:6px; padding:0 var(--s3); min-height:36px; font-size:11.5px}
+.themetoggle .ti-moon{display:none}
+[data-theme="light"] .themetoggle .ti-sun{display:none}
+[data-theme="light"] .themetoggle .ti-moon{display:inline-block}
 *,*::before,*::after{box-sizing:border-box}
 body{margin:0; background:var(--ground); color:var(--ink); font-family:var(--body); font-size:clamp(15px,.55vw + 13.6px,17px); line-height:1.65; -webkit-font-smoothing:antialiased; overflow-x:hidden}
 h1,h2,h3{font-family:var(--display); font-weight:600; line-height:1.12; text-wrap:balance; margin:0}
@@ -45,6 +57,7 @@ figure{margin:0}
 figcaption{font-size:13.5px; color:var(--ink-dim); margin-top:var(--s3); max-width:62ch}
 svg{max-width:100%; height:auto; display:block}
 .scroll-x{overflow-x:auto; -webkit-overflow-scrolling:touch}
+.scroll-x > svg{background:var(--ground-2); border:1px solid var(--line-soft); border-radius:var(--r-md); padding:var(--s4) var(--s5)}
 .card{background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); padding:var(--s5)}
 .tag{font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-faint)}
 .topbar{display:flex; flex-wrap:wrap; align-items:baseline; gap:var(--s3) var(--s4); padding-block:var(--s5) 0}
@@ -53,6 +66,10 @@ svg{max-width:100%; height:auto; display:block}
 button{font-family:inherit; font-size:inherit; color:inherit}
 .btn{display:inline-flex; align-items:center; justify-content:center; gap:var(--s2); min-height:44px; padding:0 var(--s4); border-radius:999px; background:var(--surface-2); border:1px solid var(--line); color:var(--ink); font-family:var(--mono); font-size:12.5px; letter-spacing:.04em; cursor:pointer; transition:background .18s, border-color .18s, color .18s}
 .btn:hover{background:#262046; border-color:#3a3160}
+.btn{transition:background .18s, border-color .18s, color .18s, transform .18s, box-shadow .18s; box-shadow:0 1px 2px rgba(0,0,0,.16)}
+.btn:hover{transform:translateY(-1px); box-shadow:0 3px 8px rgba(0,0,0,.28)}
+[data-theme="light"] .btn:hover{background:#efeaf9; border-color:#c9baf0; box-shadow:0 3px 8px rgba(80,60,140,.14)}
+[data-theme="light"] .btn[aria-pressed="true"], [data-theme="light"] .btn.on{color:#3b1f8a}
 .btn[aria-pressed="true"], .btn.on{background:var(--violet-soft); border-color:var(--violet); color:#d9c9ff}
 .btn:focus-visible, [tabindex]:focus-visible, input:focus-visible{outline:2px solid var(--teal); outline-offset:3px}
 .controls{display:flex; flex-wrap:wrap; gap:var(--s3); align-items:center}
@@ -81,7 +98,7 @@ input[type="range"]::-moz-range-thumb{width:22px; height:22px; border-radius:50%
 .bar.excluded .t{opacity:.4}
 .bar .p{font-family:var(--mono); font-size:12px; color:var(--ink-faint); text-align:right; font-variant-numeric:tabular-nums}
 .modebar{display:flex; flex-wrap:wrap; gap:var(--s3)}
-.gen{font-family:var(--mono); font-size:14px; line-height:2; background:var(--ground-2); border:1px solid var(--line-soft); border-radius:var(--r-md); padding:var(--s4)}
+.gen{font-family:var(--mono); font-size:14px; line-height:2; background:var(--ground-2); border:1px solid var(--line-soft); border-radius:var(--r-md); padding:var(--s4); color:#ECE9F5}
 .gen .stopmark{color:var(--coral)}
 .gen .cut{opacity:.3; text-decoration:line-through}
 </style>
@@ -101,12 +118,33 @@ input[type="range"]::-moz-range-thumb{width:22px; height:22px; border-radius:50%
 <header class="wrap topbar">
   <span class="num">MODULE 08 — GOING DEEPER · 31</span>
   <span class="tag dim">AI Concepts</span>
+  <button class="btn themetoggle" id="themeToggle" type="button" aria-pressed="false" aria-label="Switch to light theme">
+    <svg class="ti ti-sun" viewBox="0 0 16 16" aria-hidden="true" width="15" height="15"><circle cx="8" cy="8" r="3.4" fill="none" stroke="currentColor" stroke-width="1.4"/><g stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><line x1="8" y1="0.5" x2="8" y2="2.3"/><line x1="8" y1="13.7" x2="8" y2="15.5"/><line x1="0.5" y1="8" x2="2.3" y2="8"/><line x1="13.7" y1="8" x2="15.5" y2="8"/><line x1="2.6" y1="2.6" x2="3.9" y2="3.9"/><line x1="12.1" y1="12.1" x2="13.4" y2="13.4"/><line x1="2.6" y1="13.4" x2="3.9" y2="12.1"/><line x1="12.1" y1="3.9" x2="13.4" y2="2.6"/></g></svg>
+    <svg class="ti ti-moon" viewBox="0 0 16 16" aria-hidden="true" width="15" height="15"><path d="M13.5 9.5A6 6 0 1 1 6.5 2.5a4.8 4.8 0 1 0 7 7z" fill="currentColor"/></svg>
+    <span class="ti-label">Light</span>
+  </button>
 </header>
+<script>(function(){
+  var root=document.documentElement, btn=document.getElementById('themeToggle');
+  function sync(){
+    var isLight = root.getAttribute('data-theme')==='light';
+    btn.setAttribute('aria-pressed', isLight);
+    btn.setAttribute('aria-label', 'Switch to ' + (isLight?'dark':'light') + ' theme');
+    btn.querySelector('.ti-label').textContent = isLight ? 'Dark' : 'Light';
+  }
+  btn.addEventListener('click', function(){
+    var next = root.getAttribute('data-theme')==='light' ? 'dark' : 'light';
+    root.setAttribute('data-theme', next);
+    try{ localStorage.setItem('aic-theme', next); }catch(e){}
+    sync();
+  });
+  sync();
+})();</script>
 
 <section class="wrap stack g6">
   <div class="stack g4">
     <h1>One distribution, three cuts</h1>
-    <p class="lede"><a href="03-what-is-an-llm.html" title="What is an LLM?" style="color:var(--violet); text-decoration:underline; text-decoration-style:dotted; text-underline-offset:3px">Page 3</a>'s temperature slider reshapes these bars. It doesn't decide how much of the list the model is even allowed to pick from — that's a different knob, or two.</p>
+    <p class="lede">Every token from the last page eventually reaches the same moment: a list of candidate next tokens, each with odds attached. <a href="03-what-is-an-llm.html" title="What is an LLM?" style="color:var(--violet); text-decoration:underline; text-decoration-style:dotted; text-underline-offset:3px">Page 3</a>'s temperature slider reshapes these bars. It doesn't decide how much of the list the model is even allowed to pick from — that's a different knob, or two.</p>
   </div>
 
   <div class="bars" id="bars" aria-label="Candidate next words ranked by probability, same style as page 3"></div>
