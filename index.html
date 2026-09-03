@@ -3,11 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="A shell indexing collections of visual explainers; the AI Concepts series is the first.">
+<meta name="description" content="Two interactive visual-explainer series: how AI actually works, and how a real agent-driven software delivery pipeline works.">
 <meta name="color-scheme" content="dark light">
 <script>(function(){try{if(localStorage.getItem('aic-theme')==='light')document.documentElement.setAttribute('data-theme','light');}catch(e){}})();</script>
 <style>:root{color-scheme:dark}html{background:#100e1a}html[data-theme="light"]{color-scheme:light;background:#f7f5fb}</style>
-<title>Topic Atlas</title>
+<title>Visual Explainer Series</title>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;600&family=Manrope:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap">
 <style>:root{
@@ -18,11 +18,11 @@
   --violet:#9b6bff; --teal:#45e0c4; --coral:#ff6f8f;
   --violet-soft:rgba(155,107,255,.16); --teal-soft:rgba(69,224,196,.14); --coral-soft:rgba(255,111,143,.14);
   --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px; --s7:48px; --s8:64px; --s9:96px;
-  --r-sm:6px; --r-md:12px; --r-lg:20px;
+  --r-sm:6px; --r-md:12px; --r-lg:20px; --r-xl:28px;
   --display:'Unbounded',system-ui,-apple-system,'Segoe UI',sans-serif;
   --body:'Manrope',system-ui,-apple-system,'Segoe UI',sans-serif;
   --mono:'JetBrains Mono',ui-monospace,'SFMono-Regular',Menlo,monospace;
-  --wrap:1080px;
+  --wrap:1120px;
 }
 :root[data-theme="light"]{
   --ground:#f7f5fb; --surface:#ffffff; --surface-2:#efeaf9;
@@ -36,153 +36,69 @@
 [data-theme="light"] .themetoggle .ti-sun{display:none}
 [data-theme="light"] .themetoggle .ti-moon{display:inline-block}
 *,*::before,*::after{box-sizing:border-box}
-body{
-  margin:0; background:var(--ground); color:var(--ink);
-  font-family:var(--body); font-size:clamp(15px,.55vw + 13.6px,17px);
-  line-height:1.65; -webkit-font-smoothing:antialiased;
-  overflow-x:hidden;
-}
+body{margin:0; background:
+    radial-gradient(1100px 560px at 12% -8%, rgba(155,107,255,.13), transparent 60%),
+    radial-gradient(1100px 560px at 88% -4%, rgba(69,224,196,.11), transparent 60%),
+    var(--ground);
+  color:var(--ink); font-family:var(--body); font-size:clamp(15px,.55vw + 13.6px,17px); line-height:1.65; -webkit-font-smoothing:antialiased; overflow-x:hidden}
 h1,h2,h3{font-family:var(--display); font-weight:600; line-height:1.12; text-wrap:balance; margin:0}
-h1{font-size:clamp(30px,5.2vw,52px); letter-spacing:-.02em}
-h2{font-size:clamp(21px,2.7vw,30px); letter-spacing:-.01em}
-h3{font-size:clamp(16px,1.5vw,19px); letter-spacing:-.005em}
+h1{font-size:clamp(32px,5.4vw,56px); letter-spacing:-.02em}
+h2{font-size:clamp(22px,2.6vw,28px); letter-spacing:-.01em}
 p{margin:0; max-width:65ch; overflow-wrap:break-word}
-h1,h2,h3{overflow-wrap:break-word}
-.stack>*,.steps>*,.split>*,.two>*,.hero>*,.machine>*{min-width:0}
-.eyebrow{font-family:var(--mono); font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-faint); margin:0}
+.eyebrow{font-family:var(--mono); font-size:11px; letter-spacing:.18em; text-transform:uppercase; color:var(--ink-faint); margin:0}
 .dim{color:var(--ink-dim)}
-.lede{font-size:clamp(17px,1.5vw,21px); line-height:1.5; color:var(--ink-dim)}
+.lede{font-size:clamp(17px,1.6vw,21px); line-height:1.55; color:var(--ink-dim)}
 .wrap{width:min(100% - 2*var(--s5), var(--wrap)); margin-inline:auto}
 @media (max-width:520px){ .wrap{width:min(100% - 2*var(--s4), var(--wrap))} }
 .stack{display:flex; flex-direction:column}
-.g2{gap:var(--s2)} .g3{gap:var(--s3)} .g4{gap:var(--s4)} .g5{gap:var(--s5)} .g6{gap:var(--s6)} .g7{gap:var(--s7)}
-section{padding-block:var(--s7)}
-section + section{border-top:1px solid var(--line-soft)}
-figure{margin:0}
-figcaption{font-size:13.5px; color:var(--ink-dim); margin-top:var(--s3); max-width:62ch}
-svg{max-width:100%; height:auto; display:block}
-.scroll-x{overflow-x:auto; -webkit-overflow-scrolling:touch}
-.scroll-x > svg{background:var(--ground-2); border:1px solid var(--line-soft); border-radius:var(--r-md); padding:var(--s4) var(--s5)}
-.card{background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); padding:var(--s5)}
-.tag{font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-faint)}
-/* site header / footer */
-.topbar{display:flex; flex-wrap:wrap; align-items:baseline; gap:var(--s3) var(--s4); padding-block:var(--s5) 0}
-.topbar .num{font-family:var(--mono); font-size:11px; letter-spacing:.16em; color:var(--violet)}
-.foot{padding-block:var(--s6); border-top:1px solid var(--line-soft); color:var(--ink-faint); font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase}
-/* controls */
+.g3{gap:var(--s3)} .g4{gap:var(--s4)} .g5{gap:var(--s5)} .g6{gap:var(--s6)}
+.topbar{display:flex; flex-wrap:wrap; align-items:center; gap:var(--s3) var(--s4); padding-block:var(--s5) 0}
+.brand{display:flex; align-items:center; gap:8px; font-family:var(--mono); font-size:12px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-dim)}
+.brand .dot{width:8px; height:8px; border-radius:50%; background:linear-gradient(135deg,var(--violet),var(--teal))}
 button{font-family:inherit; font-size:inherit; color:inherit}
-.btn{
-  display:inline-flex; align-items:center; justify-content:center; gap:var(--s2);
-  min-height:44px; padding:0 var(--s4); border-radius:999px;
-  background:var(--surface-2); border:1px solid var(--line); color:var(--ink);
-  font-family:var(--mono); font-size:12.5px; letter-spacing:.04em;
-  cursor:pointer; transition:background .18s, border-color .18s, color .18s;
-}
-.btn:hover{background:#262046; border-color:#3a3160}
-.btn{transition:background .18s, border-color .18s, color .18s, transform .18s, box-shadow .18s; box-shadow:0 1px 2px rgba(0,0,0,.16)}
-.btn:hover{transform:translateY(-1px); box-shadow:0 3px 8px rgba(0,0,0,.28)}
+.btn{display:inline-flex; align-items:center; justify-content:center; gap:var(--s2); min-height:44px; padding:0 var(--s4); border-radius:999px; background:var(--surface-2); border:1px solid var(--line); color:var(--ink); font-family:var(--mono); font-size:12.5px; letter-spacing:.04em; cursor:pointer; transition:background .18s, border-color .18s, color .18s, transform .18s, box-shadow .18s; box-shadow:0 1px 2px rgba(0,0,0,.16)}
+.btn:hover{background:#262046; border-color:#3a3160; transform:translateY(-1px); box-shadow:0 3px 8px rgba(0,0,0,.28)}
 [data-theme="light"] .btn:hover{background:#efeaf9; border-color:#c9baf0; box-shadow:0 3px 8px rgba(80,60,140,.14)}
-[data-theme="light"] .btn[aria-pressed="true"], [data-theme="light"] .btn.on{color:#3b1f8a}
-.btn[aria-pressed="true"], .btn.on{background:var(--violet-soft); border-color:var(--violet); color:#d9c9ff}
-.btn:focus-visible, [tabindex]:focus-visible, input:focus-visible{outline:2px solid var(--teal); outline-offset:3px}
-.controls{display:flex; flex-wrap:wrap; gap:var(--s3); align-items:center}
-input[type="text"]{
-  min-height:44px; width:100%; padding:0 var(--s4); border-radius:999px;
-  background:var(--ground-2); border:1px solid var(--line); color:var(--ink);
-  font-family:var(--body); font-size:16px;
-}
-[data-theme="light"] input[type="text"]{background:var(--surface)}
-input[type="range"]{ -webkit-appearance:none; appearance:none; width:100%; height:44px; background:transparent; cursor:pointer }
-input[type="range"]::-webkit-slider-runnable-track{height:4px; border-radius:2px; background:linear-gradient(90deg,var(--teal),var(--violet),var(--coral))}
-input[type="range"]::-moz-range-track{height:4px; border-radius:2px; background:linear-gradient(90deg,var(--teal),var(--violet),var(--coral))}
-input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none; width:22px; height:22px; margin-top:-9px; border-radius:50%; background:var(--ink); border:3px solid var(--ground)}
-input[type="range"]::-moz-range-thumb{width:22px; height:22px; border-radius:50%; background:var(--ink); border:3px solid var(--ground); border-width:3px}
-.sr{position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0}
-@media (prefers-reduced-motion: reduce){
-  *,*::before,*::after{animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important}
-}
-/* mechanism strip — a concept gets a drawing, not a paragraph */
-.mech{display:grid; gap:var(--s5)}
-@media (min-width:720px){ .mech.n2{grid-template-columns:repeat(2,1fr)} }
-@media (min-width:820px){ .mech.n3{grid-template-columns:repeat(3,1fr)} }
-.mech figure{display:flex; flex-direction:column; gap:var(--s3); min-width:0}
-.mech .art{
-  background:var(--ground-2); border:1px solid var(--line-soft); border-radius:var(--r-md);
-  padding:var(--s4); color:var(--ink-faint);
-}
-.mech .art svg{width:100%; height:auto}
-.mech .lab{font-family:var(--mono); font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:var(--violet)}
-.mech figcaption{font-size:14px; line-height:1.55; color:var(--ink-dim); margin-top:0}
-.mech figcaption b{color:var(--ink); font-weight:500; display:block; font-size:15px; margin-bottom:2px}
-.wide-art{background:var(--ground-2); border:1px solid var(--line-soft); border-radius:var(--r-md); padding:var(--s5); color:var(--ink-faint)}
-.wide-art svg{width:100%; height:auto}
-</style>
-<style>
-.masthead{padding-block:var(--s7) var(--s5)}
-.colls{display:flex; flex-wrap:wrap; gap:var(--s2); margin-bottom:var(--s5)}
-.coll{display:inline-flex; align-items:center; gap:var(--s2); min-height:44px; padding:0 var(--s4); border-radius:999px;
-      border:1px solid var(--line); background:var(--surface-2); color:var(--ink-dim);
-      font-family:var(--mono); font-size:12px; letter-spacing:.05em; cursor:pointer; transition:background .2s, border-color .2s, color .2s}
-.coll[aria-pressed="true"]{background:var(--violet-soft); border-color:var(--violet); color:#e5d7ff}
-.coll:hover{transform:translateY(-1px)}
-.coll .ct{font-size:10.5px; color:var(--ink-faint)}
-.coll[aria-pressed="true"] .ct{color:#b79dff}
-.coll[disabled]{opacity:.45; cursor:not-allowed}
-[data-theme="light"] .coll[aria-pressed="true"]{color:#3b1f8a}
-[data-theme="light"] .coll[aria-pressed="true"] .ct{color:#6d3fd6}
-.atlas{position:relative; padding-block:var(--s6) var(--s8)}
-#wires{position:absolute; inset:0; width:100%; height:100%; pointer-events:none; z-index:0}
-.mod{position:relative; z-index:1; margin-bottom:var(--s7)}
-.modhead{display:flex; flex-wrap:wrap; align-items:baseline; gap:var(--s3) var(--s4); margin-bottom:var(--s4)}
-.modhead .mn{font-family:var(--mono); font-size:11px; letter-spacing:.16em; color:var(--violet)}
-.modhead h2{font-size:clamp(18px,2.1vw,24px)}
-.modhead .badge{font-family:var(--mono); font-size:9.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--coral);
-                border:1px solid rgba(255,111,143,.45); border-radius:999px; padding:3px 9px}
-.moddesc{font-size:14px; line-height:1.55; color:var(--ink-dim); max-width:64ch; margin:calc(-1 * var(--s3)) 0 var(--s4)}
-.grid{display:grid; gap:var(--s3); grid-template-columns:repeat(auto-fill,minmax(168px,1fr))}
-.node{position:relative; display:flex; flex-direction:column; gap:var(--s3); padding:var(--s4); border-radius:var(--r-md);
-      border:1px solid var(--line); background:var(--surface); text-decoration:none; color:inherit; min-height:132px;
-      box-shadow:0 1px 2px rgba(0,0,0,.14); transition:border-color .2s, background .2s, transform .2s, box-shadow .2s}
-.node::after{content:'→'; position:absolute; right:var(--s4); bottom:var(--s3); font-family:var(--mono); font-size:13px; color:var(--ink-faint); opacity:.55; transition:opacity .2s, transform .2s, color .2s}
-.node:hover{border-color:#3a3160; background:var(--surface-2); transform:translateY(-2px); box-shadow:0 6px 16px rgba(0,0,0,.3)}
-.node:hover::after{opacity:1; transform:translateX(3px); color:var(--violet)}
-.node:focus-visible{outline:2px solid var(--teal); outline-offset:3px}
-.node.soon::after{display:none}
-[data-theme="light"] .node:hover{border-color:#c9baf0; box-shadow:0 6px 16px rgba(80,60,140,.16)}
-.node .top{display:flex; align-items:center; justify-content:space-between; gap:var(--s3)}
-.node .no{font-family:var(--mono); font-size:10px; color:var(--ink-faint)}
-.node .motif{width:38px; height:38px; color:var(--violet)}
-.node .ttl{font-size:14px; line-height:1.4; font-weight:500}
-.node .sub{font-family:var(--mono); font-size:10px; letter-spacing:.06em; color:var(--ink-faint); margin-top:auto}
-.node.soon{border-style:dashed; background:transparent; cursor:default}
-.node.soon:hover{transform:none; background:transparent; border-color:var(--line)}
-.node.soon .ttl{color:var(--ink-faint)}
-.node.soon .motif{color:#3a3160}
-.node.builder .sub{color:var(--coral)}
-.node.hidden{display:none}
-.legend{display:flex; flex-wrap:wrap; gap:var(--s4); font-family:var(--mono); font-size:10.5px; color:var(--ink-faint); padding-block:var(--s5)}
-.legend i{display:inline-flex; align-items:center; gap:6px}
-.legend .sw{width:22px; height:12px; border-radius:3px; border:1px solid var(--line)}
-.legend .sw.built{background:var(--surface); border-color:#3a3160}
-.legend .sw.soon{border-style:dashed}
-.empty{padding:var(--s7); text-align:center; color:var(--ink-faint); border:1px dashed var(--line); border-radius:var(--r-lg)}
+.btn:focus-visible, a:focus-visible{outline:2px solid var(--teal); outline-offset:3px}
+@media (prefers-reduced-motion: reduce){ *,*::before,*::after{animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important} }
+
+.hero{padding-block:var(--s8) var(--s7)}
+.statrow{display:flex; flex-wrap:wrap; gap:var(--s5) var(--s6); margin-top:var(--s6); font-family:var(--mono); font-size:12px; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-faint)}
+.statrow b{display:block; font-family:var(--display); font-size:22px; letter-spacing:-.01em; color:var(--ink); text-transform:none}
+
+.seriesgrid{display:grid; grid-template-columns:1fr; gap:var(--s5); padding-block:0 var(--s8)}
+@media (min-width:800px){ .seriesgrid{grid-template-columns:1fr 1fr} }
+
+.seriescard{position:relative; display:flex; flex-direction:column; gap:var(--s4); padding:var(--s6); border-radius:var(--r-xl); border:1px solid var(--line); background:var(--surface); text-decoration:none; color:inherit; overflow:hidden; transition:transform .22s, box-shadow .22s, border-color .22s}
+.seriescard:hover{transform:translateY(-4px); box-shadow:0 16px 40px rgba(0,0,0,.32)}
+.seriescard::before{content:''; position:absolute; inset:0; opacity:.5; pointer-events:none; background:radial-gradient(420px 220px at 85% -10%, var(--glow), transparent 65%)}
+.seriescard.violet{--accent:var(--violet); --glow:rgba(155,107,255,.22)}
+.seriescard.teal{--accent:var(--teal); --glow:rgba(69,224,196,.2)}
+.seriescard:hover{border-color:var(--accent)}
+.sc-icon{position:relative; width:60px; height:60px; border-radius:16px; display:flex; align-items:center; justify-content:center; background:color-mix(in srgb, var(--accent) 16%, transparent); color:var(--accent)}
+.sc-icon svg{width:34px; height:34px}
+.sc-tag{position:relative; font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--accent)}
+.sc-title{position:relative; font-size:clamp(22px,2.8vw,28px)}
+.sc-desc{position:relative; font-size:14.5px; line-height:1.6; color:var(--ink-dim); max-width:46ch}
+.sc-chips{position:relative; display:flex; flex-wrap:wrap; gap:6px; margin-top:2px}
+.sc-chips span{font-family:var(--mono); font-size:11px; padding:5px 10px; border-radius:999px; background:var(--surface-2); border:1px solid var(--line); color:var(--ink-dim)}
+.sc-meta{position:relative; display:flex; align-items:center; justify-content:space-between; margin-top:auto; padding-top:var(--s4); border-top:1px solid var(--line-soft)}
+.sc-count{font-family:var(--mono); font-size:12px; color:var(--ink-faint)}
+.sc-cta{font-family:var(--mono); font-size:12.5px; letter-spacing:.04em; color:var(--accent); display:flex; align-items:center; gap:6px; transition:gap .18s}
+.seriescard:hover .sc-cta{gap:10px}
+
+.foot{padding-block:var(--s7); border-top:1px solid var(--line-soft); color:var(--ink-faint); font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase; display:flex; flex-wrap:wrap; gap:var(--s3); justify-content:space-between}
 </style>
 </head>
 <body>
 
-
-<header class="wrap masthead stack g4">
-  <div style="display:flex; align-items:center; gap:var(--s3)">
-    <p class="eyebrow" style="margin:0">Topic Atlas</p>
-    <button class="btn themetoggle" id="themeToggle" type="button" aria-pressed="false" aria-label="Switch to light theme">
-      <svg class="ti ti-sun" viewBox="0 0 16 16" aria-hidden="true" width="15" height="15"><circle cx="8" cy="8" r="3.4" fill="none" stroke="currentColor" stroke-width="1.4"/><g stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><line x1="8" y1="0.5" x2="8" y2="2.3"/><line x1="8" y1="13.7" x2="8" y2="15.5"/><line x1="0.5" y1="8" x2="2.3" y2="8"/><line x1="13.7" y1="8" x2="15.5" y2="8"/><line x1="2.6" y1="2.6" x2="3.9" y2="3.9"/><line x1="12.1" y1="12.1" x2="13.4" y2="13.4"/><line x1="2.6" y1="13.4" x2="3.9" y2="12.1"/><line x1="12.1" y1="3.9" x2="13.4" y2="2.6"/></g></svg>
-      <svg class="ti ti-moon" viewBox="0 0 16 16" aria-hidden="true" width="15" height="15"><path d="M13.5 9.5A6 6 0 1 1 6.5 2.5a4.8 4.8 0 1 0 7 7z" fill="currentColor"/></svg>
-      <span class="ti-label">Light</span>
-    </button>
-  </div>
-  <h1>Every page, in the order it makes sense</h1>
-  <p class="lede">One node per idea. Each is a standalone page built around a single mechanism you can operate yourself.</p>
-  <p class="dim" style="font-size:14.5px; max-width:60ch">New here? Start with the first collection below, <b>AI Concepts</b> — it teaches how AI actually works, no coding or math required, for anyone who uses AI and wants to understand what's really happening under the hood. Open page 1 and read in order; each page builds on the one before it. Finished it? <b>AI Concepts: Intermediate</b> goes deeper on the same ground.</p>
+<header class="wrap topbar">
+  <span class="brand"><span class="dot"></span>Visual Explainer Series</span>
+  <button class="btn themetoggle" id="themeToggle" type="button" aria-pressed="false" aria-label="Switch to light theme" style="margin-left:auto">
+    <svg class="ti ti-sun" viewBox="0 0 16 16" aria-hidden="true" width="15" height="15"><circle cx="8" cy="8" r="3.4" fill="none" stroke="currentColor" stroke-width="1.4"/><g stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><line x1="8" y1="0.5" x2="8" y2="2.3"/><line x1="8" y1="13.7" x2="8" y2="15.5"/><line x1="0.5" y1="8" x2="2.3" y2="8"/><line x1="13.7" y1="8" x2="15.5" y2="8"/><line x1="2.6" y1="2.6" x2="3.9" y2="3.9"/><line x1="12.1" y1="12.1" x2="13.4" y2="13.4"/><line x1="2.6" y1="13.4" x2="3.9" y2="12.1"/><line x1="12.1" y1="3.9" x2="13.4" y2="2.6"/></g></svg>
+    <svg class="ti ti-moon" viewBox="0 0 16 16" aria-hidden="true" width="15" height="15"><path d="M13.5 9.5A6 6 0 1 1 6.5 2.5a4.8 4.8 0 1 0 7 7z" fill="currentColor"/></svg>
+    <span class="ti-label">Light</span>
+  </button>
 </header>
 <script>(function(){
   var root=document.documentElement, btn=document.getElementById('themeToggle');
@@ -201,295 +117,75 @@ input[type="range"]::-moz-range-thumb{width:22px; height:22px; border-radius:50%
   sync();
 })();</script>
 
-<div class="wrap">
-  <div class="colls" id="colls" role="group" aria-label="Topic collections"></div>
-</div>
-
-<main class="wrap atlas" id="atlas">
-  <svg id="wires" aria-hidden="true"><g id="wireG"></g></svg>
-  <div id="mods"></div>
-  <div class="legend">
-    <i id="lgBuilt"><span class="sw built"></span>built — click to open</i>
-    <i id="lgPlanned"><span class="sw soon"></span>planned</i>
-    <i id="lgBuilder"><span class="sw" style="border-color:rgba(255,111,143,.5)"></span>builder track — has code</i>
+<section class="wrap hero stack g4">
+  <p class="eyebrow">Two interactive series</p>
+  <h1>Understand AI, and how it's put to work.</h1>
+  <p class="lede">Pick the series that matches what you're trying to understand. Every page is one interactive idea, built to operate yourself — not a wall of text.</p>
+  <div class="statrow">
+    <span><b>50+</b>pages</span>
+    <span><b>2</b>series</span>
+    <span><b>one</b>mechanism per page</span>
   </div>
-</main>
+</section>
 
-<footer class="wrap foot">Topic Atlas · collections of visual explainers</footer>
+<section class="wrap seriesgrid">
+  <a class="seriescard violet" href="00-atlas.html">
+    <div class="sc-icon">
+      <svg viewBox="0 0 48 48" aria-hidden="true">
+        <circle cx="12" cy="16" r="4" fill="currentColor"/>
+        <circle cx="30" cy="10" r="4" fill="currentColor" opacity=".75"/>
+        <circle cx="36" cy="32" r="4" fill="currentColor" opacity=".55"/>
+        <circle cx="14" cy="36" r="4" fill="currentColor" opacity=".9"/>
+        <g stroke="currentColor" stroke-width="1.3" opacity=".45" fill="none">
+          <path d="M12 16 L30 10"/><path d="M30 10 L36 32"/><path d="M36 32 L14 36"/><path d="M14 36 L12 16"/><path d="M12 16 L36 32"/>
+        </g>
+      </svg>
+    </div>
+    <span class="sc-tag">For anyone who uses AI</span>
+    <h2 class="sc-title">AI Concepts</h2>
+    <p class="sc-desc">How AI actually works, from tokens to agents — no coding or math required. Read the beginner series in order, then keep going with a denser Intermediate tier.</p>
+    <div class="sc-chips">
+      <span>What is an LLM?</span>
+      <span>Why AI hallucinates</span>
+      <span>Multi-agent systems</span>
+    </div>
+    <div class="sc-meta">
+      <span class="sc-count">32 pages · Intermediate tier in progress</span>
+      <span class="sc-cta">Explore →</span>
+    </div>
+  </a>
 
-<script>
-(function(){
-  // Link mode is set at build time. The folder copy links to sibling files so the
-  // directory works as a self-contained site; the hosted copy links to the artifacts,
-  // because a published page has no siblings.
-  var LINKBASE = "";
-  var FILES = {
-    1:'01-what-is-ai.html', 2:'02-tokens-embeddings.html', 3:'03-what-is-an-llm.html',
-    4:'04-context-window.html', 5:'05-training-vs-using.html', 6:'06-why-assistant.html',
-    7:'07-prompting-101.html', 8:'08-hallucination.html', 9:'09-rag.html',
-    10:'10-three-doors.html', 11:'11-multimodal.html', 12:'12-tool-use.html',
-    13:'13-agentic.html', 14:'14-agent-memory.html', 15:'15-multi-agent.html',
-    16:'16-guardrails.html', 17:'17-use-cases.html', 18:'18-limits.html',
-    19:'19-first-app.html', 20:'20-local.html', 21:'21-injection.html',
-    22:'22-open-closed.html', 23:'23-data-goes.html', 24:'24-three-finishes.html',
-    25:'25-spec-card.html', 26:'26-factory.html', 27:'27-field-guide.html',
-    28:'28-attention.html', 29:'29-parameters.html', 30:'30-token-math.html',
-    31:'31-sampling.html', 32:'32-benchmarks.html',
-    33:'33-attention-lookup.html', 34:'34-multi-head.html', 35:'35-positional-encoding.html',
-    36:'36-fine-tuning.html', 37:'37-rlhf.html', 38:'38-scaling-laws.html',
-    39:'39-chunking.html', 40:'40-hybrid-search.html', 41:'41-long-context.html'
-  };
-  function hrefFor(p){ return LINKBASE ? LINKBASE + p.id : (FILES[p.n] || null); }
-  // ---- motifs: one tiny drawing per page, echoing that page's signature visual ----
-  var M = {
-    knn:  '<circle cx="20" cy="20" r="4" fill="currentColor"/><circle cx="8" cy="10" r="2.4" fill="currentColor" opacity=".5"/><circle cx="32" cy="12" r="2.4" fill="currentColor" opacity=".5"/><circle cx="10" cy="31" r="2.4" fill="currentColor" opacity=".5"/><circle cx="31" cy="30" r="2.4" fill="currentColor" opacity=".5"/><g stroke="currentColor" stroke-width="1" opacity=".55"><line x1="20" y1="20" x2="8" y2="10"/><line x1="20" y1="20" x2="32" y2="12"/><line x1="20" y1="20" x2="10" y2="31"/><line x1="20" y1="20" x2="31" y2="30"/></g>',
-    chop: '<rect x="4" y="9" width="9" height="9" rx="2" fill="currentColor" opacity=".85"/><rect x="15" y="9" width="10" height="9" rx="2" fill="currentColor" opacity=".55"/><rect x="27" y="9" width="9" height="9" rx="2" fill="currentColor" opacity=".35"/><circle cx="11" cy="30" r="2.4" fill="currentColor"/><circle cx="21" cy="27" r="2.4" fill="currentColor"/><circle cx="30" cy="32" r="2.4" fill="currentColor"/>',
-    bars: '<rect x="5" y="8" width="30" height="4" rx="2" fill="currentColor"/><rect x="5" y="16" width="22" height="4" rx="2" fill="currentColor" opacity=".7"/><rect x="5" y="24" width="15" height="4" rx="2" fill="currentColor" opacity=".5"/><rect x="5" y="32" width="9" height="4" rx="2" fill="currentColor" opacity=".35"/>',
-    desk: '<rect x="4" y="12" width="9" height="16" rx="2" fill="currentColor" opacity=".3"/><rect x="15" y="12" width="9" height="16" rx="2" fill="currentColor" opacity=".7"/><rect x="26" y="12" width="8" height="16" rx="2" fill="currentColor" opacity=".7"/><line x1="35" y1="8" x2="35" y2="32" stroke="currentColor" stroke-width="2.4"/>',
-    cut:  '<line x1="4" y1="20" x2="36" y2="20" stroke="currentColor" stroke-width="1.4"/><circle cx="10" cy="20" r="2.6" fill="currentColor"/><circle cx="17" cy="20" r="2.6" fill="currentColor"/><line x1="23" y1="9" x2="23" y2="31" stroke="currentColor" stroke-width="2.4"/><circle cx="30" cy="20" r="2.6" fill="none" stroke="currentColor" stroke-dasharray="1.5 1.5"/>',
-    two:  '<rect x="4" y="14" width="26" height="12" rx="2" fill="currentColor" opacity=".55"/><rect x="32" y="14" width="4" height="12" rx="1.5" fill="currentColor"/>',
-    chips:'<rect x="6" y="7" width="28" height="6" rx="3" fill="currentColor" opacity=".8"/><rect x="6" y="17" width="21" height="6" rx="3" fill="currentColor" opacity=".55"/><rect x="6" y="27" width="15" height="6" rx="3" fill="currentColor" opacity=".35"/>',
-    gap:  '<rect x="4" y="16" width="12" height="8" rx="2" fill="currentColor" opacity=".6"/><rect x="18" y="16" width="8" height="8" rx="2" fill="none" stroke="currentColor" stroke-dasharray="2 2"/><rect x="28" y="16" width="8" height="8" rx="2" fill="currentColor" opacity=".6"/>',
-    map:  '<circle cx="9" cy="12" r="2.4" fill="currentColor" opacity=".4"/><circle cx="30" cy="10" r="2.4" fill="currentColor" opacity=".4"/><circle cx="12" cy="30" r="2.4" fill="currentColor" opacity=".4"/><circle cx="31" cy="29" r="2.4" fill="currentColor" opacity=".4"/><circle cx="20" cy="20" r="3.6" fill="currentColor"/><g stroke="currentColor" stroke-width="1" opacity=".6" stroke-dasharray="2 2"><line x1="20" y1="20" x2="30" y2="10"/><line x1="20" y1="20" x2="12" y2="30"/></g>',
-    doors:'<path d="M5 34V16a5 5 0 0 1 10 0v18z" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M17 34V16a5 5 0 0 1 10 0v18z" fill="none" stroke="currentColor" stroke-width="1.6" opacity=".6"/><path d="M29 34V16a5 5 0 0 1 8 0v18z" fill="none" stroke="currentColor" stroke-width="1.6" opacity=".35"/>',
-    doors4:'<rect x="4" y="7" width="9" height="7" rx="2" fill="currentColor" opacity=".75"/><rect x="4" y="17" width="9" height="7" rx="2" fill="currentColor" opacity=".55"/><rect x="4" y="27" width="9" height="7" rx="2" fill="currentColor" opacity=".35"/><circle cx="30" cy="20" r="4" fill="currentColor"/><g stroke="currentColor" stroke-width="1" opacity=".5"><line x1="15" y1="11" x2="26" y2="19"/><line x1="15" y1="21" x2="26" y2="20"/><line x1="15" y1="31" x2="26" y2="22"/></g>',
-    tool: '<rect x="3" y="14" width="12" height="12" rx="2" fill="currentColor" opacity=".7"/><line x1="20" y1="6" x2="20" y2="34" stroke="currentColor" stroke-width="1.6" stroke-dasharray="3 3"/><rect x="25" y="14" width="12" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="1.4"/>',
-    ring: '<circle cx="20" cy="20" r="12" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="20" cy="8" r="2.8" fill="currentColor"/><circle cx="31" cy="16" r="2.8" fill="currentColor" opacity=".7"/><circle cx="27" cy="29" r="2.8" fill="currentColor" opacity=".7"/><circle cx="13" cy="29" r="2.8" fill="currentColor" opacity=".7"/><circle cx="9" cy="16" r="2.8" fill="currentColor" opacity=".7"/>',
-    mem:  '<rect x="3" y="12" width="10" height="16" rx="2" fill="currentColor" opacity=".35"/><rect x="15" y="12" width="10" height="16" rx="2" fill="currentColor" opacity=".6"/><rect x="27" y="12" width="10" height="16" rx="2" fill="currentColor" opacity=".85"/>',
-    org:  '<rect x="14" y="4" width="12" height="7" rx="2" fill="currentColor"/><rect x="3" y="27" width="11" height="7" rx="2" fill="currentColor" opacity=".6"/><rect x="15" y="27" width="11" height="7" rx="2" fill="currentColor" opacity=".6"/><rect x="27" y="27" width="10" height="7" rx="2" fill="currentColor" opacity=".6"/><g stroke="currentColor" stroke-width="1" opacity=".5"><line x1="20" y1="11" x2="9" y2="27"/><line x1="20" y1="11" x2="20" y2="27"/><line x1="20" y1="11" x2="32" y2="27"/></g>',
-    gate: '<rect x="4" y="16" width="10" height="8" rx="2" fill="currentColor" opacity=".6"/><rect x="17" y="8" width="6" height="24" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><rect x="26" y="16" width="10" height="8" rx="2" fill="none" stroke="currentColor" stroke-width="1.4"/>',
-    jobs: '<circle cx="20" cy="20" r="11" fill="none" stroke="currentColor" stroke-width="1.4" opacity=".5"/><circle cx="20" cy="9" r="2.4" fill="currentColor"/><circle cx="30" cy="17" r="2.4" fill="currentColor"/><circle cx="26" cy="29" r="2.4" fill="currentColor"/><circle cx="14" cy="29" r="2.4" fill="currentColor"/><circle cx="10" cy="17" r="2.4" fill="currentColor"/>',
-    bench:'<rect x="4" y="9" width="12" height="6" rx="2" fill="currentColor" opacity=".8"/><rect x="4" y="18" width="12" height="6" rx="2" fill="currentColor" opacity=".5"/><rect x="4" y="27" width="12" height="6" rx="2" fill="currentColor" opacity=".3"/><g stroke="currentColor" stroke-width="1.4" opacity=".85"><line x1="22" y1="12" x2="36" y2="12"/><line x1="22" y1="20" x2="33" y2="20"/><line x1="22" y1="28" x2="36" y2="28"/></g><path d="M17 12 C20 12, 19 20, 22 20" fill="none" stroke="currentColor" stroke-width="1"/>',
-    homes:'<rect x="3" y="13" width="13" height="14" rx="2" fill="currentColor" opacity=".7"/><line x1="20" y1="6" x2="20" y2="34" stroke="currentColor" stroke-width="1.6" stroke-dasharray="3 3"/><rect x="24" y="13" width="13" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="1.4"/>',
-    poison:'<rect x="8" y="5" width="24" height="30" rx="3" fill="none" stroke="currentColor" stroke-width="1.4"/><g stroke="currentColor" stroke-width="1.4" opacity=".45"><line x1="13" y1="12" x2="27" y2="12"/><line x1="13" y1="17" x2="27" y2="17"/><line x1="13" y1="27" x2="25" y2="27"/></g><rect x="11" y="20" width="18" height="4" rx="1.5" fill="#ff6f8f"/>',
-    edge: '<path d="M6 20a14 12 0 0 1 20-10c6 3 8 10 5 15-3 6-13 8-19 4-4-3-6-6-6-9z" fill="currentColor" opacity=".18" stroke="currentColor" stroke-width="1.2"/><circle cx="30" cy="13" r="2.6" fill="currentColor"/><circle cx="33" cy="23" r="2.6" fill="currentColor"/><circle cx="24" cy="32" r="2.6" fill="currentColor"/>',
-    bldg: '<rect x="4" y="10" width="14" height="24" rx="2" fill="none" stroke="currentColor" stroke-width="1.6" opacity=".7"/><rect x="22" y="6" width="14" height="28" rx="2" fill="currentColor" opacity=".55"/><rect x="8" y="16" width="5" height="5" fill="currentColor" opacity=".5"/><rect x="26" y="12" width="5" height="5" fill="currentColor" opacity=".9"/>',
-    trail:'<circle cx="7" cy="20" r="3" fill="currentColor"/><circle cx="20" cy="10" r="3" fill="currentColor" opacity=".7"/><circle cx="20" cy="30" r="3" fill="currentColor" opacity=".7"/><circle cx="33" cy="20" r="3" fill="currentColor" opacity=".4"/><g stroke="currentColor" stroke-width="1.2" opacity=".5"><line x1="7" y1="20" x2="20" y2="10"/><line x1="7" y1="20" x2="20" y2="30"/><line x1="20" y1="10" x2="33" y2="20"/><line x1="20" y1="30" x2="33" y2="20"/></g>',
-    finish:'<rect x="4" y="12" width="9" height="16" fill="currentColor" opacity=".3"/><rect x="15" y="10" width="9" height="20" rx="2" fill="currentColor" opacity=".65"/><rect x="26" y="8" width="9" height="24" rx="3" fill="currentColor"/>',
-    spec: '<rect x="4" y="9" width="26" height="4" rx="2" fill="currentColor"/><rect x="4" y="17" width="18" height="4" rx="2" fill="currentColor" opacity=".7"/><rect x="4" y="25" width="30" height="4" rx="2" fill="currentColor" opacity=".45"/>',
-    factory:'<rect x="3" y="17" width="7" height="7" rx="1.5" fill="currentColor" opacity=".5"/><rect x="14" y="17" width="7" height="7" rx="1.5" fill="currentColor" opacity=".7"/><rect x="25" y="17" width="7" height="7" rx="1.5" fill="currentColor" opacity=".9"/><g stroke="currentColor" stroke-width="1.2" opacity=".5"><line x1="10" y1="20.5" x2="14" y2="20.5"/><line x1="21" y1="20.5" x2="25" y2="20.5"/></g>',
-    peg:  '<rect x="4" y="4" width="13" height="13" rx="2.5" fill="currentColor" opacity=".8"/><rect x="21" y="4" width="13" height="13" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.4"/><rect x="4" y="21" width="13" height="13" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.4"/><rect x="21" y="21" width="13" height="13" rx="2.5" fill="currentColor" opacity=".5"/>',
-    threads:'<circle cx="8" cy="12" r="3" fill="currentColor"/><circle cx="20" cy="28" r="3" fill="currentColor" opacity=".7"/><circle cx="32" cy="14" r="3" fill="currentColor" opacity=".5"/><path d="M8 12 Q14 22 20 28" fill="none" stroke="currentColor" stroke-width="1.2" opacity=".6"/><path d="M20 28 Q26 20 32 14" fill="none" stroke="currentColor" stroke-width="1.2" opacity=".5"/>',
-    dial2:'<circle cx="20" cy="20" r="14" fill="none" stroke="currentColor" stroke-width="1.6"/><line x1="20" y1="20" x2="20" y2="9" stroke="currentColor" stroke-width="2.2" transform="rotate(35 20 20)"/>',
-    meter:'<rect x="5" y="24" width="6" height="10" rx="1.5" fill="currentColor" opacity=".4"/><rect x="14" y="16" width="6" height="18" rx="1.5" fill="currentColor" opacity=".6"/><rect x="23" y="8" width="6" height="26" rx="1.5" fill="currentColor" opacity=".85"/><rect x="32" y="18" width="6" height="16" rx="1.5" fill="currentColor" opacity=".55"/>',
-    cuts: '<rect x="4" y="24" width="26" height="4" rx="2" fill="currentColor"/><rect x="4" y="16" width="18" height="4" rx="2" fill="currentColor" opacity=".7"/><rect x="4" y="8" width="10" height="4" rx="2" fill="currentColor" opacity=".45"/><line x1="24" y1="4" x2="24" y2="34" stroke="currentColor" stroke-width="1.4" stroke-dasharray="2 2" opacity=".8"/>',
-    report:'<rect x="5" y="6" width="30" height="28" rx="3" fill="none" stroke="currentColor" stroke-width="1.4"/><line x1="10" y1="14" x2="26" y2="14" stroke="currentColor" stroke-width="1.4" opacity=".6"/><line x1="10" y1="21" x2="22" y2="21" stroke="currentColor" stroke-width="1.4" opacity=".6"/><g stroke="#ff6f8f" stroke-width="1.6" stroke-linecap="round"><line x1="27" y1="24" x2="27" y2="30"/><line x1="24" y1="25.5" x2="30" y2="28.5"/><line x1="30" y1="25.5" x2="24" y2="28.5"/></g>',
-    pipe: '<circle cx="6" cy="20" r="4" fill="currentColor" opacity=".7"/><path d="M12 20 h10" stroke="currentColor" stroke-width="1.4"/><rect x="24" y="14" width="12" height="12" rx="3" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="30" cy="20" r="3" fill="currentColor"/>',
-    rerank:'<rect x="4" y="10" width="24" height="6" rx="2" fill="currentColor" opacity=".4"/><rect x="4" y="24" width="24" height="6" rx="2" fill="currentColor" opacity=".85"/><g stroke="currentColor" stroke-width="1.4" fill="none"><path d="M34 27 v-15"/><path d="M31 15 l3 -3 l3 3"/></g>',
-    qkv: '<circle cx="10" cy="20" r="6" fill="currentColor" opacity=".8"/><rect x="22" y="9" width="8" height="8" rx="2" fill="currentColor" opacity=".5"/><rect x="22" y="17" width="8" height="8" rx="2" fill="currentColor" opacity=".5"/><rect x="22" y="25" width="8" height="8" rx="2" fill="currentColor" opacity=".5"/><g stroke="currentColor" stroke-width="1" opacity=".5"><line x1="16" y1="20" x2="22" y2="13"/><line x1="16" y1="20" x2="22" y2="21"/><line x1="16" y1="20" x2="22" y2="29"/></g>',
-    heads:'<rect x="4" y="6" width="14" height="10" rx="2" fill="currentColor" opacity=".8"/><rect x="22" y="6" width="14" height="10" rx="2" fill="currentColor" opacity=".55"/><rect x="4" y="24" width="14" height="10" rx="2" fill="currentColor" opacity=".35"/><rect x="22" y="24" width="14" height="10" rx="2" fill="currentColor" opacity=".2"/>',
-    pos:  '<path d="M4 24 Q10 10, 16 24 T28 24 T40 24" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="16" cy="24" r="2.2" fill="currentColor"/><circle cx="28" cy="24" r="2.2" fill="currentColor" opacity=".6"/>'
-  };
+  <a class="seriescard teal" href="agents-at-work-hub.html">
+    <div class="sc-icon">
+      <svg viewBox="0 0 48 48" aria-hidden="true">
+        <circle cx="24" cy="10" r="5" fill="currentColor"/>
+        <circle cx="10" cy="36" r="5" fill="currentColor" opacity=".7"/>
+        <circle cx="24" cy="36" r="5" fill="currentColor" opacity=".7"/>
+        <circle cx="38" cy="36" r="5" fill="currentColor" opacity=".7"/>
+        <g stroke="currentColor" stroke-width="1.4" opacity=".5" fill="none">
+          <path d="M24 15 L24 23"/><path d="M24 23 L10 31"/><path d="M24 23 L24 31"/><path d="M24 23 L38 31"/>
+        </g>
+      </svg>
+    </div>
+    <span class="sc-tag">For developers &amp; teams</span>
+    <h2 class="sc-title">Agents at Work</h2>
+    <p class="sc-desc">How a real agent-driven software delivery pipeline works — role-scoped agents, fixed stages, human gates, and everything that keeps it safe to run unattended.</p>
+    <div class="sc-chips">
+      <span>Human gates</span>
+      <span>The review loop</span>
+      <span>Right-sizing the model</span>
+    </div>
+    <div class="sc-meta">
+      <span class="sc-count">11 interactive patterns</span>
+      <span class="sc-cta">Explore →</span>
+    </div>
+  </a>
+</section>
 
-  // ---- the only thing that changes when a collection is added ----
-  var COLLECTIONS = [
-    {
-      id:'ai-concepts',
-      title:'AI Concepts',
-      blurb:'How AI actually works, one mechanism per page.',
-      modules:[
-        { n:1, title:'Foundations', pages:[
-          { n:1,  t:'What is AI, really?',        m:'knn',   id:'63d9aade-ebcc-4e60-91aa-ef4044c9455a' },
-          { n:2,  t:'How AI reads language',      m:'chop',  id:'2d868110-ffad-4397-b7b5-c835f8c7e0b2' },
-          { n:3,  t:'What is an LLM?',            m:'bars',  id:'1dcd2670-6ad7-470c-b2cc-fefad8bf3b17' },
-          { n:4,  t:'The context window',         m:'desk',  id:'09d6a16c-7224-4da0-9346-bdb807aed7a4' }]},
-        { n:2, title:'How AI thinks, where it breaks', pages:[
-          { n:5,  t:'Training vs. using',         m:'cut',   id:'547d9891-0943-4f99-91e1-f5c2f87f83ad' },
-          { n:6,  t:'Why it acts like an assistant', m:'two', id:'ef455545-d17b-4499-8fba-94aa5edeb6ba' },
-          { n:7,  t:'Prompting 101',              m:'chips', id:'14e83f4d-0ba1-4be4-97f4-6df2e188fe9a' },
-          { n:8,  t:'Why AI hallucinates',        m:'gap',   id:'571f7dd3-beec-4279-8588-e8af555605b3' },
-          { n:9,  t:'RAG & vector databases',     m:'map',   id:'d8dfbd88-9898-4be1-9c50-ab8909abbc98' },
-          { n:10, t:'Fine-tuning vs. RAG vs. prompting', m:'doors', id:'d5f208e8-f477-4302-8611-6ca3664a1eac' }]},
-        { n:3, title:'Beyond text', pages:[
-          { n:11, t:'Multimodal AI',              m:'doors4', id:'14712b89-f1d6-45d5-a960-abc0556c85cd' },
-          { n:12, t:'Tool use',                   m:'tool',  id:'30da1e69-14b7-4f56-897d-60096b643247' }]},
-        { n:4, title:'Agentic AI', pages:[
-          { n:13, t:'What makes AI “agentic”',    m:'ring',  id:'a1146137-223a-47ff-80a8-1b7fdc26b921' },
-          { n:14, t:'Memory in AI agents',        m:'mem',   id:'d2ff0256-d84a-4e9d-b27c-ae65aaaf6ffc' },
-          { n:15, t:'Multi-agent systems',        m:'org',   id:'c9b4c638-148d-456b-a39a-fc8764d302b1' },
-          { n:16, t:'Guardrails & human-in-the-loop', m:'gate', id:'f6b7bc3d-88c2-4fdf-9d6b-e7ae035c4885' },
-          { n:17, t:'Where agents actually work', m:'jobs',  id:'c41581fe-b42d-4bbd-9f78-b020428883e6' }]},
-        { n:5, title:'Reality check', pages:[
-          { n:18, t:'What AI still can’t do',     m:'edge',  id:'2e378ac5-1d8e-42f4-8234-2fb3b2f4f7b8' }]},
-        { n:6, title:'Under the hood', pages:[
-          { n:19, t:'One request, start to finish', m:'pipe', id:'fb9b9a51-dcda-4461-876f-da88fcc15eda' },
-          { n:20, t:'Finding the right piece, twice', m:'rerank', id:'93772d2e-2f0f-454d-b2c8-c4fc3e0123c4' },
-          { n:21, t:'Anything on the desk gives orders', m:'poison', id:'4f0b36f1-b0b4-42b8-b0c2-95c72224ca2f' }]},
-        { n:7, title:'The landscape: models and tools', pages:[
-          { n:22, t:'Open vs. closed models',            m:'bldg',    id:'9d43fa57-554d-4c63-bd6d-7eecf5dfd652' },
-          { n:23, t:'Where your data goes',               m:'trail',   id:'11886f46-0f3e-4c94-9238-b14777326aa6' },
-          { n:24, t:'Base vs. instruct vs. fine-tuned',   m:'finish',  id:'a8c4d8c3-4b98-4107-9200-4a326984ae82' },
-          { n:25, t:'How model families differ',          m:'spec',    id:'18cfa0d8-4945-40f9-a136-1fa762d9b5c0' },
-          { n:26, t:'Where models come from',             m:'factory', id:'829acfba-469c-4617-b964-86224abdd409' },
-          { n:27, t:'The AI tools field guide',           m:'peg',     id:'bca777c5-0799-4679-86e0-d4b7241eb9b2' }]},
-        { n:8, title:'Going deeper', desc:'Attention → what it’s made of → what it costs to run → how it picks a word → how anyone grades it. Five pages, one machine, each picking up where the last left off.', pages:[
-          { n:28, t:'Glowing threads between words', m:'threads', id:'88e82d32-0262-4c11-88a4-80510f973c35' },
-          { n:29, t:'Parameters & weights, really',  m:'dial2',   id:'ba326c43-a968-4aaf-a79c-106ed24ccc6c' },
-          { n:30, t:'Tokens, cost & context math',   m:'meter',   id:'6aa383c0-2368-45d6-ab8e-20310e3e77b2' },
-          { n:31, t:'One distribution, three cuts',  m:'cuts',    id:'daec1753-9a8c-4bde-8604-a2ffb81769d2' },
-          { n:32, t:'A report card with an asterisk',m:'report',  id:'10c70a3e-b7a9-4233-aa19-2b06fbb1394c' }]}
-      ]
-    },
-    {
-      id:'ai-intermediate',
-      title:'AI Concepts: Intermediate',
-      blurb:'Deeper, denser passes on ground the beginner series already covered.',
-      modules:[
-        { n:1, title:'Inside the transformer', pages:[
-          { n:33, t:'Attention, as a weighted lookup',        m:'qkv',   id:'d83e7943-c87f-4e00-bcbc-eca62d94a120' },
-          { n:34, t:"Why one head isn't enough",              m:'heads', id:'a0f24c91-af89-4b1b-8045-daf37d09692a' },
-          { n:35, t:'How order survives without a scanning eye', m:'pos', id:'b06bb7b3-c775-44cd-82ce-1829564cff49' }]},
-        { n:2, title:'How models get shaped', pages:[
-          { n:36, t:'What fine-tuning actually changes',      m:'dial2', id:'local' },
-          { n:37, t:'Turning human preference into a training signal', m:'two', id:'local' },
-          { n:38, t:'Why bigger reliably helps, and where it stops', m:'bars', id:'local' }]},
-        { n:3, title:'Retrieval and memory, deeper', pages:[
-          { n:39, t:'Why how you cut a document matters',     m:'chop', id:'local' },
-          { n:40, t:'Combining keyword and vector search',    m:'map', id:'local' },
-          { n:41, t:'When a bigger context window replaces retrieval', m:'desk', id:'local' }]},
-        { n:4, title:'Agents, for real', pages:[
-          { n:42, t:'How a model actually "calls" a tool',    m:'tool' },
-          { n:43, t:'Think–act–observe as a real control loop', m:'ring' },
-          { n:44, t:'Supervisor vs. peer orchestration',      m:'org' }]},
-        { n:5, title:'Efficiency & scale', pages:[
-          { n:45, t:'What "8-bit" or "4-bit" really means',  m:'meter' },
-          { n:46, t:'Why some models only wake up part of themselves', m:'rerank' },
-          { n:47, t:'Training a small model to mimic a big one', m:'finish' }]},
-        { n:6, title:'Trust, safety & evaluation', pages:[
-          { n:48, t:'How we know a model is good',            m:'bench' },
-          { n:49, t:'Deliberately trying to break a model',   m:'poison' },
-          { n:50, t:'Teaching a model rules without labeling every case', m:'gate' }]}
-      ]
-    }
-  ];
-
-  var active = COLLECTIONS[0];
-  var collsEl = document.getElementById('colls');
-  var modsEl = document.getElementById('mods'), wires = document.getElementById('wires'), wireG = document.getElementById('wireG');
-  var lgBuilt = document.getElementById('lgBuilt'), lgPlanned = document.getElementById('lgPlanned'), lgBuilder = document.getElementById('lgBuilder');
-
-  function hasBuilderPages(c){
-    return c.modules.some(function(m){ return m.pages.some(function(p){ return (p.track || m.track) === 'builder'; }); });
-  }
-
-  function countBuilt(c){
-    var b = 0, tot = 0;
-    c.modules.forEach(function(m){ m.pages.forEach(function(p){ tot++; if(p.id) b++; }); });
-    return { built: b, total: tot };
-  }
-
-  function renderColls(){
-    collsEl.textContent = '';
-    COLLECTIONS.forEach(function(c){
-      var n = countBuilt(c);
-      var b = document.createElement('button');
-      b.className = 'coll'; b.type = 'button';
-      b.setAttribute('aria-pressed', c === active);
-      b.innerHTML = c.title + (n.built < n.total ? ' <span class="ct">' + n.built + '/' + n.total + '</span>' : '');
-      b.addEventListener('click', function(){ active = c; renderAll(); });
-      collsEl.appendChild(b);
-    });
-  }
-
-  function pageTrack(p, m){ return p.track || m.track || 'concept'; }
-
-  function renderMods(){
-    modsEl.textContent = '';
-    var shown = 0;
-    active.modules.forEach(function(m){
-      var visible = m.pages;
-      if(!visible.length) return;
-      var sec = document.createElement('section');
-      sec.className = 'mod';
-      var head = document.createElement('div');
-      head.className = 'modhead';
-      head.innerHTML = '<span class="mn">MODULE ' + String(m.n).padStart(2, '0') + '</span><h2></h2>';
-      head.querySelector('h2').textContent = m.title;
-      if(m.track === 'builder'){
-        var badge = document.createElement('span');
-        badge.className = 'badge'; badge.textContent = 'Builder';
-        head.appendChild(badge);
-      }
-      sec.appendChild(head);
-      if(m.desc){
-        var descEl = document.createElement('p');
-        descEl.className = 'moddesc';
-        descEl.textContent = m.desc;
-        sec.appendChild(descEl);
-      }
-      var grid = document.createElement('div');
-      grid.className = 'grid';
-      visible.forEach(function(p){
-        var built = !!p.id;
-        var node = document.createElement(built ? 'a' : 'div');
-        node.className = 'node' + (built ? '' : ' soon') + (pageTrack(p, m) === 'builder' ? ' builder' : '');
-        if(built){
-          node.href = hrefFor(p); node.target = '_blank'; node.rel = 'noopener';
-        }
-        node.innerHTML =
-          '<span class="top"><span class="no">' + String(p.n).padStart(2, '0') + '</span>' +
-          '<svg class="motif" viewBox="0 0 40 40" aria-hidden="true">' + (p.m ? M[p.m] : '<circle cx="20" cy="20" r="12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-dasharray="3 3"/>') + '</svg></span>' +
-          '<span class="ttl"></span>' +
-          '<span class="sub">' + (built ? (pageTrack(p, m) === 'builder' ? 'builder · open' : 'open') : 'planned') + '</span>';
-        node.querySelector('.ttl').textContent = p.t;
-        if(built) node.setAttribute('aria-label', 'Page ' + p.n + ': ' + p.t + ' — opens in a new tab');
-        grid.appendChild(node);
-        shown++;
-      });
-      sec.appendChild(grid);
-      modsEl.appendChild(sec);
-    });
-    if(!shown){
-      var e = document.createElement('div');
-      e.className = 'empty'; e.textContent = 'Nothing here yet.';
-      modsEl.appendChild(e);
-    }
-  }
-
-  function renderLegend(){
-    var n = countBuilt(active);
-    var complete = n.built >= n.total;
-    lgBuilt.style.display = complete ? 'none' : '';
-    lgPlanned.style.display = complete ? 'none' : '';
-    lgBuilder.style.display = hasBuilderPages(active) ? '' : 'none';
-  }
-
-  // ---- connector path: read the laid-out node positions, so it reflows with the grid ----
-  function drawWires(){
-    wireG.textContent = '';
-    var box = document.getElementById('atlas').getBoundingClientRect();
-    wires.setAttribute('viewBox', '0 0 ' + box.width + ' ' + box.height);
-    var nodes = Array.prototype.slice.call(modsEl.querySelectorAll('.node'));
-    if(nodes.length < 2) return;
-    var pts = nodes.map(function(n){
-      var r = n.getBoundingClientRect();
-      return { x: r.left - box.left + r.width / 2, y: r.top - box.top + r.height / 2 };
-    });
-    var d = '';
-    for(var i = 0; i < pts.length - 1; i++){
-      var a = pts[i], b = pts[i + 1];
-      var my = (a.y + b.y) / 2;
-      d += (i === 0 ? 'M' + a.x + ' ' + a.y : '') +
-           ' C ' + a.x + ' ' + my + ', ' + b.x + ' ' + my + ', ' + b.x + ' ' + b.y;
-    }
-    var path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    path.setAttribute('d', d);
-    path.setAttribute('fill', 'none');
-    path.setAttribute('stroke', '#2a2340');
-    path.setAttribute('stroke-width', '1.5');
-    path.setAttribute('stroke-dasharray', '4 6');
-    wireG.appendChild(path);
-  }
-
-  function renderAll(){
-    renderColls(); renderMods(); renderLegend();
-    requestAnimationFrame(drawWires);
-  }
-  renderAll();
-  window.addEventListener('resize', function(){ requestAnimationFrame(drawWires); });
-  if(window.ResizeObserver) new ResizeObserver(function(){ drawWires(); }).observe(modsEl);
-})();
-</script>
+<footer class="wrap foot">
+  <span>Visual Explainer Series</span>
+  <span>Every page is self-contained · nothing to install</span>
+</footer>
 
 </body>
 </html>

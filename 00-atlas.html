@@ -173,6 +173,7 @@ input[type="range"]::-moz-range-thumb{width:22px; height:22px; border-radius:50%
 
 <header class="wrap masthead stack g4">
   <div style="display:flex; align-items:center; gap:var(--s3)">
+    <a class="btn" href="index.html" style="font-size:11.5px">← All series</a>
     <p class="eyebrow" style="margin:0">Topic Atlas</p>
     <button class="btn themetoggle" id="themeToggle" type="button" aria-pressed="false" aria-label="Switch to light theme">
       <svg class="ti ti-sun" viewBox="0 0 16 16" aria-hidden="true" width="15" height="15"><circle cx="8" cy="8" r="3.4" fill="none" stroke="currentColor" stroke-width="1.4"/><g stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><line x1="8" y1="0.5" x2="8" y2="2.3"/><line x1="8" y1="13.7" x2="8" y2="15.5"/><line x1="0.5" y1="8" x2="2.3" y2="8"/><line x1="13.7" y1="8" x2="15.5" y2="8"/><line x1="2.6" y1="2.6" x2="3.9" y2="3.9"/><line x1="12.1" y1="12.1" x2="13.4" y2="13.4"/><line x1="2.6" y1="13.4" x2="3.9" y2="12.1"/><line x1="12.1" y1="3.9" x2="13.4" y2="2.6"/></g></svg>
@@ -237,7 +238,10 @@ input[type="range"]::-moz-range-thumb{width:22px; height:22px; border-radius:50%
     31:'31-sampling.html', 32:'32-benchmarks.html',
     33:'33-attention-lookup.html', 34:'34-multi-head.html', 35:'35-positional-encoding.html',
     36:'36-fine-tuning.html', 37:'37-rlhf.html', 38:'38-scaling-laws.html',
-    39:'39-chunking.html', 40:'40-hybrid-search.html', 41:'41-long-context.html'
+    39:'39-chunking.html', 40:'40-hybrid-search.html', 41:'41-long-context.html',
+    42:'42-function-calling.html', 43:'43-react-loop.html', 44:'44-orchestration.html',
+    45:'45-quantization.html', 46:'46-mixture-of-experts.html', 47:'47-distillation.html',
+    48:'48-benchmarks-evals.html', 49:'49-red-teaming.html', 50:'50-constitutional-ai.html'
   };
   function hrefFor(p){ return LINKBASE ? LINKBASE + p.id : (FILES[p.n] || null); }
   // ---- motifs: one tiny drawing per page, echoing that page's signature visual ----
@@ -348,17 +352,17 @@ input[type="range"]::-moz-range-thumb{width:22px; height:22px; border-radius:50%
           { n:40, t:'Combining keyword and vector search',    m:'map', id:'local' },
           { n:41, t:'When a bigger context window replaces retrieval', m:'desk', id:'local' }]},
         { n:4, title:'Agents, for real', pages:[
-          { n:42, t:'How a model actually "calls" a tool',    m:'tool' },
-          { n:43, t:'Think–act–observe as a real control loop', m:'ring' },
-          { n:44, t:'Supervisor vs. peer orchestration',      m:'org' }]},
+          { n:42, t:'How a model actually "calls" a tool',    m:'tool', id:'local' },
+          { n:43, t:'Think–act–observe as a real control loop', m:'ring', id:'local' },
+          { n:44, t:'Supervisor vs. peer orchestration',      m:'org', id:'local' }]},
         { n:5, title:'Efficiency & scale', pages:[
-          { n:45, t:'What "8-bit" or "4-bit" really means',  m:'meter' },
-          { n:46, t:'Why some models only wake up part of themselves', m:'rerank' },
-          { n:47, t:'Training a small model to mimic a big one', m:'finish' }]},
+          { n:45, t:'What "8-bit" or "4-bit" really means',  m:'meter', id:'local' },
+          { n:46, t:'Why some models only wake up part of themselves', m:'rerank', id:'local' },
+          { n:47, t:'Training a small model to mimic a big one', m:'finish', id:'local' }]},
         { n:6, title:'Trust, safety & evaluation', pages:[
-          { n:48, t:'How we know a model is good',            m:'bench' },
-          { n:49, t:'Deliberately trying to break a model',   m:'poison' },
-          { n:50, t:'Teaching a model rules without labeling every case', m:'gate' }]}
+          { n:48, t:'How we know a model is good',            m:'bench', id:'local' },
+          { n:49, t:'Deliberately trying to break a model',   m:'poison', id:'local' },
+          { n:50, t:'Teaching a model rules without labeling every case', m:'gate', id:'local' }]}
       ]
     }
   ];

@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Agents at Work 03 — a hub dispatches labelled packets to specialists and collects the result. Turn a specialist off and watch the hub report the gap instead of improvising.">
+<meta name="color-scheme" content="dark light">
+<script>(function(){try{if(localStorage.getItem('aic-theme')==='light')document.documentElement.setAttribute('data-theme','light');}catch(e){}})();</script>
+<style>:root{color-scheme:dark}html{background:#100e1a}html[data-theme="light"]{color-scheme:light;background:#f7f5fb}</style>
+<title>Hub And Spoke</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;600&family=Manrope:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>:root{
+  --ground:#100e1a; --ground-2:#0b0913;
+  --surface:#181428; --surface-2:#1e1934;
+  --line:#2a2340; --line-soft:#221c36;
+  --ink:#ECE9F5; --ink-dim:#9a92b6; --ink-faint:#6b6389;
+  --violet:#9b6bff; --teal:#45e0c4; --coral:#ff6f8f;
+  --violet-soft:rgba(155,107,255,.16); --teal-soft:rgba(69,224,196,.14); --coral-soft:rgba(255,111,143,.14);
+  --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px; --s7:48px; --s8:64px; --s9:96px;
+  --r-sm:6px; --r-md:12px; --r-lg:20px;
+  --display:'Unbounded',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --body:'Manrope',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,'SFMono-Regular',Menlo,monospace;
+  --wrap:1080px;
+}
+:root[data-theme="light"]{
+  --ground:#f7f5fb; --surface:#ffffff; --surface-2:#efeaf9;
+  --ink:#231d38; --ink-dim:#57507a; --ink-faint:#7b7396;
+  --line:#ddd4f0;
+  --violet:#7c3aed; --teal:#0d9488; --coral:#e11d48;
+  --violet-soft:rgba(124,58,237,.12); --teal-soft:rgba(13,148,136,.12); --coral-soft:rgba(225,29,72,.12);
+}
+.themetoggle{margin-left:auto; gap:6px; padding:0 var(--s3); min-height:36px; font-size:11.5px}
+.themetoggle .ti-moon{display:none}
+[data-theme="light"] .themetoggle .ti-sun{display:none}
+[data-theme="light"] .themetoggle .ti-moon{display:inline-block}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0; background:var(--ground); color:var(--ink); font-family:var(--body); font-size:clamp(15px,.55vw + 13.6px,17px); line-height:1.65; -webkit-font-smoothing:antialiased; overflow-x:hidden}
+h1,h2,h3{font-family:var(--display); font-weight:600; line-height:1.12; text-wrap:balance; margin:0}
+h1{font-size:clamp(30px,5.2vw,52px); letter-spacing:-.02em}
+h2{font-size:clamp(21px,2.7vw,30px); letter-spacing:-.01em}
+h3{font-size:clamp(16px,1.5vw,19px); letter-spacing:-.005em}
+p{margin:0; max-width:65ch; overflow-wrap:break-word}
+h1,h2,h3{overflow-wrap:break-word}
+.stack>*{min-width:0}
+.eyebrow{font-family:var(--mono); font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-faint); margin:0}
+.dim{color:var(--ink-dim)}
+.lede{font-size:clamp(17px,1.5vw,21px); line-height:1.5; color:var(--ink-dim)}
+.wrap{width:min(100% - 2*var(--s5), var(--wrap)); margin-inline:auto}
+@media (max-width:520px){ .wrap{width:min(100% - 2*var(--s4), var(--wrap))} }
+.stack{display:flex; flex-direction:column}
+.g2{gap:var(--s2)} .g3{gap:var(--s3)} .g4{gap:var(--s4)} .g5{gap:var(--s5)} .g6{gap:var(--s6)} .g7{gap:var(--s7)}
+section{padding-block:var(--s7)}
+section + section{border-top:1px solid var(--line-soft)}
+figure{margin:0}
+figcaption{font-size:13.5px; color:var(--ink-dim); margin-top:var(--s3); max-width:62ch}
+svg{max-width:100%; height:auto; display:block}
+.wide-art{background:var(--ground-2); border:1px solid var(--line-soft); border-radius:var(--r-md); padding:var(--s5); color:var(--ink-faint)}
+.wide-art svg{width:100%; height:auto}
+.sowhat{font-family:var(--display); font-size:clamp(19px,2.4vw,27px); line-height:1.35; letter-spacing:-.01em; max-width:30ch}
+.sowhat em{font-style:normal; color:var(--violet)}
+.topbar{display:flex; flex-wrap:wrap; align-items:baseline; gap:var(--s3) var(--s4); padding-block:var(--s5) 0}
+.topbar .num{font-family:var(--mono); font-size:11px; letter-spacing:.16em; color:var(--teal)}
+.foot{padding-block:var(--s6); border-top:1px solid var(--line-soft); color:var(--ink-faint); font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase; display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:var(--s3)}
+button{font-family:inherit; font-size:inherit; color:inherit}
+.btn{display:inline-flex; align-items:center; justify-content:center; gap:var(--s2); min-height:44px; padding:0 var(--s4); border-radius:999px; background:var(--surface-2); border:1px solid var(--line); color:var(--ink); font-family:var(--mono); font-size:12.5px; letter-spacing:.04em; cursor:pointer; transition:background .18s, border-color .18s, color .18s, transform .18s, box-shadow .18s; box-shadow:0 1px 2px rgba(0,0,0,.16)}
+.btn:hover{background:#262046; border-color:#3a3160; transform:translateY(-1px); box-shadow:0 3px 8px rgba(0,0,0,.28)}
+[data-theme="light"] .btn:hover{background:#efeaf9; border-color:#c9baf0; box-shadow:0 3px 8px rgba(80,60,140,.14)}
+.btn:focus-visible, [tabindex]:focus-visible{outline:2px solid var(--teal); outline-offset:3px}
+.sr{position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0}
+@media (prefers-reduced-motion: reduce){ *,*::before,*::after{animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important} }
+</style>
+<style>
+.specrow{display:grid; grid-template-columns:repeat(2,1fr); gap:var(--s3)}
+@media (min-width:640px){ .specrow{grid-template-columns:repeat(4,1fr)} }
+.specbtn{min-height:56px; padding:var(--s3); border-radius:var(--r-md); border:1px solid var(--line); background:var(--surface-2); color:var(--ink); cursor:pointer; text-align:left; display:flex; flex-direction:column; gap:4px; transition:border-color .2s, background .2s, opacity .2s}
+.specbtn .sn{font-family:var(--mono); font-size:10.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-dim)}
+.specbtn .sv{font-family:var(--mono); font-size:12px; font-weight:600}
+.specbtn[aria-pressed="true"]{border-color:var(--teal); background:var(--teal-soft)}
+.specbtn[aria-pressed="true"] .sv{color:var(--teal)}
+.specbtn[aria-pressed="false"]{border-color:var(--coral); opacity:.85}
+.specbtn[aria-pressed="false"] .sv{color:var(--coral)}
+.specbtn:focus-visible{outline:2px solid var(--teal); outline-offset:2px}
+.readout{background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); padding:var(--s5); display:flex; flex-direction:column; gap:var(--s3)}
+.readout.complete{border-color:var(--teal)}
+.readout.incomplete{border-color:var(--coral)}
+.readout .rv{font-size:15px; line-height:1.6}
+.gaplist{display:flex; flex-wrap:wrap; gap:var(--s2)}
+.gaplist .chip{background:var(--coral-soft); border:1px solid var(--coral); color:var(--ink); font-family:var(--mono); font-size:11.5px; padding:5px 12px; border-radius:999px}
+.walk{display:flex; flex-wrap:wrap; align-items:center; gap:var(--s2) var(--s3); font-family:var(--mono); font-size:12px}
+.walk .chip{background:var(--surface-2); border:1px solid var(--line); border-radius:999px; padding:6px 12px; color:var(--ink)}
+.walk .arrow{color:var(--ink-faint)}
+.mech2{display:grid; gap:var(--s5)}
+@media (min-width:720px){ .mech2{grid-template-columns:1fr 1fr} }
+.mech2 .art{background:var(--ground-2); border:1px solid var(--line-soft); border-radius:var(--r-md); padding:var(--s4); color:var(--ink-faint)}
+</style>
+</head>
+<body>
+
+<header class="wrap topbar">
+  <span class="num">AGENTS AT WORK · 03</span>
+  <span class="eyebrow dim">A visual series</span>
+  <button class="btn themetoggle" id="themeToggle" type="button" aria-pressed="false" aria-label="Switch to light theme">
+    <svg class="ti ti-sun" viewBox="0 0 16 16" aria-hidden="true" width="15" height="15"><circle cx="8" cy="8" r="3.4" fill="none" stroke="currentColor" stroke-width="1.4"/><g stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><line x1="8" y1="0.5" x2="8" y2="2.3"/><line x1="8" y1="13.7" x2="8" y2="15.5"/><line x1="0.5" y1="8" x2="2.3" y2="8"/><line x1="13.7" y1="8" x2="15.5" y2="8"/><line x1="2.6" y1="2.6" x2="3.9" y2="3.9"/><line x1="12.1" y1="12.1" x2="13.4" y2="13.4"/><line x1="2.6" y1="13.4" x2="3.9" y2="12.1"/></g></svg>
+    <svg class="ti ti-moon" viewBox="0 0 16 16" aria-hidden="true" width="15" height="15"><path d="M13.5 9.5A6 6 0 1 1 6.5 2.5a4.8 4.8 0 1 0 7 7z" fill="currentColor"/></svg>
+    <span class="ti-label">Light</span>
+  </button>
+</header>
+<script>(function(){
+  var root=document.documentElement, btn=document.getElementById('themeToggle');
+  function sync(){
+    var isLight = root.getAttribute('data-theme')==='light';
+    btn.setAttribute('aria-pressed', isLight);
+    btn.setAttribute('aria-label', 'Switch to ' + (isLight?'dark':'light') + ' theme');
+    btn.querySelector('.ti-label').textContent = isLight ? 'Dark' : 'Light';
+  }
+  btn.addEventListener('click', function(){
+    var next = root.getAttribute('data-theme')==='light' ? 'dark' : 'light';
+    root.setAttribute('data-theme', next);
+    try{ localStorage.setItem('aic-theme', next); }catch(e){}
+    sync();
+  });
+  sync();
+})();</script>
+
+<section class="wrap stack g6">
+  <div class="stack g4">
+    <h1>Orchestrator &amp; specialists</h1>
+    <p class="lede">One hub, four specialists. The hub dispatches a packet to each and collects the result — it never does the specialist's work itself. Turn a specialist off and see what happens.</p>
+  </div>
+
+  <div class="wide-art">
+    <svg viewBox="0 0 900 400" id="hubSvg" role="img" aria-label="A central orchestrator dispatches a labelled packet to each of four specialists — requirements, schema, API design, and review — and collects each result. A specialist that is turned off shows as a reported gap instead of a fabricated result.">
+      <line id="lineN" x1="450" y1="145" x2="450" y2="118" stroke-width="2"/>
+      <line id="lineE" x1="505" y1="200" x2="692" y2="200" stroke-width="2"/>
+      <line id="lineS" x1="450" y1="255" x2="450" y2="282" stroke-width="2"/>
+      <line id="lineW" x1="395" y1="200" x2="208" y2="200" stroke-width="2"/>
+
+      <text id="labelN" x="450" y="132" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10"></text>
+      <text id="labelE" x="598" y="190" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10"></text>
+      <text id="labelS" x="450" y="272" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10"></text>
+      <text id="labelW" x="300" y="190" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10"></text>
+
+      <circle cx="450" cy="200" r="55" fill="rgba(155,107,255,.14)" stroke="#9b6bff" stroke-width="2"/>
+      <text x="450" y="197" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="12" letter-spacing="1" fill="#d9c9ff">ORCHESTRATOR</text>
+      <text x="450" y="214" text-anchor="middle" font-family="Manrope, sans-serif" font-size="10" fill="currentColor" fill-opacity=".7">delegates, never builds</text>
+
+      <g id="nodeN"><circle cx="450" cy="70" r="48" fill="none" stroke-width="1.8"/><text x="450" y="66" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10.5" letter-spacing=".5" fill="#ECE9F5">REQUIREMENTS</text><text x="450" y="80" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10.5" letter-spacing=".5" fill="#ECE9F5">SPECIALIST</text></g>
+      <g id="nodeE"><circle cx="740" cy="200" r="48" fill="none" stroke-width="1.8"/><text x="740" y="204" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10.5" letter-spacing=".5" fill="#ECE9F5">SCHEMA SPECIALIST</text><text x="450" y="80" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10.5" letter-spacing=".5" fill="#ECE9F5">SPECIALIST</text></g>
+      <g id="nodeS"><circle cx="450" cy="330" r="48" fill="none" stroke-width="1.8"/><text x="450" y="326" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10.5" letter-spacing=".5" fill="#ECE9F5">API DESIGN</text><text x="450" y="340" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10.5" letter-spacing=".5" fill="#ECE9F5">SPECIALIST</text></g>
+      <g id="nodeW"><circle cx="160" cy="200" r="48" fill="none" stroke-width="1.8"/><text x="160" y="204" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10.5" letter-spacing=".5" fill="#ECE9F5">REVIEW  SPECIALIST</text></g>
+    </svg>
+  </div>
+
+  <div class="specrow" id="specRow"></div>
+
+  <div class="readout" id="readout" aria-live="polite">
+    <span class="eyebrow" id="statusLabel"></span>
+    <p class="rv" id="statusText"></p>
+    <div class="gaplist" id="gapList"></div>
+  </div>
+</section>
+
+<section class="wrap stack g5">
+  <p class="eyebrow">The problem this replaces</p>
+  <h2>One agent, every job</h2>
+  <div class="wide-art">
+    <svg viewBox="0 0 900 260" role="img" aria-label="A single overstuffed agent box crammed with every job at once: requirements, schema, API design, diagrams, non-functional requirements, review, docs, and gap analysis.">
+      <rect x="60" y="20" width="780" height="220" rx="14" fill="rgba(255,111,143,.1)" stroke="#ff6f8f" stroke-width="1.6"/>
+      <text x="450" y="46" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="12" letter-spacing="1.5" fill="#ffb3c4">ONE AGENT, EVERY JOB</text>
+      <g font-family="JetBrains Mono, monospace" font-size="10.5" fill="currentColor" fill-opacity=".8">
+        <text x="130" y="90">requirements</text>
+        <text x="330" y="75">schema design</text>
+        <text x="540" y="95">API design</text>
+        <text x="720" y="80">diagrams</text>
+        <text x="150" y="140">non-functional reqs</text>
+        <text x="420" y="150">review</text>
+        <text x="640" y="135">docs</text>
+        <text x="230" y="195">gap analysis</text>
+        <text x="480" y="200">standards check</text>
+        <text x="700" y="190">publish</text>
+      </g>
+    </svg>
+  </div>
+  <p class="dim">Everything lives in one head. When one job goes wrong, there's nowhere smaller to point at.</p>
+</section>
+
+<section class="wrap stack g5">
+  <p class="eyebrow">How it works</p>
+  <h2>Every spoke is the same round trip</h2>
+  <div class="mech2">
+    <figure>
+      <div class="art">
+        <svg viewBox="0 0 460 140" role="img" aria-label="The orchestrator sends a labelled packet out to a specialist, and the specialist sends a result packet back — the orchestrator never does the work itself.">
+          <rect x="10" y="45" width="120" height="50" rx="8" fill="rgba(155,107,255,.12)" stroke="#9b6bff"/>
+          <text x="70" y="75" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10.5" fill="#d9c9ff">ORCHESTRATOR</text>
+          <line x1="135" y1="60" x2="315" y2="60" stroke="#45e0c4" stroke-width="1.6"/><polygon points="322,60 315,64 315,56" fill="#45e0c4"/>
+          <text x="225" y="52" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#8ff0dd">packet out</text>
+          <line x1="315" y1="82" x2="135" y2="82" stroke="#9b6bff" stroke-width="1.6"/><polygon points="128,82 135,78 135,86" fill="#9b6bff"/>
+          <text x="225" y="98" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#d9c9ff">result back</text>
+          <rect x="330" y="45" width="120" height="50" rx="8" fill="rgba(69,224,196,.12)" stroke="#45e0c4"/>
+          <text x="390" y="75" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10.5" fill="#8ff0dd">SPECIALIST</text>
+        </svg>
+      </div>
+      <figcaption>Same round trip for every spoke — only the packet's name changes. The specialist does the work; the hub only carries the packet.</figcaption>
+    </figure>
+    <figure>
+      <div class="art" style="display:flex; align-items:center; justify-content:center; min-height:140px">
+        <p class="dim" style="font-size:14px">If a specialist can't run, the orchestrator reports the missing packet — it does not write a fake schema or a fake review to fill the gap.</p>
+      </div>
+    </figure>
+  </div>
+</section>
+
+<section class="wrap stack g4">
+  <p class="eyebrow">See it in action</p>
+  <h2>One design, four round trips</h2>
+  <div class="walk" role="list" aria-label="Designing add-customer-export via four specialist round trips">
+    <span class="chip">"design: add customer export"</span>
+    <span class="arrow">→</span>
+    <span class="chip">requirements: filters, CSV, admin-only</span>
+    <span class="arrow">→</span>
+    <span class="chip">schema: export_job table</span>
+    <span class="arrow">→</span>
+    <span class="chip">API: POST /exports</span>
+    <span class="arrow">→</span>
+    <span class="chip">review: approved</span>
+  </div>
+  <p class="dim">Four specialists, four packets back — the orchestrator assembles the final design doc from what it received.</p>
+</section>
+
+<section class="wrap stack g4">
+  <p class="eyebrow">So what</p>
+  <p class="sowhat">When review misbehaves, <em>you fix the review specialist</em> — not the whole thing.</p>
+</section>
+
+<footer class="wrap foot">
+  <span>AGENTS AT WORK — a visual series</span>
+  <span style="display:flex; gap:8px; flex-wrap:wrap">
+    <a class="btn" href="agents-at-work-hub.html">All patterns</a>
+    <a class="btn" href="04-handoff-artifacts.html">Next: Handoff artifacts →</a>
+  </span>
+</footer>
+
+<script>
+(function(){
+  var SPECIALISTS = [
+    { id:'requirements', dir:'N', name:'Requirements', packet:'requirements analysis' },
+    { id:'schema',        dir:'E', name:'Schema',        packet:'schema design' },
+    { id:'api',           dir:'S', name:'API design',    packet:'API contract' },
+    { id:'review',        dir:'W', name:'Review',        packet:'review notes' }
+  ];
+  var state = {};
+  SPECIALISTS.forEach(function(s){ state[s.id] = true; });
+
+  var specRow = document.getElementById('specRow');
+  var statusLabel = document.getElementById('statusLabel'), statusText = document.getElementById('statusText'), gapList = document.getElementById('gapList'), readout = document.getElementById('readout');
+
+  SPECIALISTS.forEach(function(s){
+    var b = document.createElement('button');
+    b.type = 'button'; b.className = 'specbtn'; b.setAttribute('aria-pressed', 'true');
+    b.innerHTML = '<span class="sn">' + s.name + '</span><span class="sv">ON — dispatching</span>';
+    b.addEventListener('click', function(){
+      state[s.id] = !state[s.id];
+      render();
+    });
+    b.dataset.id = s.id;
+    specRow.appendChild(b);
+  });
+
+  function render(){
+    var gaps = [];
+    SPECIALISTS.forEach(function(s){
+      var on = state[s.id];
+      var btn = specRow.querySelector('[data-id="' + s.id + '"]');
+      btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+      btn.querySelector('.sv').textContent = on ? 'ON — dispatching' : 'OFF — gap reported';
+
+      var line = document.getElementById('line' + s.dir), label = document.getElementById('label' + s.dir), node = document.getElementById('node' + s.dir);
+      var circle = node.querySelector('circle');
+      if(on){
+        line.setAttribute('stroke', '#45e0c4'); line.removeAttribute('stroke-dasharray');
+        label.setAttribute('fill', '#8ff0dd'); label.textContent = s.packet;
+        circle.setAttribute('stroke', '#45e0c4'); circle.setAttribute('fill', 'rgba(69,224,196,.1)');
+        node.setAttribute('opacity', '1');
+      } else {
+        line.setAttribute('stroke', '#ff6f8f'); line.setAttribute('stroke-dasharray', '5 4');
+        label.setAttribute('fill', '#ffb3c4'); label.textContent = 'MISSING';
+        circle.setAttribute('stroke', '#ff6f8f'); circle.setAttribute('fill', 'rgba(255,111,143,.08)');
+        node.setAttribute('opacity', '.75');
+        gaps.push(s.packet);
+      }
+    });
+
+    if(gaps.length === 0){
+      readout.className = 'readout complete';
+      statusLabel.textContent = 'Design status — complete';
+      statusText.textContent = 'All four specialist packets received. The orchestrator can assemble and publish the design.';
+      gapList.innerHTML = '';
+    } else {
+      readout.className = 'readout incomplete';
+      statusLabel.textContent = 'Design status — incomplete';
+      statusText.textContent = 'The orchestrator did not invent a substitute for the missing piece' + (gaps.length > 1 ? 's' : '') + ' below — it reports the gap instead.';
+      gapList.innerHTML = gaps.map(function(g){ return '<span class="chip">MISSING: ' + g + '</span>'; }).join('');
+    }
+  }
+
+  render();
+})();
+</script>
+
+</body>
+</html>

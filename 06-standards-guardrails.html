@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Agents at Work 06 — the same rulebook scans every diff. Blocking issues get auto-fixed on the spot; warnings get surfaced to you. Same bar, whoever runs it.">
+<meta name="color-scheme" content="dark light">
+<script>(function(){try{if(localStorage.getItem('aic-theme')==='light')document.documentElement.setAttribute('data-theme','light');}catch(e){}})();</script>
+<style>:root{color-scheme:dark}html{background:#100e1a}html[data-theme="light"]{color-scheme:light;background:#f7f5fb}</style>
+<title>The Same Bar</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;600&family=Manrope:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>:root{
+  --ground:#100e1a; --ground-2:#0b0913;
+  --surface:#181428; --surface-2:#1e1934;
+  --line:#2a2340; --line-soft:#221c36;
+  --ink:#ECE9F5; --ink-dim:#9a92b6; --ink-faint:#6b6389;
+  --violet:#9b6bff; --teal:#45e0c4; --coral:#ff6f8f;
+  --violet-soft:rgba(155,107,255,.16); --teal-soft:rgba(69,224,196,.14); --coral-soft:rgba(255,111,143,.14);
+  --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px; --s7:48px; --s8:64px; --s9:96px;
+  --r-sm:6px; --r-md:12px; --r-lg:20px;
+  --display:'Unbounded',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --body:'Manrope',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,'SFMono-Regular',Menlo,monospace;
+  --wrap:1080px;
+}
+:root[data-theme="light"]{
+  --ground:#f7f5fb; --surface:#ffffff; --surface-2:#efeaf9;
+  --ink:#231d38; --ink-dim:#57507a; --ink-faint:#7b7396;
+  --line:#ddd4f0;
+  --violet:#7c3aed; --teal:#0d9488; --coral:#e11d48;
+  --violet-soft:rgba(124,58,237,.12); --teal-soft:rgba(13,148,136,.12); --coral-soft:rgba(225,29,72,.12);
+}
+.themetoggle{margin-left:auto; gap:6px; padding:0 var(--s3); min-height:36px; font-size:11.5px}
+.themetoggle .ti-moon{display:none}
+[data-theme="light"] .themetoggle .ti-sun{display:none}
+[data-theme="light"] .themetoggle .ti-moon{display:inline-block}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0; background:var(--ground); color:var(--ink); font-family:var(--body); font-size:clamp(15px,.55vw + 13.6px,17px); line-height:1.65; -webkit-font-smoothing:antialiased; overflow-x:hidden}
+h1,h2,h3{font-family:var(--display); font-weight:600; line-height:1.12; text-wrap:balance; margin:0}
+h1{font-size:clamp(30px,5.2vw,52px); letter-spacing:-.02em}
+h2{font-size:clamp(21px,2.7vw,30px); letter-spacing:-.01em}
+h3{font-size:clamp(16px,1.5vw,19px); letter-spacing:-.005em}
+p{margin:0; max-width:65ch; overflow-wrap:break-word}
+h1,h2,h3{overflow-wrap:break-word}
+.stack>*{min-width:0}
+.eyebrow{font-family:var(--mono); font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-faint); margin:0}
+.dim{color:var(--ink-dim)}
+.lede{font-size:clamp(17px,1.5vw,21px); line-height:1.5; color:var(--ink-dim)}
+.wrap{width:min(100% - 2*var(--s5), var(--wrap)); margin-inline:auto}
+@media (max-width:520px){ .wrap{width:min(100% - 2*var(--s4), var(--wrap))} }
+.stack{display:flex; flex-direction:column}
+.g2{gap:var(--s2)} .g3{gap:var(--s3)} .g4{gap:var(--s4)} .g5{gap:var(--s5)} .g6{gap:var(--s6)} .g7{gap:var(--s7)}
+section{padding-block:var(--s7)}
+section + section{border-top:1px solid var(--line-soft)}
+figure{margin:0}
+figcaption{font-size:13.5px; color:var(--ink-dim); margin-top:var(--s3); max-width:62ch}
+svg{max-width:100%; height:auto; display:block}
+.wide-art{background:var(--ground-2); border:1px solid var(--line-soft); border-radius:var(--r-md); padding:var(--s5); color:var(--ink-faint)}
+.wide-art svg{width:100%; height:auto}
+.sowhat{font-family:var(--display); font-size:clamp(19px,2.4vw,27px); line-height:1.35; letter-spacing:-.01em; max-width:30ch}
+.sowhat em{font-style:normal; color:var(--violet)}
+.topbar{display:flex; flex-wrap:wrap; align-items:baseline; gap:var(--s3) var(--s4); padding-block:var(--s5) 0}
+.topbar .num{font-family:var(--mono); font-size:11px; letter-spacing:.16em; color:var(--teal)}
+.foot{padding-block:var(--s6); border-top:1px solid var(--line-soft); color:var(--ink-faint); font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase; display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:var(--s3)}
+button{font-family:inherit; font-size:inherit; color:inherit}
+.btn{display:inline-flex; align-items:center; justify-content:center; gap:var(--s2); min-height:44px; padding:0 var(--s4); border-radius:999px; background:var(--surface-2); border:1px solid var(--line); color:var(--ink); font-family:var(--mono); font-size:12.5px; letter-spacing:.04em; cursor:pointer; transition:background .18s, border-color .18s, color .18s, transform .18s, box-shadow .18s; box-shadow:0 1px 2px rgba(0,0,0,.16)}
+.btn:hover{background:#262046; border-color:#3a3160; transform:translateY(-1px); box-shadow:0 3px 8px rgba(0,0,0,.28)}
+[data-theme="light"] .btn:hover{background:#efeaf9; border-color:#c9baf0; box-shadow:0 3px 8px rgba(80,60,140,.14)}
+.btn:focus-visible, [tabindex]:focus-visible{outline:2px solid var(--teal); outline-offset:3px}
+.sr{position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0}
+@media (prefers-reduced-motion: reduce){ *,*::before,*::after{animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important} }
+.qtoggle{display:flex; flex-wrap:wrap; gap:4px; border:1px solid var(--line); border-radius:999px; padding:4px; width:100%; max-width:max-content}
+.qtoggle button{flex:1 1 auto; min-height:44px; padding:0 var(--s4); border-radius:999px; border:0; background:transparent; color:var(--ink-faint); font-family:var(--mono); font-size:12px; letter-spacing:.06em; cursor:pointer; white-space:nowrap; transition:background .2s, color .2s}
+.qtoggle button[aria-pressed="true"]{background:var(--violet-soft); color:var(--ink); box-shadow:inset 0 0 0 1px var(--violet)}
+.qtoggle button:focus-visible{outline:2px solid var(--teal); outline-offset:2px}
+.diffrow{display:flex; flex-wrap:wrap; align-items:center; gap:var(--s2) var(--s3); padding:var(--s3); border-radius:var(--r-sm); background:var(--ground-2); border:1px solid var(--line-soft); font-family:var(--mono); font-size:12.5px}
+.diffrow .txt{word-break:break-word}
+@media (max-width:520px){
+  .diffrow{align-items:flex-start}
+  .diffrow .tag{flex-basis:100%; margin-left:22px}
+}
+.diffrow .dot{width:10px; height:10px; border-radius:50%; flex:none; background:var(--line)}
+.diffrow.red .dot{background:var(--coral)}
+.diffrow.amber .dot{background:#e8b750}
+.diffrow .txt{flex:1; color:var(--ink-dim)}
+.diffrow.flagged .txt{color:var(--ink)}
+.diffrow .tag{font-size:10px; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-faint); flex:none}
+.diffrow.red .tag{color:var(--coral)}
+.diffrow.amber .tag{color:#e8b750}
+.diffcount{display:flex; gap:var(--s5); font-family:var(--mono); font-size:13px}
+.diffcount b{font-size:16px}
+.mech2{display:grid; gap:var(--s5)}
+@media (min-width:720px){ .mech2{grid-template-columns:1fr 1fr} }
+.mech2 .art{background:var(--ground-2); border:1px solid var(--line-soft); border-radius:var(--r-md); padding:var(--s4); color:var(--ink-faint)}
+.walk{display:flex; flex-wrap:wrap; align-items:center; gap:var(--s2) var(--s3); font-family:var(--mono); font-size:12px}
+.walk .chip{background:var(--surface-2); border:1px solid var(--line); border-radius:999px; padding:6px 12px; color:var(--ink)}
+.walk .arrow{color:var(--ink-faint)}
+</style>
+</head>
+<body>
+
+<header class="wrap topbar">
+  <span class="num">AGENTS AT WORK · 06</span>
+  <span class="eyebrow dim">A visual series</span>
+  <button class="btn themetoggle" id="themeToggle" type="button" aria-pressed="false" aria-label="Switch to light theme">
+    <svg class="ti ti-sun" viewBox="0 0 16 16" aria-hidden="true" width="15" height="15"><circle cx="8" cy="8" r="3.4" fill="none" stroke="currentColor" stroke-width="1.4"/><g stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><line x1="8" y1="0.5" x2="8" y2="2.3"/><line x1="8" y1="13.7" x2="8" y2="15.5"/><line x1="0.5" y1="8" x2="2.3" y2="8"/><line x1="13.7" y1="8" x2="15.5" y2="8"/><line x1="2.6" y1="2.6" x2="3.9" y2="3.9"/><line x1="12.1" y1="12.1" x2="13.4" y2="13.4"/></g></svg>
+    <svg class="ti ti-moon" viewBox="0 0 16 16" aria-hidden="true" width="15" height="15"><path d="M13.5 9.5A6 6 0 1 1 6.5 2.5a4.8 4.8 0 1 0 7 7z" fill="currentColor"/></svg>
+    <span class="ti-label">Light</span>
+  </button>
+</header>
+<script>(function(){
+  var root=document.documentElement, btn=document.getElementById('themeToggle');
+  function sync(){
+    var isLight = root.getAttribute('data-theme')==='light';
+    btn.setAttribute('aria-pressed', isLight);
+    btn.setAttribute('aria-label', 'Switch to ' + (isLight?'dark':'light') + ' theme');
+    btn.querySelector('.ti-label').textContent = isLight ? 'Dark' : 'Light';
+  }
+  btn.addEventListener('click', function(){
+    var next = root.getAttribute('data-theme')==='light' ? 'dark' : 'light';
+    root.setAttribute('data-theme', next);
+    try{ localStorage.setItem('aic-theme', next); }catch(e){}
+    sync();
+  });
+  sync();
+})();</script>
+
+<section class="wrap stack g6">
+  <div class="stack g4">
+    <h1>Standards as guardrails</h1>
+    <p class="lede">One rulebook scans every diff. Slide the rulebook looser or stricter and watch how many lines it catches.</p>
+  </div>
+
+  <div class="qtoggle" id="strictToggle" role="group" aria-label="Rulebook strictness">
+    <button type="button" data-level="loose" aria-pressed="false">Loose</button>
+    <button type="button" data-level="default" aria-pressed="true">Default</button>
+    <button type="button" data-level="strict" aria-pressed="false">Strict</button>
+  </div>
+
+  <div class="wide-art">
+    <div class="stack g3" id="diffRows"></div>
+  </div>
+
+  <div class="diffcount" id="diffCount" aria-live="polite"></div>
+</section>
+
+<section class="wrap stack g5">
+  <p class="eyebrow">The problem this replaces</p>
+  <h2>Two developers, two different bars</h2>
+  <div class="wide-art">
+    <svg viewBox="0 0 900 240" role="img" aria-label="Two pull requests with the same three issues. One developer's manual review catches all three; the other's misses one, which ships." >
+      <text x="220" y="30" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" fill="currentColor" fill-opacity=".7">PR — DEVELOPER A</text>
+      <g font-family="Manrope, sans-serif" font-size="11" fill="currentColor">
+        <text x="70" y="65">✓ no null check</text>
+        <text x="70" y="95">✓ debug log removed</text>
+        <text x="70" y="125">✓ test added</text>
+      </g>
+      <text x="680" y="30" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" fill="currentColor" fill-opacity=".7">PR — DEVELOPER B</text>
+      <g font-family="Manrope, sans-serif" font-size="11" fill="currentColor">
+        <text x="530" y="65">✓ no null check</text>
+        <text x="530" y="95">✓ debug log removed</text>
+      </g>
+      <text x="530" y="130" font-family="Manrope, sans-serif" font-size="11" fill="#ff6f8f">✕ test — not added</text>
+      <rect x="510" y="150" width="240" height="34" rx="6" fill="rgba(255,111,143,.12)" stroke="#ff6f8f"/>
+      <text x="630" y="172" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10.5" fill="#ffb3c4">SHIPPED WITHOUT A TEST</text>
+    </svg>
+  </div>
+  <p class="dim">Same kind of change, two different reviewers, two different bars — one gap slips through.</p>
+</section>
+
+<section class="wrap stack g5">
+  <p class="eyebrow">How it works</p>
+  <h2>Blocking gets fixed now; warnings get surfaced</h2>
+  <div class="mech2">
+    <figure>
+      <div class="art">
+        <svg viewBox="0 0 460 145" role="img" aria-label="The rulebook and the diff both feed the scanner. A blocking finding is auto-fixed immediately; a warning is surfaced as a PR note for a human." >
+          <rect x="10" y="10" width="120" height="40" rx="6" fill="rgba(155,107,255,.12)" stroke="#9b6bff"/>
+          <text x="70" y="34" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="#d9c9ff">RULEBOOK</text>
+          <rect x="10" y="60" width="120" height="40" rx="6" fill="rgba(155,107,255,.12)" stroke="#9b6bff"/>
+          <text x="70" y="84" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="#d9c9ff">THE DIFF</text>
+          <line x1="130" y1="55" x2="175" y2="55" stroke="currentColor" stroke-width="1.5"/><polygon points="182,55 175,59 175,51" fill="currentColor"/>
+          <rect x="185" y="35" width="90" height="40" rx="6" fill="none" stroke="currentColor" stroke-width="1.6"/>
+          <text x="230" y="59" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="currentColor">SCANNER</text>
+          <line x1="275" y1="45" x2="320" y2="20" stroke="#ff6f8f" stroke-width="1.6"/><polygon points="326,16 321,24 314,17" fill="#ff6f8f"/>
+          <line x1="275" y1="65" x2="320" y2="100" stroke="#e8b750" stroke-width="1.6"/><polygon points="326,106 316,101 322,93" fill="#e8b750"/>
+          <text x="390" y="10" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9.5" fill="#ffb3c4">blocking →</text>
+          <text x="390" y="29" text-anchor="middle" font-family="Manrope, sans-serif" font-size="9.5" fill="currentColor">auto-fixed now</text>
+          <text x="390" y="112" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9.5" fill="#f0cf8f">warning →</text>
+          <text x="390" y="131" text-anchor="middle" font-family="Manrope, sans-serif" font-size="9.5" fill="currentColor">surfaced to you</text>
+        </svg>
+      </div>
+      <figcaption>The scanner never skips a line — it just routes each finding to whoever should act on it.</figcaption>
+    </figure>
+    <figure>
+      <div class="art" style="display:flex; align-items:center; justify-content:center; min-height:150px">
+        <p class="dim" style="font-size:14px">The rulebook is the team's own standards doc, loaded fresh every run — not a generic linter's opinion.</p>
+      </div>
+    </figure>
+  </div>
+</section>
+
+<section class="wrap stack g4">
+  <p class="eyebrow">See it in action</p>
+  <h2>One diff, one fix, one note</h2>
+  <div class="walk" role="list" aria-label="add-customer-export diff scanned at default strictness">
+    <span class="chip">diff: add-customer-export</span>
+    <span class="arrow">→</span>
+    <span class="chip">blocking: any type → auto-fixed</span>
+    <span class="arrow">→</span>
+    <span class="chip">warning: no test → PR note</span>
+    <span class="arrow">→</span>
+    <span class="chip">PR opened</span>
+  </div>
+  <p class="dim">The blocking issue never reaches you. The warning does — as a note, not a surprise.</p>
+</section>
+
+<section class="wrap stack g4">
+  <p class="eyebrow">So what</p>
+  <p class="sowhat">The review bar is <em>the same whoever ran the pipeline.</em></p>
+</section>
+
+<footer class="wrap foot">
+  <span>AGENTS AT WORK — a visual series</span>
+  <span style="display:flex; gap:8px; flex-wrap:wrap">
+    <a class="btn" href="agents-at-work-hub.html">All patterns</a>
+    <a class="btn" href="07-review-loop.html">Next: The review loop →</a>
+  </span>
+</footer>
+
+<script>
+(function(){
+  var LINES = [
+    { text:'const data: any = response.json();', sev:{loose:null, default:'red', strict:'red'} },
+    { text:'const user = users.find(u => u.id === id); user.name', sev:{loose:'red', default:'red', strict:'red'} },
+    { text:"console.log('debug', data);", sev:{loose:null, default:'amber', strict:'amber'} },
+    { text:'function GetUserName(u) { return u.name }', sev:{loose:null, default:null, strict:'amber'} },
+    { text:'exports.getUserName = getUserName;  // no test', sev:{loose:null, default:'amber', strict:'amber'} },
+    { text:'throw new Error("Something went wrong");', sev:{loose:null, default:'amber', strict:'red'} }
+  ];
+  var rowsEl = document.getElementById('diffRows'), countEl = document.getElementById('diffCount'), toggle = document.getElementById('strictToggle');
+
+  LINES.forEach(function(l, i){
+    var row = document.createElement('div');
+    row.className = 'diffrow';
+    row.id = 'row' + i;
+    row.innerHTML = '<span class="dot"></span><span class="txt">' + l.text + '</span><span class="tag"></span>';
+    rowsEl.appendChild(row);
+  });
+
+  function render(level){
+    var red = 0, amber = 0;
+    LINES.forEach(function(l, i){
+      var row = document.getElementById('row' + i);
+      var sev = l.sev[level];
+      row.className = 'diffrow' + (sev ? ' flagged ' + sev : '');
+      row.querySelector('.tag').textContent = sev === 'red' ? 'blocking · auto-fixed' : sev === 'amber' ? 'warning · surfaced' : '';
+      if(sev === 'red') red++;
+      if(sev === 'amber') amber++;
+    });
+    countEl.innerHTML = '<span>Blocking (auto-fixed): <b style="color:var(--coral)">' + red + '</b></span><span>Warnings (surfaced): <b style="color:#e8b750">' + amber + '</b></span>';
+  }
+
+  Array.prototype.forEach.call(toggle.children, function(btn){
+    btn.addEventListener('click', function(){
+      Array.prototype.forEach.call(toggle.children, function(b){ b.setAttribute('aria-pressed', 'false'); });
+      btn.setAttribute('aria-pressed', 'true');
+      render(btn.getAttribute('data-level'));
+    });
+  });
+
+  render('default');
+})();
+</script>
+
+</body>
+</html>
