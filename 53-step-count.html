@@ -1,0 +1,367 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="AI Concepts: Beyond Text, Module 1.3 — denoising happens in dozens of small steps, not one big leap; skip steps and the result gets rougher, not faster-and-equal.">
+<meta name="color-scheme" content="dark light">
+<script>(function(){try{if(localStorage.getItem('aic-theme')==='light')document.documentElement.setAttribute('data-theme','light');}catch(e){}})();</script>
+<style>:root{color-scheme:dark}html{background:#100e1a}html[data-theme="light"]{color-scheme:light;background:#f7f5fb}</style>
+<title>Many Small Guesses, Not One Big Leap</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;600&family=Manrope:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>:root{
+  --ground:#100e1a; --ground-2:#0b0913;
+  --surface:#181428; --surface-2:#1e1934;
+  --line:#2a2340; --line-soft:#221c36;
+  --ink:#ECE9F5; --ink-dim:#9a92b6; --ink-faint:#6b6389;
+  --violet:#9b6bff; --teal:#45e0c4; --coral:#ff6f8f;
+  --violet-soft:rgba(155,107,255,.16); --teal-soft:rgba(69,224,196,.14); --coral-soft:rgba(255,111,143,.14);
+  --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px; --s7:48px; --s8:64px; --s9:96px;
+  --r-sm:6px; --r-md:12px; --r-lg:20px;
+  --display:'Unbounded',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --body:'Manrope',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,'SFMono-Regular',Menlo,monospace;
+  --wrap:1080px;
+}
+:root[data-theme="light"]{
+  --ground:#f7f5fb; --surface:#ffffff; --surface-2:#efeaf9;
+  --ink:#231d38; --ink-dim:#57507a; --ink-faint:#7b7396;
+  --line:#ddd4f0;
+  --violet:#7c3aed; --teal:#0d9488; --coral:#e11d48;
+  --violet-soft:rgba(124,58,237,.12); --teal-soft:rgba(13,148,136,.12); --coral-soft:rgba(225,29,72,.12);
+}
+.themetoggle{margin-left:auto; gap:6px; padding:0 var(--s3); min-height:36px; font-size:11.5px}
+.themetoggle .ti-moon{display:none}
+[data-theme="light"] .themetoggle .ti-sun{display:none}
+[data-theme="light"] .themetoggle .ti-moon{display:inline-block}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0; background:var(--ground); color:var(--ink); font-family:var(--body); font-size:clamp(15px,.55vw + 13.6px,17px); line-height:1.65; -webkit-font-smoothing:antialiased; overflow-x:hidden}
+h1,h2,h3{font-family:var(--display); font-weight:600; line-height:1.12; text-wrap:balance; margin:0}
+h1{font-size:clamp(30px,5.2vw,52px); letter-spacing:-.02em}
+h2{font-size:clamp(21px,2.7vw,30px); letter-spacing:-.01em}
+h3{font-size:clamp(16px,1.5vw,19px); letter-spacing:-.005em}
+p{margin:0; max-width:65ch; overflow-wrap:break-word}
+h1,h2,h3{overflow-wrap:break-word}
+.stack>*,.steps>*,.split>*,.two>*,.hero>*,.machine>*{min-width:0}
+.eyebrow{font-family:var(--mono); font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-faint); margin:0}
+.dim{color:var(--ink-dim)}
+.lede{font-size:clamp(17px,1.5vw,21px); line-height:1.5; color:var(--ink-dim)}
+.wrap{width:min(100% - 2*var(--s5), var(--wrap)); margin-inline:auto}
+@media (max-width:520px){ .wrap{width:min(100% - 2*var(--s4), var(--wrap))} }
+.stack{display:flex; flex-direction:column}
+.g2{gap:var(--s2)} .g3{gap:var(--s3)} .g4{gap:var(--s4)} .g5{gap:var(--s5)} .g6{gap:var(--s6)} .g7{gap:var(--s7)}
+section{padding-block:var(--s7)}
+section + section{border-top:1px solid var(--line-soft)}
+figure{margin:0}
+figcaption{font-size:13.5px; color:var(--ink-dim); margin-top:var(--s3); max-width:62ch}
+svg{max-width:100%; height:auto; display:block}
+.tag{font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-faint)}
+.topbar{display:flex; flex-wrap:wrap; align-items:baseline; gap:var(--s3) var(--s4); padding-block:var(--s5) 0}
+.topbar .num{font-family:var(--mono); font-size:11px; letter-spacing:.16em; color:var(--violet)}
+.foot{padding-block:var(--s6); border-top:1px solid var(--line-soft); color:var(--ink-faint); font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase}
+button{font-family:inherit; font-size:inherit; color:inherit}
+.btn{display:inline-flex; align-items:center; justify-content:center; gap:var(--s2); min-height:44px; padding:0 var(--s4); border-radius:999px; background:var(--surface-2); border:1px solid var(--line); color:var(--ink); font-family:var(--mono); font-size:12.5px; letter-spacing:.04em; cursor:pointer; transition:background .18s, border-color .18s, color .18s, transform .18s, box-shadow .18s; box-shadow:0 1px 2px rgba(0,0,0,.16)}
+.btn:hover{background:#262046; border-color:#3a3160; transform:translateY(-1px); box-shadow:0 3px 8px rgba(0,0,0,.28)}
+[data-theme="light"] .btn:hover{background:#efeaf9; border-color:#c9baf0; box-shadow:0 3px 8px rgba(80,60,140,.14)}
+.btn[aria-pressed="true"], .btn.on{background:var(--violet-soft); border-color:var(--violet); color:#d9c9ff}
+.btn:focus-visible, [tabindex]:focus-visible, input:focus-visible{outline:2px solid var(--teal); outline-offset:3px}
+@media (prefers-reduced-motion: reduce){ *,*::before,*::after{animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important} }
+.mech{display:grid; gap:var(--s5)}
+@media (min-width:820px){ .mech.n3{grid-template-columns:repeat(3,1fr)} }
+.mech figure{display:flex; flex-direction:column; gap:var(--s3); min-width:0}
+.mech .art{background:var(--ground-2); border:1px solid var(--line-soft); border-radius:var(--r-md); padding:var(--s4); color:var(--ink-faint)}
+.mech .art svg{width:100%; height:auto}
+.mech figcaption{font-size:14px; line-height:1.55; color:var(--ink-dim); margin-top:0}
+.mech figcaption b{color:var(--ink); font-weight:500; display:block; font-size:15px; margin-bottom:2px}
+.sowhat{font-family:var(--display); font-size:clamp(19px,2.4vw,27px); line-height:1.35; letter-spacing:-.01em; max-width:28ch}
+.sowhat em{font-style:normal; color:var(--violet)}
+</style>
+<style>
+.lab{background:linear-gradient(165deg,#151125,#0c0a16); border:1px solid var(--line); border-radius:var(--r-lg); padding:var(--s5); display:flex; flex-direction:column; gap:var(--s5); color:#ECE9F5}
+.stepgrid{display:grid; grid-template-columns:repeat(2,1fr); gap:var(--s4)}
+@media (min-width:640px){ .stepgrid{grid-template-columns:repeat(4,1fr)} }
+.stepcell{display:flex; flex-direction:column; gap:var(--s2); align-items:center}
+.stepcell canvas{width:100%; aspect-ratio:4/3; image-rendering:pixelated; image-rendering:crisp-edges; border-radius:var(--r-md); border:1px solid var(--line); display:block; background:#000}
+.stepcell .lab2{font-family:var(--mono); font-size:12px; color:#9a92b6; text-align:center}
+.stepcell .lab2 b{color:#ECE9F5}
+.caption{font-size:13.5px; color:#9a92b6; text-align:center}
+</style>
+<style>
+.recap{border:1px solid var(--line); border-radius:var(--r-lg); background:var(--surface); padding:var(--s5); display:flex; flex-direction:column; gap:var(--s5)}
+.recap-icons{display:flex; flex-wrap:wrap; gap:var(--s3)}
+.ricon{width:52px; height:52px; border-radius:var(--r-md); border:1.5px solid var(--line); background:var(--ground-2); display:flex; align-items:center; justify-content:center; color:var(--ink-dim); cursor:pointer; transition:border-color .2s, background .2s, opacity .2s; padding:0}
+.ricon svg{width:30px; height:30px}
+.ricon[aria-pressed="true"]{border-color:var(--violet); background:var(--violet-soft); color:var(--violet)}
+.ricon.solved{opacity:.25; pointer-events:none}
+.recap-cards{display:flex; flex-wrap:wrap; gap:var(--s3)}
+.rcard{min-height:44px; padding:0 var(--s4); border-radius:999px; border:1px solid var(--line); background:var(--surface-2); color:var(--ink); font-size:13.5px; cursor:pointer; text-align:left; transition:border-color .15s, background .15s, opacity .2s, transform .12s}
+.rcard.solved{opacity:.25; pointer-events:none}
+.rcard.wrong{animation:rshake .3s}
+@keyframes rshake{ 25%{transform:translateX(-4px)} 75%{transform:translateX(4px)} }
+.recap-chain{display:flex; flex-wrap:wrap; align-items:center; gap:0; min-height:52px}
+.rchain-item{width:44px; height:44px; border-radius:var(--r-md); background:var(--violet-soft); border:1.5px solid var(--violet); display:flex; align-items:center; justify-content:center; color:var(--violet); flex:none}
+.rchain-item svg{width:24px; height:24px}
+.rchain-link{width:20px; height:2px; background:var(--line); flex:none}
+.recap-done{display:none; flex-direction:column; gap:var(--s4); padding-top:var(--s4); border-top:1px solid var(--line-soft)}
+.recap-done.show{display:flex}
+.recap-done p{font-family:var(--display); font-size:clamp(17px,2vw,21px); line-height:1.4; max-width:60ch}
+@media (prefers-reduced-motion: reduce){ .rcard.wrong{animation:none} }
+</style>
+</head>
+<body>
+
+<style>
+.pagenav{display:flex; flex-wrap:wrap; gap:var(--s4); justify-content:space-between; align-items:center; padding-block:var(--s6); border-top:1px solid var(--line-soft)}
+.pnbtn{display:flex; flex-direction:column; gap:2px; min-height:44px; justify-content:center; padding:var(--s2) var(--s4); border-radius:var(--r-md); text-decoration:none; color:inherit; transition:background .18s; max-width:280px}
+.pnbtn:hover{background:var(--surface-2)}
+.pnbtn.hub{flex-direction:row; align-items:center; background:var(--surface-2); border:1px solid var(--line); border-radius:999px; font-family:var(--mono); font-size:12.5px; letter-spacing:.04em; padding:0 var(--s4); flex:none}
+.pnbtn.next{text-align:right; align-items:flex-end; margin-left:auto}
+.pnk{font-family:var(--mono); font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--violet)}
+.pnt{font-size:14px; color:var(--ink-dim)}
+@media (max-width:640px){ .pagenav{flex-direction:column; align-items:stretch} .pnbtn{max-width:none} .pnbtn.hub{order:-1; justify-content:center} .pnbtn.next{text-align:left; align-items:flex-start; margin-left:0} }
+</style>
+
+<header class="wrap topbar">
+  <span class="num">BEYOND TEXT · MODULE 01 — THE PICTURE-MAKER'S TRICK · 53</span>
+  <span class="tag dim">AI Concepts: Beyond Text</span>
+  <button class="btn themetoggle" id="themeToggle" type="button" aria-pressed="false" aria-label="Switch to light theme">
+    <svg class="ti ti-sun" viewBox="0 0 16 16" aria-hidden="true" width="15" height="15"><circle cx="8" cy="8" r="3.4" fill="none" stroke="currentColor" stroke-width="1.4"/><g stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><line x1="8" y1="0.5" x2="8" y2="2.3"/><line x1="8" y1="13.7" x2="8" y2="15.5"/><line x1="0.5" y1="8" x2="2.3" y2="8"/><line x1="13.7" y1="8" x2="15.5" y2="8"/><line x1="2.6" y1="2.6" x2="3.9" y2="3.9"/><line x1="12.1" y1="12.1" x2="13.4" y2="13.4"/><line x1="2.6" y1="13.4" x2="3.9" y2="12.1"/><line x1="12.1" y1="3.9" x2="13.4" y2="2.6"/></g></svg>
+    <svg class="ti ti-moon" viewBox="0 0 16 16" aria-hidden="true" width="15" height="15"><path d="M13.5 9.5A6 6 0 1 1 6.5 2.5a4.8 4.8 0 1 0 7 7z" fill="currentColor"/></svg>
+    <span class="ti-label">Light</span>
+  </button>
+</header>
+<script>(function(){
+  var root=document.documentElement, btn=document.getElementById('themeToggle');
+  function sync(){
+    var isLight = root.getAttribute('data-theme')==='light';
+    btn.setAttribute('aria-pressed', isLight);
+    btn.setAttribute('aria-label', 'Switch to ' + (isLight?'dark':'light') + ' theme');
+    btn.querySelector('.ti-label').textContent = isLight ? 'Dark' : 'Light';
+  }
+  btn.addEventListener('click', function(){
+    var next = root.getAttribute('data-theme')==='light' ? 'dark' : 'light';
+    root.setAttribute('data-theme', next);
+    try{ localStorage.setItem('aic-theme', next); }catch(e){}
+    sync();
+  });
+  sync();
+})();</script>
+
+<section class="wrap stack g6">
+  <div class="stack g4">
+    <p class="eyebrow">Deepens pages 51 &amp; 52</p>
+    <h1>Many small guesses, not one big leap</h1>
+    <p class="lede">Each denoising step only removes a little noise, then re-checks against the prompt. Skip steps, and the result gets rougher — it doesn't just arrive at the same picture faster. Same starting noise, same prompt, four different step budgets.</p>
+  </div>
+
+  <div class="lab">
+    <div class="stepgrid" id="stepGrid"></div>
+    <p class="caption">An illustrative simulation, not a running image model — but the shape of the tradeoff is real.</p>
+  </div>
+</section>
+
+<section class="wrap stack g5">
+  <p class="eyebrow">How it works</p>
+  <h2>Fewer checks, rougher answer</h2>
+  <div class="mech n3">
+    <figure>
+      <div class="art">
+        <svg viewBox="0 0 220 100" role="img" aria-label="At one step, only a small fraction of the noise gets removed before the process stops.">
+          <rect x="20" y="20" width="180" height="60" rx="4" fill="none" stroke="currentColor" stroke-opacity=".3"/>
+          <rect x="20" y="20" width="16" height="60" fill="#45e0c4" fill-opacity=".8"/>
+          <text x="110" y="95" font-family="JetBrains Mono, monospace" font-size="11" text-anchor="middle" fill="currentColor">1 step used — most of the budget is untouched</text>
+        </svg>
+      </div>
+      <figcaption><b>1 step</b>Only one small correction gets applied, then the process stops. Barely resolved.</figcaption>
+    </figure>
+    <figure>
+      <div class="art">
+        <svg viewBox="0 0 220 100" role="img" aria-label="At twenty steps, most but not all of the correction budget has been used.">
+          <rect x="20" y="20" width="180" height="60" rx="4" fill="none" stroke="currentColor" stroke-opacity=".3"/>
+          <rect x="20" y="20" width="128" height="60" fill="#9b6bff" fill-opacity=".7"/>
+          <text x="110" y="95" font-family="JetBrains Mono, monospace" font-size="11" text-anchor="middle" fill="currentColor">20 steps used — most corrections applied</text>
+        </svg>
+      </div>
+      <figcaption><b>20 steps</b>Most of the corrections have run. Recognizable, but softer than it will get.</figcaption>
+    </figure>
+    <figure>
+      <div class="art">
+        <svg viewBox="0 0 220 100" role="img" aria-label="At fifty steps, the full correction budget has been used and the image is fully resolved.">
+          <rect x="20" y="20" width="180" height="60" rx="4" fill="none" stroke="currentColor" stroke-opacity=".3"/>
+          <rect x="20" y="20" width="180" height="60" fill="#ff6f8f" fill-opacity=".7"/>
+          <text x="110" y="95" font-family="JetBrains Mono, monospace" font-size="11" text-anchor="middle" fill="currentColor">50 steps used — full budget spent</text>
+        </svg>
+      </div>
+      <figcaption><b>50 steps</b>The full correction budget has run. This is as clean as this process gets.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section class="wrap stack g4">
+  <p class="eyebrow">So what</p>
+  <p class="sowhat">A "step" isn't overhead to skip — <em>it's a chance to correct the picture</em>, and fewer chances means a rougher result.</p>
+</section>
+
+<section class="wrap stack g5">
+  <p class="eyebrow">Module recap</p>
+  <h2>Before you move on</h2>
+  <p class="dim">Click an idea below, then click the card it matches.</p>
+  <div class="recap">
+    <div class="recap-icons" id="rIcons" role="group" aria-label="This module's ideas"></div>
+    <div class="recap-cards" id="rCards" role="group" aria-label="Match each idea to its card"></div>
+    <div class="recap-chain" id="rChain" aria-hidden="true"></div>
+    <p class="sr" id="rLive" aria-live="polite"></p>
+    <div class="recap-done" id="rDone">
+      <p>Denoising starts from static, a prompt steers where it resolves to, and the number of steps decides how rough or clean the result is — three parts of the same one mechanism.</p>
+      <a class="btn" href="00-atlas.html">Back to all topics →</a>
+    </div>
+  </div>
+</section>
+
+<nav class="wrap pagenav" aria-label="Series navigation">
+  <a class="pnbtn hub" href="00-atlas.html">All topics</a>
+  <a class="pnbtn next" href="54-text-to-speech.html"><span class="pnk">Next →</span><span class="pnt">Turning words into a waveform</span></a>
+</nav>
+<footer class="wrap foot">Part of the AI Concepts: Beyond Text series</footer>
+
+<script>
+(function(){
+  var W = 48, H = 36;
+
+  function mulberry32(seed){
+    return function(){
+      seed |= 0; seed = (seed + 0x6D2B79F5) | 0;
+      var t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+  var rand = mulberry32(20260909); // same seed as pages 51/52
+
+  var SKY = [91,127,209], GROUND = [74,155,94], SUN = [255,209,102];
+  var ROOF = [139,58,58], BODY = [217,79,79], DOOR = [74,47,31], WINDOW = [255,243,176];
+
+  function targetColor(gx, gy){
+    if(gy >= 27) return GROUND;
+    var dx = gx-8, dy = gy-6;
+    if(dx*dx+dy*dy <= 9) return SUN;
+    if(gy>=9 && gy<17){
+      var t = (gy-9)/8;
+      var halfw = t * 11;
+      if(Math.abs(gx-24) <= halfw) return ROOF;
+    }
+    if(gy>=17 && gy<27 && gx>=15 && gx<33){
+      if(gx>=22 && gx<26 && gy>=21 && gy<27) return DOOR;
+      if(gx>=28 && gx<31 && gy>=19 && gy<22) return WINDOW;
+      return BODY;
+    }
+    return SKY;
+  }
+
+  var noise = new Array(W*H);
+  for(var i=0;i<W*H;i++){
+    noise[i] = [Math.floor(rand()*256), Math.floor(rand()*256), Math.floor(rand()*256)];
+  }
+
+  function lerp(a,b,t){ return Math.round(a + (b-a)*t); }
+
+  function renderInto(canvas, steps){
+    var ctx = canvas.getContext('2d');
+    ctx.imageSmoothingEnabled = false;
+    var r = steps / 50;
+    var eased = 1 - Math.pow(1-r, 2);
+    for(var gy=0; gy<H; gy++){
+      for(var gx=0; gx<W; gx++){
+        var idx = gy*W+gx;
+        var n = noise[idx], tgt = targetColor(gx, gy);
+        var c = [lerp(n[0],tgt[0],eased), lerp(n[1],tgt[1],eased), lerp(n[2],tgt[2],eased)];
+        ctx.fillStyle = 'rgb(' + c[0] + ',' + c[1] + ',' + c[2] + ')';
+        ctx.fillRect(gx, gy, 1, 1);
+      }
+    }
+  }
+
+  var STEP_COUNTS = [1, 5, 20, 50];
+  var grid = document.getElementById('stepGrid');
+  STEP_COUNTS.forEach(function(steps){
+    var cell = document.createElement('div');
+    cell.className = 'stepcell';
+    var canvas = document.createElement('canvas');
+    canvas.width = W; canvas.height = H;
+    canvas.setAttribute('role','img');
+    canvas.setAttribute('aria-label', 'The picture after ' + steps + ' denoising steps.');
+    var lab = document.createElement('span');
+    lab.className = 'lab2';
+    lab.innerHTML = '<b>' + steps + '</b> step' + (steps===1?'':'s');
+    cell.appendChild(canvas); cell.appendChild(lab);
+    grid.appendChild(cell);
+    renderInto(canvas, steps);
+  });
+})();
+</script>
+
+<script>
+(function(){
+  var DATA = [
+    {m:'noise', label:'Page 51', text:'Generation starts from pure random static, then repeatedly removes a little noise.'},
+    {m:'steer', label:'Page 52', text:'The prompt steers which picture the same starting noise resolves into.'},
+    {m:'refine', label:'Page 53', text:'More steps means more chances to correct the picture — fewer steps means a rougher result.'}
+  ];
+  var MOTIF = {
+    noise: '<rect x="3" y="8" width="4" height="4" fill="currentColor" opacity=".2"/><rect x="10" y="14" width="4" height="4" fill="currentColor" opacity=".35"/><rect x="4" y="22" width="4" height="4" fill="currentColor" opacity=".15"/><rect x="12" y="28" width="4" height="4" fill="currentColor" opacity=".4"/><path d="M22 30 V18 h12 V30z M22 18 L28 10 L34 18" fill="currentColor" opacity=".85"/>',
+    steer: '<g stroke="currentColor" stroke-width="1.6" opacity=".7"><line x1="3" y1="10" x2="15" y2="10"/><line x1="3" y1="16" x2="12" y2="16"/><line x1="3" y1="22" x2="15" y2="22"/></g><path d="M18 16 h8" stroke="currentColor" stroke-width="1.6" fill="none"/><polygon points="28,16 24,13 24,19" fill="currentColor"/><circle cx="33" cy="16" r="6" fill="currentColor" opacity=".55"/>',
+    refine: '<circle cx="10" cy="20" r="8" fill="none" stroke="currentColor" stroke-width="1.2" stroke-dasharray="2 2" opacity=".5"/><circle cx="30" cy="20" r="8" fill="currentColor" opacity=".8"/>'
+  };
+  var icons = document.getElementById('rIcons'), cards = document.getElementById('rCards'), chain = document.getElementById('rChain');
+  var done = document.getElementById('rDone'), live = document.getElementById('rLive');
+  var selected = null, solvedCount = 0;
+
+  function shuffle(arr){ for(var i=arr.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=arr[i]; arr[i]=arr[j]; arr[j]=t; } return arr; }
+
+  DATA.forEach(function(d, idx){
+    var b = document.createElement('button');
+    b.type = 'button'; b.className = 'ricon'; b.setAttribute('aria-pressed', 'false'); b.setAttribute('aria-label', d.label);
+    b.innerHTML = '<svg viewBox="0 0 40 40" aria-hidden="true">' + MOTIF[d.m] + '</svg>';
+    b.addEventListener('click', function(){
+      if(b.classList.contains('solved')) return;
+      Array.prototype.forEach.call(icons.children, function(x){ x.setAttribute('aria-pressed', 'false'); });
+      b.setAttribute('aria-pressed', 'true');
+      selected = idx;
+    });
+    icons.appendChild(b);
+  });
+
+  var order = shuffle(DATA.map(function(d, i){ return i; }));
+  order.forEach(function(idx){
+    var d = DATA[idx];
+    var c = document.createElement('button');
+    c.type = 'button'; c.className = 'rcard'; c.textContent = d.text;
+    c.addEventListener('click', function(){
+      if(selected === null || c.classList.contains('solved')) return;
+      if(selected === idx){
+        var iconBtn = icons.children[selected];
+        iconBtn.classList.add('solved'); iconBtn.setAttribute('aria-pressed', 'false');
+        c.classList.add('solved');
+        if(chain.children.length){ var link = document.createElement('span'); link.className = 'rchain-link'; chain.appendChild(link); }
+        var chip = document.createElement('span'); chip.className = 'rchain-item'; chip.innerHTML = iconBtn.innerHTML;
+        chain.appendChild(chip);
+        live.textContent = 'Matched: ' + d.label;
+        selected = null;
+        solvedCount++;
+        if(solvedCount === DATA.length){
+          done.classList.add('show');
+          var f = done.querySelector('a'); if(f) f.focus();
+        }
+      } else {
+        c.classList.remove('wrong'); void c.offsetWidth; c.classList.add('wrong');
+        live.textContent = 'Not quite — try again';
+      }
+    });
+    cards.appendChild(c);
+  });
+})();
+</script>
+
+</body>
+</html>
