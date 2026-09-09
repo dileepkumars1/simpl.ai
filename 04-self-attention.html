@@ -1,0 +1,353 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="AI Engineering: Deep Dive, Module 2.1 — real Q/K/V projection matrices, scaled dot-product scores, and softmax, applied token-by-token to the Nimbus query.">
+<meta name="color-scheme" content="dark light">
+<script>(function(){try{if(localStorage.getItem('aic-theme')==='light')document.documentElement.setAttribute('data-theme','light');}catch(e){}})();</script>
+<style>:root{color-scheme:dark}html{background:#100e1a}html[data-theme="light"]{color-scheme:light;background:#f7f5fb}</style>
+<title>The Real Attention Equation</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;600&family=Manrope:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>:root{
+  --ground:#100e1a; --ground-2:#0b0913;
+  --surface:#181428; --surface-2:#1e1934;
+  --line:#2a2340; --line-soft:#221c36;
+  --ink:#ECE9F5; --ink-dim:#9a92b6; --ink-faint:#6b6389;
+  --violet:#9b6bff; --teal:#45e0c4; --coral:#ff6f8f;
+  --violet-soft:rgba(155,107,255,.16); --teal-soft:rgba(69,224,196,.14); --coral-soft:rgba(255,111,143,.14);
+  --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px; --s7:48px; --s8:64px; --s9:96px;
+  --r-sm:6px; --r-md:12px; --r-lg:20px;
+  --display:'Unbounded',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --body:'Manrope',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,'SFMono-Regular',Menlo,monospace;
+  --wrap:1080px;
+}
+:root[data-theme="light"]{
+  --ground:#f7f5fb; --surface:#ffffff; --surface-2:#efeaf9;
+  --ink:#231d38; --ink-dim:#57507a; --ink-faint:#7b7396;
+  --line:#ddd4f0;
+  --violet:#7c3aed; --teal:#0d9488; --coral:#e11d48;
+  --violet-soft:rgba(124,58,237,.12); --teal-soft:rgba(13,148,136,.12); --coral-soft:rgba(225,29,72,.12);
+}
+.themetoggle{margin-left:auto; gap:6px; padding:0 var(--s3); min-height:36px; font-size:11.5px}
+.themetoggle .ti-moon{display:none}
+[data-theme="light"] .themetoggle .ti-sun{display:none}
+[data-theme="light"] .themetoggle .ti-moon{display:inline-block}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0; background:var(--ground); color:var(--ink); font-family:var(--body); font-size:clamp(15px,.55vw + 13.6px,17px); line-height:1.65; -webkit-font-smoothing:antialiased; overflow-x:hidden}
+h1,h2,h3{font-family:var(--display); font-weight:600; line-height:1.12; text-wrap:balance; margin:0}
+h1{font-size:clamp(30px,5.2vw,52px); letter-spacing:-.02em}
+h2{font-size:clamp(21px,2.7vw,30px); letter-spacing:-.01em}
+h3{font-size:clamp(16px,1.5vw,19px); letter-spacing:-.005em}
+p{margin:0; max-width:65ch; overflow-wrap:break-word}
+h1,h2,h3{overflow-wrap:break-word}
+.stack>*,.steps>*,.split>*,.two>*,.hero>*,.machine>*{min-width:0}
+.eyebrow{font-family:var(--mono); font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-faint); margin:0}
+.dim{color:var(--ink-dim)}
+.lede{font-size:clamp(17px,1.5vw,21px); line-height:1.5; color:var(--ink-dim)}
+.wrap{width:min(100% - 2*var(--s5), var(--wrap)); margin-inline:auto}
+@media (max-width:520px){ .wrap{width:min(100% - 2*var(--s4), var(--wrap))} }
+.stack{display:flex; flex-direction:column}
+.g2{gap:var(--s2)} .g3{gap:var(--s3)} .g4{gap:var(--s4)} .g5{gap:var(--s5)} .g6{gap:var(--s6)} .g7{gap:var(--s7)}
+section{padding-block:var(--s7)}
+section + section{border-top:1px solid var(--line-soft)}
+figure{margin:0}
+figcaption{font-size:13.5px; color:var(--ink-dim); margin-top:var(--s3); max-width:62ch}
+svg{max-width:100%; height:auto; display:block}
+.tag{font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-faint)}
+.topbar{display:flex; flex-wrap:wrap; align-items:baseline; gap:var(--s3) var(--s4); padding-block:var(--s5) 0}
+.topbar .num{font-family:var(--mono); font-size:11px; letter-spacing:.16em; color:var(--violet)}
+.foot{padding-block:var(--s6); border-top:1px solid var(--line-soft); color:var(--ink-faint); font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase}
+button{font-family:inherit; font-size:inherit; color:inherit}
+.btn{display:inline-flex; align-items:center; justify-content:center; gap:var(--s2); min-height:44px; padding:0 var(--s4); border-radius:999px; background:var(--surface-2); border:1px solid var(--line); color:var(--ink); font-family:var(--mono); font-size:12.5px; letter-spacing:.04em; cursor:pointer; transition:background .18s, border-color .18s, color .18s, transform .18s, box-shadow .18s; box-shadow:0 1px 2px rgba(0,0,0,.16)}
+.btn:hover{background:#262046; border-color:#3a3160; transform:translateY(-1px); box-shadow:0 3px 8px rgba(0,0,0,.28)}
+[data-theme="light"] .btn:hover{background:#efeaf9; border-color:#c9baf0; box-shadow:0 3px 8px rgba(80,60,140,.14)}
+[data-theme="light"] .btn[aria-pressed="true"], [data-theme="light"] .btn.on{color:#3b1f8a}
+.btn[aria-pressed="true"], .btn.on{background:var(--violet-soft); border-color:var(--violet); color:#d9c9ff}
+.btn:focus-visible, [tabindex]:focus-visible, input:focus-visible{outline:2px solid var(--teal); outline-offset:3px}
+.sr{position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0}
+@media (prefers-reduced-motion: reduce){ *,*::before,*::after{animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important} }
+.sowhat{font-family:var(--display); font-size:clamp(19px,2.4vw,27px); line-height:1.35; letter-spacing:-.01em; max-width:30ch}
+.sowhat em{font-style:normal; color:var(--violet)}
+.videowrap{position:relative; width:100%; padding-top:56.25%; border-radius:var(--r-md); overflow:hidden; background:var(--ground-2); border:1px solid var(--line-soft)}
+.videowrap iframe{position:absolute; inset:0; width:100%; height:100%; border:0}
+</style>
+<style>
+.rig{background:linear-gradient(165deg,#151125,#0c0a16); border:1px solid var(--line); border-radius:var(--r-lg); padding:var(--s5); display:flex; flex-direction:column; gap:var(--s5); color:#ECE9F5}
+.promptline{font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:#9a92b6}
+.qtoggle{display:flex; flex-wrap:wrap; gap:4px; border:1px solid var(--line); border-radius:999px; padding:4px; width:100%; max-width:max-content}
+.qtoggle button{flex:1 1 auto; min-height:40px; padding:0 16px; border-radius:999px; border:0; background:transparent; color:#9a92b6; font-family:var(--mono); font-size:12.5px; letter-spacing:.04em; cursor:pointer; white-space:nowrap}
+.qtoggle button[aria-pressed="true"]{background:var(--violet-soft); color:#e5d7ff; box-shadow:inset 0 0 0 1px var(--violet)}
+.tokrow{display:flex; flex-wrap:wrap; gap:var(--s3)}
+.tokcard{flex:1 1 120px; background:var(--ground-2); border:1.5px solid var(--line-soft); border-radius:var(--r-md); padding:var(--s3); display:flex; flex-direction:column; gap:6px; transition:border-color .2s, background .2s}
+.tokcard.active{border-color:var(--violet); background:var(--violet-soft)}
+.toklabel{font-family:var(--mono); font-size:11.5px; color:#ECE9F5}
+.minibars{display:flex; gap:2px; height:20px; align-items:center}
+.minibars .bar{flex:1; height:100%; display:flex; flex-direction:column; justify-content:center}
+.minibars .fill{width:100%; border-radius:1px}
+.weightrow{display:flex; flex-direction:column; gap:8px}
+.wline{display:grid; grid-template-columns:80px 1fr 50px; gap:var(--s3); align-items:center; font-family:var(--mono); font-size:12.5px; color:#9a92b6}
+.wtrack{height:16px; border-radius:999px; background:var(--ground-2); border:1px solid var(--line-soft); overflow:hidden}
+.wfill{height:100%; background:linear-gradient(90deg,#9b6bff,#45e0c4); border-radius:999px; transition:width .3s}
+.outbars{display:flex; gap:4px; height:30px; align-items:center}
+.outbars .bar{flex:1; height:100%; display:flex; flex-direction:column; justify-content:center}
+.outbars .fill{width:100%; border-radius:2px}
+</style>
+<style>
+/* math panel */
+.mathgrid{display:grid; gap:var(--s4)}
+@media (min-width:820px){ .mathgrid{grid-template-columns:repeat(3,1fr)} }
+.mathblock{background:var(--ground-2); border:1px solid var(--line-soft); border-radius:var(--r-md); padding:var(--s5); display:flex; flex-direction:column; gap:var(--s3)}
+.mathblock .mlab{font-family:var(--mono); font-size:10.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--violet)}
+.mform{font-size:19px; color:var(--ink); letter-spacing:.01em}
+.msub{font-family:var(--mono); font-size:13.5px; color:var(--ink-dim)}
+.mres{font-family:var(--mono); font-size:19px; color:var(--teal); font-weight:500}
+/* code panel */
+.codepanel{background:#0b0913; border:1px solid var(--line-soft); border-radius:var(--r-md); overflow:hidden; color:#ECE9F5}
+.codehead{display:flex; align-items:center; gap:8px; padding:10px 14px; background:#151125; border-bottom:1px solid var(--line-soft)}
+.codedot{width:9px; height:9px; border-radius:50%; display:inline-block}
+.codefile{margin-left:8px; font-family:var(--mono); font-size:11.5px; color:#9a92b6}
+.codepanel pre{margin:0; padding:var(--s5); overflow-x:auto}
+.codepanel code{font-family:var(--mono); font-size:13px; line-height:1.7; white-space:pre}
+.tok-kw{color:#9b6bff}
+.tok-fn{color:#45e0c4}
+.tok-num{color:#ff9fb4}
+.tok-cm{color:#6b6389; font-style:italic}
+/* nimbus panel */
+.nimbuspanel{background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); padding:var(--s5); display:flex; flex-direction:column; gap:var(--s4)}
+</style>
+</head>
+<body>
+
+<style>
+.pagenav{display:flex; flex-wrap:wrap; gap:var(--s4); justify-content:space-between; align-items:center; padding-block:var(--s6); border-top:1px solid var(--line-soft)}
+.pnbtn{display:flex; flex-direction:column; gap:2px; min-height:44px; justify-content:center; padding:var(--s2) var(--s4); border-radius:var(--r-md); text-decoration:none; color:inherit; transition:background .18s; max-width:280px}
+.pnbtn:hover{background:var(--surface-2)}
+.pnbtn.next{text-align:right; align-items:flex-end; margin-left:auto}
+.pnk{font-family:var(--mono); font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--violet)}
+.pnt{font-size:14px; color:var(--ink-dim)}
+@media (max-width:640px){ .pagenav{flex-direction:column; align-items:stretch} .pnbtn{max-width:none} .pnbtn.next{text-align:left; align-items:flex-start; margin-left:0} }
+</style>
+
+<header class="wrap topbar">
+  <span class="num">AI ENGINEERING: DEEP DIVE · MODULE 02 — TRANSFORMERS, THE REAL MECHANISM · 04</span>
+  <span class="tag dim">A hands-on series · math + code</span>
+  <button class="btn themetoggle" id="themeToggle" type="button" aria-pressed="false" aria-label="Switch to light theme">
+    <svg class="ti ti-sun" viewBox="0 0 16 16" aria-hidden="true" width="15" height="15"><circle cx="8" cy="8" r="3.4" fill="none" stroke="currentColor" stroke-width="1.4"/><g stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><line x1="8" y1="0.5" x2="8" y2="2.3"/><line x1="8" y1="13.7" x2="8" y2="15.5"/><line x1="0.5" y1="8" x2="2.3" y2="8"/><line x1="13.7" y1="8" x2="15.5" y2="8"/><line x1="2.6" y1="2.6" x2="3.9" y2="3.9"/><line x1="12.1" y1="12.1" x2="13.4" y2="13.4"/><line x1="2.6" y1="13.4" x2="3.9" y2="12.1"/></g></svg>
+    <svg class="ti ti-moon" viewBox="0 0 16 16" aria-hidden="true" width="15" height="15"><path d="M13.5 9.5A6 6 0 1 1 6.5 2.5a4.8 4.8 0 1 0 7 7z" fill="currentColor"/></svg>
+    <span class="ti-label">Light</span>
+  </button>
+</header>
+<script>(function(){
+  var root=document.documentElement, btn=document.getElementById('themeToggle');
+  function sync(){
+    var isLight = root.getAttribute('data-theme')==='light';
+    btn.setAttribute('aria-pressed', isLight);
+    btn.setAttribute('aria-label', 'Switch to ' + (isLight?'dark':'light') + ' theme');
+    btn.querySelector('.ti-label').textContent = isLight ? 'Dark' : 'Light';
+  }
+  btn.addEventListener('click', function(){
+    var next = root.getAttribute('data-theme')==='light' ? 'dark' : 'light';
+    root.setAttribute('data-theme', next);
+    try{ localStorage.setItem('aic-theme', next); }catch(e){}
+    sync();
+  });
+  sync();
+})();</script>
+
+<section class="wrap stack g6">
+  <div class="stack g4">
+    <p class="eyebrow">Module 2.1</p>
+    <h1>The real attention equation</h1>
+    <p class="lede">Module 1.3 attended directly on raw embeddings. Real attention never does that — every token is projected into a Query, a Key, and a Value first. Pick a token below and watch the full equation run.</p>
+  </div>
+
+  <div class="rig">
+    <span class="promptline">QUERY: "Why did my Nimbus export fail?" — TOKENS BELOW</span>
+    <div class="qtoggle" id="tokRow" role="group" aria-label="Which token's output to compute"></div>
+
+    <div class="tokrow" id="tokCards"></div>
+
+    <div class="stack g2">
+      <span class="promptline" id="qkLine">Q(export) · K(j) / √d, for every j</span>
+      <div class="weightrow" id="weightRows"></div>
+    </div>
+
+    <div class="stack g2">
+      <span class="promptline">OUTPUT = Σ weight × V(j)</span>
+      <div class="outbars" id="outBars"></div>
+    </div>
+  </div>
+</section>
+
+<section class="wrap stack g5">
+  <p class="eyebrow">The math</p>
+  <h2>Three steps, same formula every layer</h2>
+  <div class="mathgrid">
+    <div class="mathblock">
+      <span class="mlab">Projections</span>
+      <div class="mform">Q, K, V&nbsp; = &nbsp;XWq, XWk, XWv</div>
+      <div class="msub">X is the token's embedding; Wq/Wk/Wv are learned</div>
+      <div class="mres" id="mProj">Q(export) = [0.35, 0.22]</div>
+    </div>
+    <div class="mathblock">
+      <span class="mlab">Scaled score</span>
+      <div class="mform">score&nbsp; = &nbsp;(Q · K) / √d</div>
+      <div class="msub" id="mScoreSub">Q(export) · K(fail) / √2</div>
+      <div class="mres" id="mScoreRes">= 0.36</div>
+    </div>
+    <div class="mathblock">
+      <span class="mlab">Weighted output</span>
+      <div class="mform">out&nbsp; = &nbsp;Σⱼ softmax(scores)ⱼ Vⱼ</div>
+      <div class="msub">one weight per token, always summing to 1</div>
+      <div class="mres" id="mSum">Σ weights = 1.00</div>
+    </div>
+  </div>
+  <p class="dim">The scale-by-√d isn't decorative — without it, larger embedding dimensions push scores so large that softmax saturates into a near one-hot pick, and gradients vanish everywhere else.</p>
+</section>
+
+<section class="wrap stack g5">
+  <p class="eyebrow">The code</p>
+  <h2>~20 lines, the whole mechanism</h2>
+  <div class="codepanel">
+    <div class="codehead">
+      <span class="codedot" style="background:#ff6f8f"></span>
+      <span class="codedot" style="background:#f5c451"></span>
+      <span class="codedot" style="background:#45e0c4"></span>
+      <span class="codefile">self_attention.py</span>
+    </div>
+    <pre><code><span class="tok-kw">import</span> numpy <span class="tok-kw">as</span> np
+
+<span class="tok-kw">def</span> <span class="tok-fn">softmax</span>(x):
+    e = np.exp(x - np.<span class="tok-fn">max</span>(x))
+    <span class="tok-kw">return</span> e / e.sum()
+
+<span class="tok-cm"># X: one row per token embedding, shape (n_tokens, d_model)</span>
+Q = X @ Wq   <span class="tok-cm"># (n_tokens, d_k)</span>
+K = X @ Wk   <span class="tok-cm"># (n_tokens, d_k)</span>
+V = X @ Wv   <span class="tok-cm"># (n_tokens, d_v)</span>
+
+d_k = K.shape[-<span class="tok-num">1</span>]
+scores  = (Q @ K.T) / np.sqrt(d_k)     <span class="tok-cm"># (n_tokens, n_tokens)</span>
+weights = np.array([<span class="tok-fn">softmax</span>(row) <span class="tok-kw">for</span> row <span class="tok-kw">in</span> scores])
+output  = weights @ V                   <span class="tok-cm"># (n_tokens, d_v) — one output per token</span></code></pre>
+  </div>
+  <p class="dim">That's the entire mechanism. Every transformer's attention sublayer, at every layer, is these same three matrix multiplies plus one softmax.</p>
+</section>
+
+<section class="wrap stack g5">
+  <p class="eyebrow">The Nimbus thread</p>
+  <div class="nimbuspanel">
+    <h2 style="margin:0">Same tokens as Module 1.3 — now with real projections</h2>
+    <p class="dim">Module 1.3 let "export" attend directly using its raw embedding as both query and key. Real self-attention never does that — it learns three separate projections first, so "how similar am I" (query) and "what do I offer" (key) can differ from "what do I actually contribute" (value). Toggle through each token above; the shape of the story survives (export and fail still pull toward each other) even though every number changed.</p>
+  </div>
+</section>
+
+<section class="wrap stack g4">
+  <p class="eyebrow">So what</p>
+  <p class="sowhat">Every token asks a question <em>(Q)</em>, every token offers an answer <em>(K)</em>, and the output is a weighted blend of what's actually useful <em>(V)</em> — that's attention, full stop.</p>
+</section>
+
+<nav class="wrap pagenav" aria-label="Series navigation">
+  <a class="pnbtn prev" href="03-matmul-engine.html"><span class="pnk">← Prev</span><span class="pnt">Every layer is the same trick</span></a>
+  <a class="pnbtn next" href="05-transformer-block.html"><span class="pnk">Next →</span><span class="pnt">Multi-head, positional encoding, the full block</span></a>
+</nav>
+<footer class="wrap foot">AI Engineering: Deep Dive — Module 2 of 8</footer>
+
+<script>
+(function(){
+  var TOKENS = ['Nimbus','export','fail','why'];
+  var EMB = [[0.3,-0.4,0.6,0.1],[0.9,0.1,-0.2,0.4],[0.8,0.0,-0.3,0.5],[-0.5,0.6,0.7,-0.1]];
+  var Wq = [[1.0,0.2],[0.4,-0.6],[0.8,0.4],[-0.2,1.0]];
+  var Wk = [[0.6,-0.4],[0.2,0.8],[-1.0,0.6],[0.4,0.2]];
+  var Wv = [[0.2,0.3],[0.4,-0.1],[0.1,0.2],[-0.3,0.4]];
+
+  function matvec(v, W){
+    var out = [];
+    for(var c=0;c<W[0].length;c++){
+      var s = 0;
+      for(var r=0;r<v.length;r++) s += v[r]*W[r][c];
+      out.push(s);
+    }
+    return out;
+  }
+  function dot(a,b){ var s=0; for(var i=0;i<a.length;i++) s+=a[i]*b[i]; return s; }
+  function softmax(arr){
+    var m = Math.max.apply(null, arr);
+    var ex = arr.map(function(x){ return Math.exp(x-m); });
+    var sum = ex.reduce(function(a,b){return a+b;},0);
+    return ex.map(function(x){ return x/sum; });
+  }
+  function fmt(n){ return (n>=0?'':'') + n.toFixed(2); }
+
+  var Q = EMB.map(function(e){ return matvec(e, Wq); });
+  var K = EMB.map(function(e){ return matvec(e, Wk); });
+  var V = EMB.map(function(e){ return matvec(e, Wv); });
+  var dK = 2;
+
+  function renderMiniBars(container, vec){
+    container.innerHTML = '';
+    vec.forEach(function(v){
+      var bar = document.createElement('div'); bar.className = 'bar';
+      var fill = document.createElement('div'); fill.className = 'fill';
+      var mag = Math.min(1, Math.abs(v));
+      fill.style.height = (mag*100) + '%';
+      fill.style.background = v >= 0 ? 'rgba(155,107,255,' + (0.35+mag*0.5) + ')' : 'rgba(255,111,143,' + (0.35+mag*0.5) + ')';
+      bar.appendChild(fill);
+      container.appendChild(bar);
+    });
+  }
+
+  var tokRow = document.getElementById('tokRow'), tokCards = document.getElementById('tokCards');
+  var weightRows = document.getElementById('weightRows'), outBars = document.getElementById('outBars'), qkLine = document.getElementById('qkLine');
+  var mProj = document.getElementById('mProj'), mScoreSub = document.getElementById('mScoreSub'), mScoreRes = document.getElementById('mScoreRes'), mSum = document.getElementById('mSum');
+
+  var cardEls = TOKENS.map(function(t, i){
+    var card = document.createElement('div'); card.className = 'tokcard';
+    card.innerHTML = '<span class="toklabel">' + t + '</span><div class="minibars"></div>';
+    tokCards.appendChild(card);
+    renderMiniBars(card.querySelector('.minibars'), EMB[i]);
+    return card;
+  });
+
+  TOKENS.forEach(function(t, i){
+    var b = document.createElement('button');
+    b.type = 'button'; b.setAttribute('aria-pressed', i===1?'true':'false'); b.textContent = t;
+    b.addEventListener('click', function(){ setActive(i); });
+    tokRow.appendChild(b);
+  });
+
+  function setActive(qi){
+    Array.prototype.forEach.call(tokRow.children, function(b, bi){ b.setAttribute('aria-pressed', bi===qi?'true':'false'); });
+    cardEls.forEach(function(c, i){ c.classList.toggle('active', i===qi); });
+
+    var scores = K.map(function(k){ return dot(Q[qi], k) / Math.sqrt(dK); });
+    var weights = softmax(scores);
+
+    qkLine.textContent = 'Q(' + TOKENS[qi] + ') · K(j) / √d, for every j';
+    weightRows.innerHTML = '';
+    weights.forEach(function(w, j){
+      var row = document.createElement('div'); row.className = 'wline';
+      row.innerHTML = '<span>' + TOKENS[j] + '</span><div class="wtrack"><div class="wfill" style="width:' + (w*100) + '%"></div></div><span>' + w.toFixed(2) + '</span>';
+      weightRows.appendChild(row);
+    });
+
+    var output = [0,0];
+    weights.forEach(function(w, j){ output[0]+=w*V[j][0]; output[1]+=w*V[j][1]; });
+    renderMiniBars(outBars, output);
+
+    var maxJ = weights.indexOf(Math.max.apply(null, weights));
+    mProj.textContent = 'Q(' + TOKENS[qi] + ') = [' + Q[qi].map(fmt).join(', ') + ']';
+    mScoreSub.textContent = 'Q(' + TOKENS[qi] + ') · K(' + TOKENS[maxJ] + ') / √' + dK;
+    mScoreRes.textContent = '= ' + fmt(scores[maxJ]);
+    mSum.textContent = 'Σ weights = ' + weights.reduce(function(a,b){return a+b;},0).toFixed(2);
+  }
+
+  setActive(1);
+})();
+</script>
+
+</body>
+</html>

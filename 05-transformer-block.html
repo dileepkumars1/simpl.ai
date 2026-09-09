@@ -1,0 +1,363 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="AI Engineering: Deep Dive, Module 2.2 — assembling one real transformer block end to end: positional encoding, multi-head attention, residual connections, layernorm, and the feed-forward sublayer.">
+<meta name="color-scheme" content="dark light">
+<script>(function(){try{if(localStorage.getItem('aic-theme')==='light')document.documentElement.setAttribute('data-theme','light');}catch(e){}})();</script>
+<style>:root{color-scheme:dark}html{background:#100e1a}html[data-theme="light"]{color-scheme:light;background:#f7f5fb}</style>
+<title>One Block, Start To Finish</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;600&family=Manrope:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>:root{
+  --ground:#100e1a; --ground-2:#0b0913;
+  --surface:#181428; --surface-2:#1e1934;
+  --line:#2a2340; --line-soft:#221c36;
+  --ink:#ECE9F5; --ink-dim:#9a92b6; --ink-faint:#6b6389;
+  --violet:#9b6bff; --teal:#45e0c4; --coral:#ff6f8f;
+  --violet-soft:rgba(155,107,255,.16); --teal-soft:rgba(69,224,196,.14); --coral-soft:rgba(255,111,143,.14);
+  --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px; --s7:48px; --s8:64px; --s9:96px;
+  --r-sm:6px; --r-md:12px; --r-lg:20px;
+  --display:'Unbounded',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --body:'Manrope',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,'SFMono-Regular',Menlo,monospace;
+  --wrap:1080px;
+}
+:root[data-theme="light"]{
+  --ground:#f7f5fb; --surface:#ffffff; --surface-2:#efeaf9;
+  --ink:#231d38; --ink-dim:#57507a; --ink-faint:#7b7396;
+  --line:#ddd4f0;
+  --violet:#7c3aed; --teal:#0d9488; --coral:#e11d48;
+  --violet-soft:rgba(124,58,237,.12); --teal-soft:rgba(13,148,136,.12); --coral-soft:rgba(225,29,72,.12);
+}
+.themetoggle{margin-left:auto; gap:6px; padding:0 var(--s3); min-height:36px; font-size:11.5px}
+.themetoggle .ti-moon{display:none}
+[data-theme="light"] .themetoggle .ti-sun{display:none}
+[data-theme="light"] .themetoggle .ti-moon{display:inline-block}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0; background:var(--ground); color:var(--ink); font-family:var(--body); font-size:clamp(15px,.55vw + 13.6px,17px); line-height:1.65; -webkit-font-smoothing:antialiased; overflow-x:hidden}
+h1,h2,h3{font-family:var(--display); font-weight:600; line-height:1.12; text-wrap:balance; margin:0}
+h1{font-size:clamp(30px,5.2vw,52px); letter-spacing:-.02em}
+h2{font-size:clamp(21px,2.7vw,30px); letter-spacing:-.01em}
+h3{font-size:clamp(16px,1.5vw,19px); letter-spacing:-.005em}
+p{margin:0; max-width:65ch; overflow-wrap:break-word}
+h1,h2,h3{overflow-wrap:break-word}
+.stack>*,.steps>*,.split>*,.two>*,.hero>*,.machine>*{min-width:0}
+.eyebrow{font-family:var(--mono); font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-faint); margin:0}
+.dim{color:var(--ink-dim)}
+.lede{font-size:clamp(17px,1.5vw,21px); line-height:1.5; color:var(--ink-dim)}
+.wrap{width:min(100% - 2*var(--s5), var(--wrap)); margin-inline:auto}
+@media (max-width:520px){ .wrap{width:min(100% - 2*var(--s4), var(--wrap))} }
+.stack{display:flex; flex-direction:column}
+.g2{gap:var(--s2)} .g3{gap:var(--s3)} .g4{gap:var(--s4)} .g5{gap:var(--s5)} .g6{gap:var(--s6)} .g7{gap:var(--s7)}
+section{padding-block:var(--s7)}
+section + section{border-top:1px solid var(--line-soft)}
+figure{margin:0}
+figcaption{font-size:13.5px; color:var(--ink-dim); margin-top:var(--s3); max-width:62ch}
+svg{max-width:100%; height:auto; display:block}
+.tag{font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-faint)}
+.topbar{display:flex; flex-wrap:wrap; align-items:baseline; gap:var(--s3) var(--s4); padding-block:var(--s5) 0}
+.topbar .num{font-family:var(--mono); font-size:11px; letter-spacing:.16em; color:var(--violet)}
+.foot{padding-block:var(--s6); border-top:1px solid var(--line-soft); color:var(--ink-faint); font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase}
+button{font-family:inherit; font-size:inherit; color:inherit}
+.btn{display:inline-flex; align-items:center; justify-content:center; gap:var(--s2); min-height:44px; padding:0 var(--s4); border-radius:999px; background:var(--surface-2); border:1px solid var(--line); color:var(--ink); font-family:var(--mono); font-size:12.5px; letter-spacing:.04em; cursor:pointer; transition:background .18s, border-color .18s, color .18s, transform .18s, box-shadow .18s; box-shadow:0 1px 2px rgba(0,0,0,.16)}
+.btn:hover{background:#262046; border-color:#3a3160; transform:translateY(-1px); box-shadow:0 3px 8px rgba(0,0,0,.28)}
+[data-theme="light"] .btn:hover{background:#efeaf9; border-color:#c9baf0; box-shadow:0 3px 8px rgba(80,60,140,.14)}
+[data-theme="light"] .btn[aria-pressed="true"], [data-theme="light"] .btn.on{color:#3b1f8a}
+.btn[aria-pressed="true"], .btn.on{background:var(--violet-soft); border-color:var(--violet); color:#d9c9ff}
+.btn:focus-visible, [tabindex]:focus-visible, input:focus-visible{outline:2px solid var(--teal); outline-offset:3px}
+.sr{position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0}
+@media (prefers-reduced-motion: reduce){ *,*::before,*::after{animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important} }
+.sowhat{font-family:var(--display); font-size:clamp(19px,2.4vw,27px); line-height:1.35; letter-spacing:-.01em; max-width:30ch}
+.sowhat em{font-style:normal; color:var(--violet)}
+</style>
+<style>
+.rig{background:linear-gradient(165deg,#151125,#0c0a16); border:1px solid var(--line); border-radius:var(--r-lg); padding:var(--s5); display:flex; flex-direction:column; gap:var(--s5); color:#ECE9F5}
+.promptline{font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:#9a92b6}
+.pipeline{display:flex; flex-wrap:wrap; gap:4px; align-items:center}
+.pipestage{min-height:44px; padding:0 12px; border-radius:var(--r-md); border:1.5px solid var(--line-soft); background:var(--ground-2); color:#9a92b6; font-family:var(--mono); font-size:11px; letter-spacing:.02em; cursor:pointer; text-align:center; line-height:1.3}
+.pipestage[aria-pressed="true"]{border-color:var(--violet); background:var(--violet-soft); color:#e5d7ff}
+.pipearrow{color:#6b6389; font-size:13px}
+.stagebox{background:var(--ground-2); border:1px solid var(--line-soft); border-radius:var(--r-md); padding:var(--s4); display:flex; flex-direction:column; gap:var(--s3)}
+.stagetitle{font-family:var(--mono); font-size:12.5px; color:var(--teal)}
+.stagebars{display:flex; gap:5px; height:44px; align-items:center}
+.stagebars .bar{flex:1; height:100%; display:flex; flex-direction:column; justify-content:center}
+.stagebars .fill{width:100%; border-radius:2px}
+.stagenote{font-size:13.5px; color:#9a92b6}
+</style>
+<style>
+.mathgrid{display:grid; gap:var(--s4)}
+@media (min-width:820px){ .mathgrid{grid-template-columns:repeat(3,1fr)} }
+.mathblock{background:var(--ground-2); border:1px solid var(--line-soft); border-radius:var(--r-md); padding:var(--s5); display:flex; flex-direction:column; gap:var(--s3)}
+.mathblock .mlab{font-family:var(--mono); font-size:10.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--violet)}
+.mform{font-size:18px; color:var(--ink); letter-spacing:.01em}
+.msub{font-family:var(--mono); font-size:13px; color:var(--ink-dim)}
+.mres{font-family:var(--mono); font-size:18px; color:var(--teal); font-weight:500}
+.codepanel{background:#0b0913; border:1px solid var(--line-soft); border-radius:var(--r-md); overflow:hidden; color:#ECE9F5}
+.codehead{display:flex; align-items:center; gap:8px; padding:10px 14px; background:#151125; border-bottom:1px solid var(--line-soft)}
+.codedot{width:9px; height:9px; border-radius:50%; display:inline-block}
+.codefile{margin-left:8px; font-family:var(--mono); font-size:11.5px; color:#9a92b6}
+.codepanel pre{margin:0; padding:var(--s5); overflow-x:auto}
+.codepanel code{font-family:var(--mono); font-size:12.5px; line-height:1.65; white-space:pre}
+.tok-kw{color:#9b6bff}
+.tok-fn{color:#45e0c4}
+.tok-num{color:#ff9fb4}
+.tok-cm{color:#6b6389; font-style:italic}
+.nimbuspanel{background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); padding:var(--s5); display:flex; flex-direction:column; gap:var(--s4)}
+</style>
+</head>
+<body>
+
+<style>
+.pagenav{display:flex; flex-wrap:wrap; gap:var(--s4); justify-content:space-between; align-items:center; padding-block:var(--s6); border-top:1px solid var(--line-soft)}
+.pnbtn{display:flex; flex-direction:column; gap:2px; min-height:44px; justify-content:center; padding:var(--s2) var(--s4); border-radius:var(--r-md); text-decoration:none; color:inherit; transition:background .18s; max-width:280px}
+.pnbtn:hover{background:var(--surface-2)}
+.pnbtn.next{text-align:right; align-items:flex-end; margin-left:auto}
+.pnk{font-family:var(--mono); font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--violet)}
+.pnt{font-size:14px; color:var(--ink-dim)}
+@media (max-width:640px){ .pagenav{flex-direction:column; align-items:stretch} .pnbtn{max-width:none} .pnbtn.next{text-align:left; align-items:flex-start; margin-left:0} }
+</style>
+
+<header class="wrap topbar">
+  <span class="num">AI ENGINEERING: DEEP DIVE · MODULE 02 — TRANSFORMERS, THE REAL MECHANISM · 05</span>
+  <span class="tag dim">A hands-on series · math + code</span>
+  <button class="btn themetoggle" id="themeToggle" type="button" aria-pressed="false" aria-label="Switch to light theme">
+    <svg class="ti ti-sun" viewBox="0 0 16 16" aria-hidden="true" width="15" height="15"><circle cx="8" cy="8" r="3.4" fill="none" stroke="currentColor" stroke-width="1.4"/><g stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><line x1="8" y1="0.5" x2="8" y2="2.3"/><line x1="8" y1="13.7" x2="8" y2="15.5"/><line x1="0.5" y1="8" x2="2.3" y2="8"/><line x1="13.7" y1="8" x2="15.5" y2="8"/><line x1="2.6" y1="2.6" x2="3.9" y2="3.9"/><line x1="12.1" y1="12.1" x2="13.4" y2="13.4"/><line x1="2.6" y1="13.4" x2="3.9" y2="12.1"/></g></svg>
+    <svg class="ti ti-moon" viewBox="0 0 16 16" aria-hidden="true" width="15" height="15"><path d="M13.5 9.5A6 6 0 1 1 6.5 2.5a4.8 4.8 0 1 0 7 7z" fill="currentColor"/></svg>
+    <span class="ti-label">Light</span>
+  </button>
+</header>
+<script>(function(){
+  var root=document.documentElement, btn=document.getElementById('themeToggle');
+  function sync(){
+    var isLight = root.getAttribute('data-theme')==='light';
+    btn.setAttribute('aria-pressed', isLight);
+    btn.setAttribute('aria-label', 'Switch to ' + (isLight?'dark':'light') + ' theme');
+    btn.querySelector('.ti-label').textContent = isLight ? 'Dark' : 'Light';
+  }
+  btn.addEventListener('click', function(){
+    var next = root.getAttribute('data-theme')==='light' ? 'dark' : 'light';
+    root.setAttribute('data-theme', next);
+    try{ localStorage.setItem('aic-theme', next); }catch(e){}
+    sync();
+  });
+  sync();
+})();</script>
+
+<section class="wrap stack g6">
+  <div class="stack g4">
+    <p class="eyebrow">Module 2.2</p>
+    <h1>One block, start to finish</h1>
+    <p class="lede">Attention is one sublayer, not the whole block. Follow "export"'s representation through the full pipeline — positional encoding, two attention heads concatenated, a residual add, layernorm, a feed-forward sublayer, and another residual add.</p>
+  </div>
+
+  <div class="rig">
+    <span class="promptline">TOKEN: "export" (position 1 of 4) — STEP THROUGH THE BLOCK</span>
+    <div class="pipeline" id="pipeline"></div>
+
+    <div class="stagebox">
+      <span class="stagetitle" id="stageTitle">1. Embedding</span>
+      <div class="stagebars" id="stageBars"></div>
+      <p class="stagenote" id="stageNote"></p>
+    </div>
+  </div>
+</section>
+
+<section class="wrap stack g5">
+  <p class="eyebrow">The math</p>
+  <h2>Three formulas the block leans on</h2>
+  <div class="mathgrid">
+    <div class="mathblock">
+      <span class="mlab">Positional encoding</span>
+      <div class="mform">PE(pos,2i)=sin(pos/10000^(2i/d))</div>
+      <div class="msub">PE(pos,2i+1)=cos(pos/10000^(2i/d))</div>
+      <div class="mres">PE(1) = [0.84, 0.54, 0.01, 1.00]</div>
+    </div>
+    <div class="mathblock">
+      <span class="mlab">Add &amp; norm</span>
+      <div class="mform">LN(x + Sublayer(x))</div>
+      <div class="msub">residual keeps the original signal from vanishing</div>
+      <div class="mres">mean ≈ 0, std ≈ 1 after LN</div>
+    </div>
+    <div class="mathblock">
+      <span class="mlab">Feed-forward</span>
+      <div class="mform">FFN(x) = W₂ · ReLU(W₁x + b₁) + b₂</div>
+      <div class="msub">expands, squashes negatives, contracts back</div>
+      <div class="mres">d_model → d_ff → d_model</div>
+    </div>
+  </div>
+  <p class="dim">Every one of these is applied per token, independently and identically — the only place tokens talk to each other at all is inside the attention sublayer.</p>
+</section>
+
+<section class="wrap stack g5">
+  <p class="eyebrow">The code</p>
+  <h2>The whole block, assembled</h2>
+  <div class="codepanel">
+    <div class="codehead">
+      <span class="codedot" style="background:#ff6f8f"></span>
+      <span class="codedot" style="background:#f5c451"></span>
+      <span class="codedot" style="background:#45e0c4"></span>
+      <span class="codefile">transformer_block.py</span>
+    </div>
+    <pre><code><span class="tok-kw">def</span> <span class="tok-fn">layer_norm</span>(x, eps=<span class="tok-num">1e-5</span>):
+    mu, var = x.mean(), x.var()
+    <span class="tok-kw">return</span> (x - mu) / np.sqrt(var + eps)
+
+<span class="tok-kw">def</span> <span class="tok-fn">multi_head_attention</span>(X, heads):
+    outs = [<span class="tok-fn">attention_head</span>(X, h) <span class="tok-kw">for</span> h <span class="tok-kw">in</span> heads]
+    <span class="tok-kw">return</span> np.concatenate(outs, axis=-<span class="tok-num">1</span>)   <span class="tok-cm"># back to d_model</span>
+
+<span class="tok-kw">def</span> <span class="tok-fn">transformer_block</span>(X, heads, W1, b1, W2, b2):
+    X = X + <span class="tok-fn">positional_encoding</span>(X.shape[<span class="tok-num">0</span>], X.shape[<span class="tok-num">1</span>])
+    attn = <span class="tok-fn">multi_head_attention</span>(X, heads)
+    X = <span class="tok-fn">layer_norm</span>(X + attn)                       <span class="tok-cm"># residual #1</span>
+    ffn = np.maximum(<span class="tok-num">0</span>, X @ W1 + b1) @ W2 + b2
+    X = <span class="tok-fn">layer_norm</span>(X + ffn)                        <span class="tok-cm"># residual #2</span>
+    <span class="tok-kw">return</span> X   <span class="tok-cm"># same shape as the input — stackable</span></code></pre>
+  </div>
+  <p class="dim">Same shape in, same shape out — that's what makes stacking N of these (Module 2.3) as simple as calling this function N times.</p>
+</section>
+
+<section class="wrap stack g5">
+  <p class="eyebrow">The Nimbus thread</p>
+  <div class="nimbuspanel">
+    <h2 style="margin:0">One block deep, on the real query</h2>
+    <p class="dim">This exact pipeline runs on <b style="color:var(--ink)">every</b> token of "Why did my Nimbus export fail?" simultaneously, not just "export" — the interactive above shows one token's journey so the numbers stay readable. A real model repeats this whole block dozens of times, each one refining every token's representation using what every other token now knows.</p>
+  </div>
+</section>
+
+<section class="wrap stack g4">
+  <p class="eyebrow">So what</p>
+  <p class="sowhat">A transformer block is <em>attention, then a per-token feed-forward pass</em>, each wrapped in a residual add and a normalize — repeat N times.</p>
+</section>
+
+<nav class="wrap pagenav" aria-label="Series navigation">
+  <a class="pnbtn prev" href="04-self-attention.html"><span class="pnk">← Prev</span><span class="pnt">The real attention equation</span></a>
+  <a class="pnbtn next" href="06-block-to-model.html"><span class="pnk">Next →</span><span class="pnt">From block to model</span></a>
+</nav>
+<footer class="wrap foot">AI Engineering: Deep Dive — Module 2 of 8</footer>
+
+<script>
+(function(){
+  var TOKENS = ['Nimbus','export','fail','why'];
+  var EMB = [[0.3,-0.4,0.6,0.1],[0.9,0.1,-0.2,0.4],[0.8,0.0,-0.3,0.5],[-0.5,0.6,0.7,-0.1]];
+  var D = 4, QI = 1; // "export"
+
+  function posEnc(pos, d){
+    var v = [];
+    for(var i=0;i<d;i+=2){
+      var denom = Math.pow(10000, i/d);
+      v.push(Math.sin(pos/denom));
+      v.push(Math.cos(pos/denom));
+    }
+    return v.slice(0,d);
+  }
+  function addv(a,b){ return a.map(function(x,i){ return x+b[i]; }); }
+  function matvec(v, W){
+    var out = [];
+    for(var c=0;c<W[0].length;c++){ var s=0; for(var r=0;r<v.length;r++) s+=v[r]*W[r][c]; out.push(s); }
+    return out;
+  }
+  function dot(a,b){ var s=0; for(var i=0;i<a.length;i++) s+=a[i]*b[i]; return s; }
+  function softmax(arr){
+    var m = Math.max.apply(null, arr);
+    var ex = arr.map(function(x){ return Math.exp(x-m); });
+    var sum = ex.reduce(function(a,b){return a+b;},0);
+    return ex.map(function(x){ return x/sum; });
+  }
+  function layerNorm(v){
+    var mean = v.reduce(function(a,b){return a+b;},0)/v.length;
+    var variance = v.reduce(function(a,b){ return a+(b-mean)*(b-mean); },0)/v.length;
+    return v.map(function(x){ return (x-mean)/Math.sqrt(variance+1e-5); });
+  }
+
+  var X0 = EMB.map(function(e, i){ return addv(e, posEnc(i, D)); });
+
+  var Wq_A = [[1.0,0.2],[0.4,-0.6],[0.8,0.4],[-0.2,1.0]];
+  var Wk_A = [[0.6,-0.4],[0.2,0.8],[-1.0,0.6],[0.4,0.2]];
+  var Wv_A = [[0.2,0.3],[0.4,-0.1],[0.1,0.2],[-0.3,0.4]];
+  var Wq_B = [[0.3,0.7],[-0.5,0.2],[0.6,-0.3],[0.1,0.4]];
+  var Wk_B = [[0.4,-0.6],[0.3,0.5],[-0.2,0.7],[0.6,-0.1]];
+  var Wv_B = [[-0.3,0.5],[0.6,0.2],[0.4,-0.4],[0.2,0.6]];
+
+  function headOutput(Wq, Wk, Wv, qi){
+    var Q = X0.map(function(x){ return matvec(x, Wq); });
+    var K = X0.map(function(x){ return matvec(x, Wk); });
+    var V = X0.map(function(x){ return matvec(x, Wv); });
+    var scores = K.map(function(k){ return dot(Q[qi], k) / Math.sqrt(2); });
+    var weights = softmax(scores);
+    var out = [0,0];
+    weights.forEach(function(w,j){ out[0]+=w*V[j][0]; out[1]+=w*V[j][1]; });
+    return out;
+  }
+
+  var headA = headOutput(Wq_A, Wk_A, Wv_A, QI);
+  var headB = headOutput(Wq_B, Wk_B, Wv_B, QI);
+  var attnOut = headA.concat(headB); // 4-dim, concatenated
+
+  var resid1 = addv(X0[QI], attnOut);
+  var norm1 = layerNorm(resid1);
+
+  // deterministic small toy FFN weights (illustrative, not trained)
+  var dFF = 6;
+  var W1 = []; for(var i=0;i<D;i++){ var row=[]; for(var j=0;j<dFF;j++) row.push(((i+j)%3-1)*0.3); W1.push(row); }
+  var W2 = []; for(var i=0;i<dFF;i++){ var row2=[]; for(var j=0;j<D;j++) row2.push(((i+j)%3-1)*0.25); W2.push(row2); }
+  var b1 = [0.05,-0.05,0.05,-0.05,0.05,-0.05], b2 = [0.02,-0.02,0.02,-0.02];
+
+  function ffn(x){
+    var h = matvec(x, W1).map(function(v,i){ return Math.max(0, v+b1[i]); });
+    return matvec(h, W2).map(function(v,i){ return v+b2[i]; });
+  }
+  var ffnOut = ffn(norm1);
+  var resid2 = addv(norm1, ffnOut);
+  var norm2 = layerNorm(resid2);
+
+  var STAGES = [
+    { t:'1. Embedding', v:EMB[QI], note:'Raw learned embedding for "export" — no position, no context yet.' },
+    { t:'2. + Positional encoding', v:X0[QI], note:'Sinusoidal signal for position 1 added in — same token, different position now reads as a different vector.' },
+    { t:'3. Multi-head attention (2 heads, concat)', v:attnOut, note:'Two independent attention heads each produce a 2-dim slice; concatenated back to the model\'s 4 dimensions.' },
+    { t:'4. Add residual', v:resid1, note:'The pre-attention vector is added back in — the sublayer only has to learn the *change*, not reinvent the token from scratch.' },
+    { t:'5. LayerNorm', v:norm1, note:'Rescaled to roughly zero mean, unit variance — keeps values in a stable range before the next sublayer.' },
+    { t:'6. Feed-forward (Linear → ReLU → Linear)', v:ffnOut, note:'A per-token MLP: expand to 6 dims, clip negatives, contract back to 4 — no cross-token mixing here at all.' },
+    { t:'7. Add residual + Norm (block output)', v:norm2, note:'Same shape as the input embedding — this is what makes stacking another identical block possible.' }
+  ];
+
+  var pipeline = document.getElementById('pipeline'), stageTitle = document.getElementById('stageTitle'), stageBars = document.getElementById('stageBars'), stageNote = document.getElementById('stageNote');
+
+  STAGES.forEach(function(s, i){
+    if(i>0){ var arrow = document.createElement('span'); arrow.className='pipearrow'; arrow.textContent='→'; pipeline.appendChild(arrow); }
+    var chip = document.createElement('button');
+    chip.type = 'button'; chip.className = 'pipestage'; chip.setAttribute('aria-pressed', i===0?'true':'false');
+    chip.textContent = s.t.replace(/^\d+\.\s*/, '');
+    chip.addEventListener('click', function(){ setStage(i); });
+    pipeline.appendChild(chip);
+  });
+
+  function renderBars(container, vec){
+    container.innerHTML = '';
+    var maxAbs = Math.max.apply(null, vec.map(Math.abs).concat([1]));
+    vec.forEach(function(v){
+      var bar = document.createElement('div'); bar.className='bar';
+      var fill = document.createElement('div'); fill.className='fill';
+      var mag = Math.min(1, Math.abs(v)/maxAbs);
+      fill.style.height = (mag*100)+'%';
+      fill.style.background = v>=0 ? 'rgba(155,107,255,'+(0.35+mag*0.5)+')' : 'rgba(255,111,143,'+(0.35+mag*0.5)+')';
+      bar.appendChild(fill);
+      container.appendChild(bar);
+    });
+  }
+
+  var chips = pipeline.querySelectorAll('.pipestage');
+  function setStage(i){
+    chips.forEach(function(c,ci){ c.setAttribute('aria-pressed', ci===i?'true':'false'); });
+    stageTitle.textContent = STAGES[i].t;
+    renderBars(stageBars, STAGES[i].v);
+    stageNote.textContent = STAGES[i].note;
+  }
+  setStage(0);
+})();
+</script>
+
+</body>
+</html>

@@ -176,6 +176,12 @@ input[type="range"]::-moz-range-thumb{width:22px; height:22px; border-radius:50%
 
 [data-theme="light"] .answer.invented .flag{color:#8a1030}
 [data-theme="light"] .answer.grounded .flag{color:#0b5f52}
+.chatmsg{display:flex; align-items:flex-start; gap:var(--s3)}
+.chatavatar{width:36px; height:36px; border-radius:50%; background:var(--violet-soft); border:1.5px solid var(--violet); display:flex; align-items:center; justify-content:center; color:var(--violet); flex:none}
+.chatavatar svg{width:18px; height:18px}
+.chatbubble{background:var(--surface); border:1.5px solid var(--line); border-radius:4px var(--r-md) var(--r-md) var(--r-md); padding:10px var(--s4); max-width:min(100%, 520px)}
+.chatlabel{font-family:var(--mono); font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-faint); display:block; margin-bottom:3px}
+.chattext{margin:0; font-size:15.5px; color:var(--ink); font-weight:500; max-width:none}
 </style>
 <header class="wrap topbar">
   <span class="num">MODULE 02 — HOW AI THINKS · 08</span>
@@ -245,8 +251,15 @@ input[type="range"]::-moz-range-thumb{width:22px; height:22px; border-radius:50%
 
     <div class="panes">
       <div class="ask">
-        <p class="eyebrow">Asked</p>
-        <div class="qline">What is Northwind Traders’ return policy?</div>
+        <div class="chatmsg">
+          <span class="chatavatar" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M4 20c0-4.4 3.6-7 8-7s8 2.6 8 7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          </span>
+          <div class="chatbubble">
+            <span class="chatlabel">Asked</span>
+            <p class="chattext">What is Northwind Traders’ return policy?</p>
+          </div>
+        </div>
         <p class="eyebrow">Answered</p>
         <div class="answer invented" id="answer" aria-live="polite"></div>
         <div class="doc" id="doc"></div>

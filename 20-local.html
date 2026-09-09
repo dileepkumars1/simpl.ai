@@ -92,6 +92,12 @@ button{font-family:inherit; font-size:inherit; color:inherit}
 @media (max-width:640px){ .pagenav{flex-direction:column; align-items:stretch} .pnbtn{max-width:none} .pnbtn.hub{order:-1; justify-content:center} .pnbtn.next{text-align:left; align-items:flex-start; margin-left:0} }
 </style>
 <style>
+.chatmsg{display:flex; align-items:flex-start; gap:var(--s3)}
+.chatavatar{width:36px; height:36px; border-radius:50%; background:var(--violet-soft); border:1.5px solid var(--violet); display:flex; align-items:center; justify-content:center; color:var(--violet); flex:none}
+.chatavatar svg{width:18px; height:18px}
+.chatbubble{background:var(--surface); border:1.5px solid var(--line); border-radius:4px var(--r-md) var(--r-md) var(--r-md); padding:10px var(--s4); max-width:min(100%, 520px)}
+.chatlabel{font-family:var(--mono); font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-faint); display:block; margin-bottom:3px}
+.chattext{margin:0; font-size:15.5px; color:var(--ink); font-weight:500; max-width:none}
 .qmap{position:relative; aspect-ratio:16/7; background:radial-gradient(125% 105% at 32% 22%,#181234,#0a0812 72%); border:1px solid var(--line); border-radius:var(--r-lg); overflow:hidden; color:#ECE9F5}
 .qmap svg{position:absolute; inset:0; width:100%; height:100%}
 .qdot{position:absolute; transform:translate(-50%,-50%); width:9px; height:9px; border-radius:50%; background:#544a7d; box-shadow:0 0 6px rgba(84,74,125,.8)}
@@ -139,7 +145,15 @@ button{font-family:inherit; font-size:inherit; color:inherit}
     <p class="lede">"Nearest in the coordinate space" and "actually the best answer" aren't always the same chunk. A reranker is the second, separate look that catches the difference.</p>
   </div>
 
-  <p class="eyebrow">Query: "Can I return the headphones I bought two weeks ago?"</p>
+  <div class="chatmsg">
+    <span class="chatavatar" aria-hidden="true">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M4 20c0-4.4 3.6-7 8-7s8 2.6 8 7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+    </span>
+    <div class="chatbubble">
+      <span class="chatlabel">Query</span>
+      <p class="chattext">"Can I return the headphones I bought two weeks ago?"</p>
+    </div>
+  </div>
 
   <div class="qmap" id="qmap" role="img" aria-label="A scattered set of document chunks placed by meaning, the same kind of map as page 9, with the query as a bright center point."></div>
   <figcaption>Same kind of map as <a href="09-rag.html" title="Look it up before you answer" style="color:var(--teal); text-decoration:underline; text-decoration-style:dotted; text-underline-offset:3px">page 9</a> — every dot is a chunk, placed by meaning.</figcaption>
