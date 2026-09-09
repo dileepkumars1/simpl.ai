@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Build a Local Chatbot, Module 1 — the smallest possible chatbot script, run for real, and why its raw output doesn't read like a reply.">
+<meta name="color-scheme" content="dark light">
+<script>(function(){try{if(localStorage.getItem('aic-theme')==='light')document.documentElement.setAttribute('data-theme','light');}catch(e){}})();</script>
+<style>:root{color-scheme:dark}html{background:#100e1a}html[data-theme="light"]{color-scheme:light;background:#f7f5fb}</style>
+<title>Ten Lines, Start To Finish</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;600&family=Manrope:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>:root{
+  --ground:#100e1a; --ground-2:#0b0913;
+  --surface:#181428; --surface-2:#1e1934;
+  --line:#2a2340; --line-soft:#221c36;
+  --ink:#ECE9F5; --ink-dim:#9a92b6; --ink-faint:#6b6389;
+  --violet:#9b6bff; --teal:#45e0c4; --coral:#ff6f8f;
+  --violet-soft:rgba(155,107,255,.16); --teal-soft:rgba(69,224,196,.14); --coral-soft:rgba(255,111,143,.14);
+  --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px; --s7:48px; --s8:64px; --s9:96px;
+  --r-sm:6px; --r-md:12px; --r-lg:20px;
+  --display:'Unbounded',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --body:'Manrope',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,'SFMono-Regular',Menlo,monospace;
+  --wrap:1080px;
+}
+:root[data-theme="light"]{
+  --ground:#f7f5fb; --surface:#ffffff; --surface-2:#efeaf9;
+  --ink:#231d38; --ink-dim:#57507a; --ink-faint:#7b7396;
+  --line:#ddd4f0;
+  --violet:#7c3aed; --teal:#0d9488; --coral:#e11d48;
+  --violet-soft:rgba(124,58,237,.12); --teal-soft:rgba(13,148,136,.12); --coral-soft:rgba(225,29,72,.12);
+}
+.themetoggle{margin-left:auto; gap:6px; padding:0 var(--s3); min-height:36px; font-size:11.5px}
+.themetoggle .ti-moon{display:none}
+[data-theme="light"] .themetoggle .ti-sun{display:none}
+[data-theme="light"] .themetoggle .ti-moon{display:inline-block}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0; background:var(--ground); color:var(--ink); font-family:var(--body); font-size:clamp(15px,.55vw + 13.6px,17px); line-height:1.65; -webkit-font-smoothing:antialiased; overflow-x:hidden}
+h1,h2,h3{font-family:var(--display); font-weight:600; line-height:1.12; text-wrap:balance; margin:0}
+h1{font-size:clamp(30px,5.2vw,52px); letter-spacing:-.02em}
+h2{font-size:clamp(21px,2.7vw,30px); letter-spacing:-.01em}
+h3{font-size:clamp(16px,1.5vw,19px); letter-spacing:-.005em}
+p{margin:0; max-width:65ch; overflow-wrap:break-word}
+h1,h2,h3{overflow-wrap:break-word}
+.stack>*,.steps>*,.split>*,.two>*,.hero>*{min-width:0}
+.eyebrow{font-family:var(--mono); font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-faint); margin:0}
+.dim{color:var(--ink-dim)}
+.lede{font-size:clamp(17px,1.5vw,21px); line-height:1.5; color:var(--ink-dim)}
+.wrap{width:min(100% - 2*var(--s5), var(--wrap)); margin-inline:auto}
+@media (max-width:520px){ .wrap{width:min(100% - 2*var(--s4), var(--wrap))} }
+.stack{display:flex; flex-direction:column}
+.g2{gap:var(--s2)} .g3{gap:var(--s3)} .g4{gap:var(--s4)} .g5{gap:var(--s5)} .g6{gap:var(--s6)} .g7{gap:var(--s7)}
+section{padding-block:var(--s7)}
+section + section{border-top:1px solid var(--line-soft)}
+.tag{font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-faint)}
+.topbar{display:flex; flex-wrap:wrap; align-items:baseline; gap:var(--s3) var(--s4); padding-block:var(--s5) 0}
+.topbar .num{font-family:var(--mono); font-size:11px; letter-spacing:.16em; color:var(--coral)}
+.foot{padding-block:var(--s6); border-top:1px solid var(--line-soft); color:var(--ink-faint); font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase}
+button{font-family:inherit; font-size:inherit; color:inherit}
+.btn{display:inline-flex; align-items:center; justify-content:center; gap:var(--s2); min-height:44px; padding:0 var(--s4); border-radius:999px; background:var(--surface-2); border:1px solid var(--line); color:var(--ink); font-family:var(--mono); font-size:12.5px; letter-spacing:.04em; cursor:pointer; transition:background .18s, border-color .18s, color .18s, transform .18s, box-shadow .18s; box-shadow:0 1px 2px rgba(0,0,0,.16); text-decoration:none}
+.btn:hover{background:#262046; border-color:#3a3160; transform:translateY(-1px); box-shadow:0 3px 8px rgba(0,0,0,.28)}
+[data-theme="light"] .btn:hover{background:#efeaf9; border-color:#c9baf0; box-shadow:0 3px 8px rgba(80,60,140,.14)}
+.btn[aria-pressed="true"], .btn.on{background:var(--coral-soft); border-color:var(--coral); color:var(--coral)}
+.btn:focus-visible, [tabindex]:focus-visible, input:focus-visible{outline:2px solid var(--teal); outline-offset:3px}
+@media (prefers-reduced-motion: reduce){ *,*::before,*::after{animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important} }
+.sowhat{font-family:var(--display); font-size:clamp(19px,2.4vw,27px); line-height:1.35; letter-spacing:-.01em; max-width:32ch}
+.sowhat em{font-style:normal; color:var(--coral)}
+</style>
+<style>
+.termwindow{background:#0b0913; border:1px solid var(--line-soft); border-radius:var(--r-md); overflow:hidden; color:#ECE9F5}
+.termhead{display:flex; align-items:center; gap:8px; padding:10px 14px; background:#151125; border-bottom:1px solid var(--line-soft)}
+.termdot{width:9px; height:9px; border-radius:50%; display:inline-block}
+.termfile{margin-left:8px; font-family:var(--mono); font-size:11.5px; color:#9a92b6}
+.termwindow pre{margin:0; padding:var(--s4) var(--s5); overflow-x:auto}
+.termwindow code{font-family:var(--mono); font-size:13px; line-height:1.7; white-space:pre-wrap; word-break:break-word}
+.termcmd{color:var(--teal)}
+.termcmd::before{content:"$ "; color:var(--ink-faint)}
+.tok-kw{color:#9b6bff}
+.tok-fn{color:#45e0c4}
+.tok-num{color:#ff9fb4}
+.tok-cm{color:#6b6389; font-style:italic}
+.tok-str{color:#ffcf7d}
+.trythis{background:var(--coral-soft); border:1.5px solid var(--coral); border-radius:var(--r-md); padding:var(--s4) var(--s5); display:flex; flex-direction:column; gap:6px}
+.trythis .tt-lab{font-family:var(--mono); font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--coral)}
+.dl{display:inline-flex; align-items:center; gap:8px; font-family:var(--mono); font-size:12.5px}
+.rig{background:linear-gradient(165deg,#151125,#0c0a16); border:1px solid var(--line); border-radius:var(--r-lg); padding:var(--s5); display:flex; flex-direction:column; gap:var(--s5); color:#ECE9F5}
+.qa{display:flex; flex-direction:column; gap:var(--s3)}
+.qa .role{font-family:var(--mono); font-size:10.5px; letter-spacing:.12em; text-transform:uppercase}
+.qa .role.user{color:var(--teal)}
+.qa .role.model{color:var(--coral)}
+.qa .bubble{background:var(--ground-2); border:1.5px solid var(--line-soft); border-radius:var(--r-md); padding:var(--s4); font-size:14.5px; color:#ECE9F5}
+.annot{font-family:var(--mono); font-size:12px; color:#9a92b6; background:var(--ground-2); border-left:2px solid var(--coral); padding:6px 12px}
+</style>
+</head>
+<body>
+
+<style>
+.pagenav{display:flex; flex-wrap:wrap; gap:var(--s4); justify-content:space-between; align-items:center; padding-block:var(--s6); border-top:1px solid var(--line-soft)}
+.pnbtn{display:flex; flex-direction:column; gap:2px; min-height:44px; justify-content:center; padding:var(--s2) var(--s4); border-radius:var(--r-md); text-decoration:none; color:inherit; transition:background .18s; max-width:280px}
+.pnbtn:hover{background:var(--surface-2)}
+.pnbtn.next{text-align:right; align-items:flex-end; margin-left:auto}
+.pnk{font-family:var(--mono); font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--coral)}
+.pnt{font-size:14px; color:var(--ink-dim)}
+@media (max-width:640px){ .pagenav{flex-direction:column; align-items:stretch} .pnbtn{max-width:none} .pnbtn.next{text-align:left; align-items:flex-start; margin-left:0} }
+</style>
+
+<header class="wrap topbar">
+  <span class="num">BUILD A LOCAL CHATBOT · MODULE 1 — THE SMALLEST POSSIBLE CHATBOT · bc-01</span>
+  <span class="tag dim">Real Python, every page</span>
+  <button class="btn themetoggle" id="themeToggle" type="button" aria-pressed="false" aria-label="Switch to light theme">
+    <svg class="ti ti-sun" viewBox="0 0 16 16" aria-hidden="true" width="15" height="15"><circle cx="8" cy="8" r="3.4" fill="none" stroke="currentColor" stroke-width="1.4"/><g stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><line x1="8" y1="0.5" x2="8" y2="2.3"/><line x1="8" y1="13.7" x2="8" y2="15.5"/><line x1="0.5" y1="8" x2="2.3" y2="8"/><line x1="13.7" y1="8" x2="15.5" y2="8"/><line x1="2.6" y1="2.6" x2="3.9" y2="3.9"/><line x1="12.1" y1="12.1" x2="13.4" y2="13.4"/><line x1="2.6" y1="13.4" x2="3.9" y2="12.1"/></g></svg>
+    <svg class="ti ti-moon" viewBox="0 0 16 16" aria-hidden="true" width="15" height="15"><path d="M13.5 9.5A6 6 0 1 1 6.5 2.5a4.8 4.8 0 1 0 7 7z" fill="currentColor"/></svg>
+    <span class="ti-label">Light</span>
+  </button>
+</header>
+<script>(function(){
+  var root=document.documentElement, btn=document.getElementById('themeToggle');
+  function sync(){
+    var isLight = root.getAttribute('data-theme')==='light';
+    btn.setAttribute('aria-pressed', isLight);
+    btn.setAttribute('aria-label', 'Switch to ' + (isLight?'dark':'light') + ' theme');
+    btn.querySelector('.ti-label').textContent = isLight ? 'Dark' : 'Light';
+  }
+  btn.addEventListener('click', function(){
+    var next = root.getAttribute('data-theme')==='light' ? 'dark' : 'light';
+    root.setAttribute('data-theme', next);
+    try{ localStorage.setItem('aic-theme', next); }catch(e){}
+    sync();
+  });
+  sync();
+})();</script>
+
+<section class="wrap stack g6">
+  <div class="stack g4">
+    <p class="eyebrow">Module 1.1 · Deepens pages <a href="02-tokens-embeddings.html">2</a> &amp; <a href="03-what-is-an-llm.html">3</a></p>
+    <h1>Ten lines, start to finish</h1>
+    <p class="lede">Load a tokenizer, load a model, encode a prompt, generate, decode. That's the entire mechanism — no chat formatting, no memory, nothing hidden. Run it once before any of that gets added, so you see exactly what's missing.</p>
+  </div>
+
+  <div class="rig">
+    <div class="qa">
+      <span class="role user">you typed</span>
+      <div class="bubble">Hi, how are you?</div>
+    </div>
+    <div class="qa">
+      <span class="role model">raw model output (continuing the same text)</span>
+      <div class="bubble">Hi, how are you? I hope you're doing well. I've been thinking about the project for a while now, and I'm really excited about the idea of creating a</div>
+    </div>
+    <div class="annot">Notice: the model didn't answer your question — it kept <em>writing</em>, as if it were the one who said "Hi, how are you?" and is now continuing to talk. That's what "no chat formatting" actually looks like.</div>
+  </div>
+</section>
+
+<section class="wrap stack g5">
+  <p class="eyebrow">The script</p>
+  <h2>Every line, annotated</h2>
+  <div class="termwindow">
+    <div class="termhead"><span class="termdot" style="background:#ff6f8f"></span><span class="termdot" style="background:#f5c451"></span><span class="termdot" style="background:#45e0c4"></span><span class="termfile">bc-01-ten-lines.py</span></div>
+    <pre><code><span class="tok-kw">from</span> transformers <span class="tok-kw">import</span> AutoTokenizer, AutoModelForCausalLM
+
+tokenizer = AutoTokenizer.<span class="tok-fn">from_pretrained</span>(<span class="tok-str">"HuggingFaceTB/SmolLM2-135M-Instruct"</span>)
+model = AutoModelForCausalLM.<span class="tok-fn">from_pretrained</span>(<span class="tok-str">"HuggingFaceTB/SmolLM2-135M-Instruct"</span>)
+
+prompt = <span class="tok-str">"Hi, how are you?"</span>
+inputs = tokenizer(prompt, return_tensors=<span class="tok-str">"pt"</span>)          <span class="tok-cm"># text -> token ids (page bc-02)</span>
+outputs = model.<span class="tok-fn">generate</span>(**inputs, max_new_tokens=<span class="tok-num">30</span>)     <span class="tok-cm"># ids in -> more ids out (page bc-03)</span>
+<span class="tok-fn">print</span>(tokenizer.<span class="tok-fn">decode</span>(outputs[<span class="tok-num">0</span>], skip_special_tokens=<span class="tok-kw">True</span>))  <span class="tok-cm"># ids -> text again</span></code></pre>
+  </div>
+  <p class="dim"><code>from_pretrained</code> is doing the "download a folder, read config.json, build the right shape, load the weights in" work from the last page — one line hides all of that. <a href="bc-01-ten-lines.py" class="dl">Download bc-01-ten-lines.py ⬇</a></p>
+</section>
+
+<section class="wrap stack g5">
+  <p class="eyebrow">What you should see</p>
+  <div class="termwindow">
+    <div class="termhead"><span class="termdot" style="background:#ff6f8f"></span><span class="termdot" style="background:#f5c451"></span><span class="termdot" style="background:#45e0c4"></span><span class="termfile">terminal</span></div>
+    <pre><code><span class="termcmd">python bc-01-ten-lines.py</span>
+Hi, how are you? I hope you're doing well. I've been thinking about the project for a while now, and I'm really excited about the idea of creating a</code></pre>
+  </div>
+  <p class="dim">Real output from this exact script. Nothing about "reply" or "conversation" exists yet in these ten lines — that's Module 2, once a chat template is introduced.</p>
+</section>
+
+<section class="wrap stack g4">
+  <div class="trythis">
+    <span class="tt-lab">Try this</span>
+    <p class="dim">Change <code>prompt = "Hi, how are you?"</code> to <code>prompt = "The best way to learn to code is"</code> and re-run. It reads much more like a normal reply this time — predict why before you run it: is the model doing something different, or is this prompt just a better fit for "keep writing the same kind of text"?</p>
+  </div>
+</section>
+
+<section class="wrap stack g4">
+  <p class="eyebrow">So what</p>
+  <p class="sowhat">Without a chat template, the model isn't ignoring you — it's doing <em>exactly</em> what it was asked: continue this text.</p>
+</section>
+
+<nav class="wrap pagenav" aria-label="Series navigation">
+  <a class="pnbtn prev" href="bc-00-setup.html"><span class="pnk">← Prev</span><span class="pnt">Your local AI lab</span></a>
+  <a class="pnbtn next" href="bc-02-tokenize.html"><span class="pnk">Next →</span><span class="pnt">What tokenize() really returns</span></a>
+</nav>
+<footer class="wrap foot">Build a Local Chatbot — Module 1 of 5</footer>
+
+</body>
+</html>

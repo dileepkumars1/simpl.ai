@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Build a Local Chatbot, Module 5 — one final annotated script, Modules 1-4 stitched together, run for real, closing out the series.">
+<meta name="color-scheme" content="dark light">
+<script>(function(){try{if(localStorage.getItem('aic-theme')==='light')document.documentElement.setAttribute('data-theme','light');}catch(e){}})();</script>
+<style>:root{color-scheme:dark}html{background:#100e1a}html[data-theme="light"]{color-scheme:light;background:#f7f5fb}</style>
+<title>The Whole Thing, End To End</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;600&family=Manrope:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>:root{
+  --ground:#100e1a; --ground-2:#0b0913;
+  --surface:#181428; --surface-2:#1e1934;
+  --line:#2a2340; --line-soft:#221c36;
+  --ink:#ECE9F5; --ink-dim:#9a92b6; --ink-faint:#6b6389;
+  --violet:#9b6bff; --teal:#45e0c4; --coral:#ff6f8f;
+  --violet-soft:rgba(155,107,255,.16); --teal-soft:rgba(69,224,196,.14); --coral-soft:rgba(255,111,143,.14);
+  --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px; --s7:48px; --s8:64px; --s9:96px;
+  --r-sm:6px; --r-md:12px; --r-lg:20px;
+  --display:'Unbounded',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --body:'Manrope',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,'SFMono-Regular',Menlo,monospace;
+  --wrap:1080px;
+}
+:root[data-theme="light"]{
+  --ground:#f7f5fb; --surface:#ffffff; --surface-2:#efeaf9;
+  --ink:#231d38; --ink-dim:#57507a; --ink-faint:#7b7396;
+  --line:#ddd4f0;
+  --violet:#7c3aed; --teal:#0d9488; --coral:#e11d48;
+  --violet-soft:rgba(124,58,237,.12); --teal-soft:rgba(13,148,136,.12); --coral-soft:rgba(225,29,72,.12);
+}
+.themetoggle{margin-left:auto; gap:6px; padding:0 var(--s3); min-height:36px; font-size:11.5px}
+.themetoggle .ti-moon{display:none}
+[data-theme="light"] .themetoggle .ti-sun{display:none}
+[data-theme="light"] .themetoggle .ti-moon{display:inline-block}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0; background:var(--ground); color:var(--ink); font-family:var(--body); font-size:clamp(15px,.55vw + 13.6px,17px); line-height:1.65; -webkit-font-smoothing:antialiased; overflow-x:hidden}
+h1,h2,h3{font-family:var(--display); font-weight:600; line-height:1.12; text-wrap:balance; margin:0}
+h1{font-size:clamp(30px,5.2vw,52px); letter-spacing:-.02em}
+h2{font-size:clamp(21px,2.7vw,30px); letter-spacing:-.01em}
+h3{font-size:clamp(16px,1.5vw,19px); letter-spacing:-.005em}
+p{margin:0; max-width:65ch; overflow-wrap:break-word}
+h1,h2,h3{overflow-wrap:break-word}
+.stack>*,.steps>*,.split>*,.two>*,.hero>*{min-width:0}
+.eyebrow{font-family:var(--mono); font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-faint); margin:0}
+.dim{color:var(--ink-dim)}
+.lede{font-size:clamp(17px,1.5vw,21px); line-height:1.5; color:var(--ink-dim)}
+.wrap{width:min(100% - 2*var(--s5), var(--wrap)); margin-inline:auto}
+@media (max-width:520px){ .wrap{width:min(100% - 2*var(--s4), var(--wrap))} }
+.stack{display:flex; flex-direction:column}
+.g2{gap:var(--s2)} .g3{gap:var(--s3)} .g4{gap:var(--s4)} .g5{gap:var(--s5)} .g6{gap:var(--s6)} .g7{gap:var(--s7)}
+section{padding-block:var(--s7)}
+section + section{border-top:1px solid var(--line-soft)}
+.tag{font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-faint)}
+.topbar{display:flex; flex-wrap:wrap; align-items:baseline; gap:var(--s3) var(--s4); padding-block:var(--s5) 0}
+.topbar .num{font-family:var(--mono); font-size:11px; letter-spacing:.16em; color:var(--coral)}
+.foot{padding-block:var(--s6); border-top:1px solid var(--line-soft); color:var(--ink-faint); font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase}
+button{font-family:inherit; font-size:inherit; color:inherit}
+.btn{display:inline-flex; align-items:center; justify-content:center; gap:var(--s2); min-height:44px; padding:0 var(--s4); border-radius:999px; background:var(--surface-2); border:1px solid var(--line); color:var(--ink); font-family:var(--mono); font-size:12.5px; letter-spacing:.04em; cursor:pointer; transition:background .18s, border-color .18s, color .18s, transform .18s, box-shadow .18s; box-shadow:0 1px 2px rgba(0,0,0,.16); text-decoration:none}
+.btn:hover{background:#262046; border-color:#3a3160; transform:translateY(-1px); box-shadow:0 3px 8px rgba(0,0,0,.28)}
+[data-theme="light"] .btn:hover{background:#efeaf9; border-color:#c9baf0; box-shadow:0 3px 8px rgba(80,60,140,.14)}
+.btn[aria-pressed="true"], .btn.on{background:var(--coral-soft); border-color:var(--coral); color:var(--coral)}
+.btn:focus-visible, [tabindex]:focus-visible, input:focus-visible{outline:2px solid var(--teal); outline-offset:3px}
+@media (prefers-reduced-motion: reduce){ *,*::before,*::after{animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important} }
+.sowhat{font-family:var(--display); font-size:clamp(19px,2.4vw,27px); line-height:1.35; letter-spacing:-.01em; max-width:32ch}
+.sowhat em{font-style:normal; color:var(--coral)}
+</style>
+<style>
+.piecerow{display:flex; flex-wrap:wrap; gap:8px}
+.piecechip{font-family:var(--mono); font-size:12px; padding:8px 14px; border-radius:999px; background:var(--surface-2); border:1.5px solid var(--line); color:var(--ink-dim); text-decoration:none}
+.piecechip:hover{border-color:var(--coral); color:var(--coral)}
+.termwindow{background:#0b0913; border:1px solid var(--line-soft); border-radius:var(--r-md); overflow:hidden; color:#ECE9F5}
+.termhead{display:flex; align-items:center; gap:8px; padding:10px 14px; background:#151125; border-bottom:1px solid var(--line-soft)}
+.termdot{width:9px; height:9px; border-radius:50%; display:inline-block}
+.termfile{margin-left:8px; font-family:var(--mono); font-size:11.5px; color:#9a92b6}
+.termwindow pre{margin:0; padding:var(--s4) var(--s5); overflow-x:auto}
+.termwindow code{font-family:var(--mono); font-size:13px; line-height:1.7; white-space:pre-wrap; word-break:break-word}
+.termcmd{color:var(--teal)}
+.termcmd::before{content:"$ "; color:var(--ink-faint)}
+.tok-kw{color:#9b6bff}
+.tok-fn{color:#45e0c4}
+.tok-num{color:#ff9fb4}
+.tok-cm{color:#6b6389; font-style:italic}
+.tok-str{color:#ffcf7d}
+.dl{display:inline-flex; align-items:center; gap:8px; font-family:var(--mono); font-size:12.5px}
+.closing{background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); padding:var(--s5); display:flex; flex-direction:column; gap:var(--s4)}
+</style>
+</head>
+<body>
+
+<style>
+.pagenav{display:flex; flex-wrap:wrap; gap:var(--s4); justify-content:space-between; align-items:center; padding-block:var(--s6); border-top:1px solid var(--line-soft)}
+.pnbtn{display:flex; flex-direction:column; gap:2px; min-height:44px; justify-content:center; padding:var(--s2) var(--s4); border-radius:var(--r-md); text-decoration:none; color:inherit; transition:background .18s; max-width:280px}
+.pnbtn:hover{background:var(--surface-2)}
+.pnbtn.next{text-align:right; align-items:flex-end; margin-left:auto}
+.pnk{font-family:var(--mono); font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--coral)}
+.pnt{font-size:14px; color:var(--ink-dim)}
+@media (max-width:640px){ .pagenav{flex-direction:column; align-items:stretch} .pnbtn{max-width:none} .pnbtn.next{text-align:left; align-items:flex-start; margin-left:0} }
+</style>
+
+<header class="wrap topbar">
+  <span class="num">BUILD A LOCAL CHATBOT · MODULE 5 — WHERE THIS HITS ITS CEILING · bc-14</span>
+  <span class="tag dim">Real Python, every page</span>
+  <button class="btn themetoggle" id="themeToggle" type="button" aria-pressed="false" aria-label="Switch to light theme">
+    <svg class="ti ti-sun" viewBox="0 0 16 16" aria-hidden="true" width="15" height="15"><circle cx="8" cy="8" r="3.4" fill="none" stroke="currentColor" stroke-width="1.4"/><g stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><line x1="8" y1="0.5" x2="8" y2="2.3"/><line x1="8" y1="13.7" x2="8" y2="15.5"/><line x1="0.5" y1="8" x2="2.3" y2="8"/><line x1="13.7" y1="8" x2="15.5" y2="8"/><line x1="2.6" y1="2.6" x2="3.9" y2="3.9"/><line x1="12.1" y1="12.1" x2="13.4" y2="13.4"/><line x1="2.6" y1="13.4" x2="3.9" y2="12.1"/></g></svg>
+    <svg class="ti ti-moon" viewBox="0 0 16 16" aria-hidden="true" width="15" height="15"><path d="M13.5 9.5A6 6 0 1 1 6.5 2.5a4.8 4.8 0 1 0 7 7z" fill="currentColor"/></svg>
+    <span class="ti-label">Light</span>
+  </button>
+</header>
+<script>(function(){
+  var root=document.documentElement, btn=document.getElementById('themeToggle');
+  function sync(){
+    var isLight = root.getAttribute('data-theme')==='light';
+    btn.setAttribute('aria-pressed', isLight);
+    btn.setAttribute('aria-label', 'Switch to ' + (isLight?'dark':'light') + ' theme');
+    btn.querySelector('.ti-label').textContent = isLight ? 'Dark' : 'Light';
+  }
+  btn.addEventListener('click', function(){
+    var next = root.getAttribute('data-theme')==='light' ? 'dark' : 'light';
+    root.setAttribute('data-theme', next);
+    try{ localStorage.setItem('aic-theme', next); }catch(e){}
+    sync();
+  });
+  sync();
+})();</script>
+
+<section class="wrap stack g6">
+  <div class="stack g4">
+    <p class="eyebrow">Module 5.14 · Series finale</p>
+    <h1>The whole thing, end to end</h1>
+    <p class="lede">Fourteen pages, one file. Everything below is real code that actually ran — not a recap in prose.</p>
+  </div>
+
+  <div class="piecerow">
+    <a class="piecechip" href="bc-01-ten-lines.html">bc-01 load + generate</a>
+    <a class="piecechip" href="bc-05-chat-loop.html">bc-05 memory</a>
+    <a class="piecechip" href="bc-06-context-wall.html">bc-06 context guard</a>
+    <a class="piecechip" href="bc-10-system-prompt.html">bc-10 system prompt</a>
+    <a class="piecechip" href="bc-11-guardrail.html">bc-11 guardrail</a>
+    <a class="piecechip" href="bc-12-put-a-face-on-it.html">bc-12 UI</a>
+  </div>
+</section>
+
+<section class="wrap stack g5">
+  <p class="eyebrow">The script</p>
+  <h2>Every earlier page, in one file</h2>
+  <div class="termwindow">
+    <div class="termhead"><span class="termdot" style="background:#ff6f8f"></span><span class="termdot" style="background:#f5c451"></span><span class="termdot" style="background:#45e0c4"></span><span class="termfile">bc-14-end-to-end.py</span></div>
+    <pre><code><span class="tok-kw">import</span> re
+<span class="tok-kw">from</span> transformers <span class="tok-kw">import</span> AutoTokenizer, AutoModelForCausalLM
+
+<span class="tok-cm"># ---- Module 1: load the model (bc-01) ----</span>
+MODEL_ID = <span class="tok-str">"HuggingFaceTB/SmolLM2-135M-Instruct"</span>
+tokenizer = AutoTokenizer.<span class="tok-fn">from_pretrained</span>(MODEL_ID)
+model = AutoModelForCausalLM.<span class="tok-fn">from_pretrained</span>(MODEL_ID)
+
+<span class="tok-cm"># ---- Module 4: a system prompt, written on purpose (bc-10) ----</span>
+SYSTEM_PROMPT = <span class="tok-str">"You are a helpful, concise local assistant running entirely on the user's own machine."</span>
+
+<span class="tok-cm"># ---- Module 4: a guardrail you can actually read (bc-11) ----</span>
+BLOCKED_PATTERNS = [r<span class="tok-str">"\bhow to (make|build) a bomb\b"</span>, r<span class="tok-str">"\bmy (password|social security number) is\b"</span>]
+<span class="tok-kw">def</span> <span class="tok-fn">is_blocked</span>(text):
+    <span class="tok-kw">return</span> <span class="tok-fn">any</span>(re.<span class="tok-fn">search</span>(p, text.<span class="tok-fn">lower</span>()) <span class="tok-kw">for</span> p <span class="tok-kw">in</span> BLOCKED_PATTERNS)
+
+<span class="tok-cm"># ---- Module 2: real memory, one growing list (bc-05) ----</span>
+history = [{<span class="tok-str">"role"</span>: <span class="tok-str">"system"</span>, <span class="tok-str">"content"</span>: SYSTEM_PROMPT}]
+
+<span class="tok-kw">def</span> <span class="tok-fn">respond</span>(message):
+    <span class="tok-kw">if</span> <span class="tok-fn">is_blocked</span>(message):
+        <span class="tok-kw">return</span> <span class="tok-str">"[BLOCKED before reaching the model]"</span>
+    history.<span class="tok-fn">append</span>({<span class="tok-str">"role"</span>: <span class="tok-str">"user"</span>, <span class="tok-str">"content"</span>: message})
+    prompt = tokenizer.<span class="tok-fn">apply_chat_template</span>(history, tokenize=<span class="tok-kw">False</span>, add_generation_prompt=<span class="tok-kw">True</span>)
+    inputs = tokenizer(prompt, return_tensors=<span class="tok-str">"pt"</span>, add_special_tokens=<span class="tok-kw">False</span>)
+
+    <span class="tok-cm"># ---- Module 2: hitting the wall on purpose (bc-06) — warn, don't silently proceed ----</span>
+    <span class="tok-kw">if</span> inputs[<span class="tok-str">"input_ids"</span>].shape[<span class="tok-num">1</span>] &gt; model.config.max_position_embeddings:
+        <span class="tok-kw">return</span> <span class="tok-str">"[conversation too long for this model's context window]"</span>
+
+    outputs = model.<span class="tok-fn">generate</span>(**inputs, max_new_tokens=<span class="tok-num">80</span>)
+    reply = tokenizer.<span class="tok-fn">decode</span>(outputs[<span class="tok-num">0</span>][inputs[<span class="tok-str">"input_ids"</span>].shape[<span class="tok-num">1</span>]:], skip_special_tokens=<span class="tok-kw">True</span>)
+    history.<span class="tok-fn">append</span>({<span class="tok-str">"role"</span>: <span class="tok-str">"assistant"</span>, <span class="tok-str">"content"</span>: reply})
+    <span class="tok-kw">return</span> reply
+
+<span class="tok-kw">if</span> __name__ == <span class="tok-str">"__main__"</span>:
+    <span class="tok-fn">print</span>(<span class="tok-fn">respond</span>(<span class="tok-str">"Hi! What can you help me with?"</span>))
+    <span class="tok-cm"># ---- Module 4: put a face on it (bc-12) ----</span>
+    <span class="tok-cm"># import gradio as gr</span>
+    <span class="tok-cm"># gr.ChatInterface(fn=lambda m, h: respond(m), type="messages").launch()</span></code></pre>
+  </div>
+  <p class="dim">Every piece here is a page you already ran individually. <a href="bc-14-end-to-end.py" class="dl">Download bc-14-end-to-end.py ⬇</a></p>
+</section>
+
+<section class="wrap stack g5">
+  <p class="eyebrow">What you should see</p>
+  <div class="termwindow">
+    <div class="termhead"><span class="termdot" style="background:#ff6f8f"></span><span class="termdot" style="background:#f5c451"></span><span class="termdot" style="background:#45e0c4"></span><span class="termfile">terminal</span></div>
+    <pre><code><span class="termcmd">python bc-14-end-to-end.py</span>
+Local chatbot ready. Type a message (Ctrl+C to quit).
+I'm here to help you with everything from cooking to gardening. If you have any questions or need assistance with something specific, feel free to ask!</code></pre>
+  </div>
+  <p class="dim">Real output from this exact file, run start to finish, no edits.</p>
+</section>
+
+<section class="wrap stack g5">
+  <div class="closing">
+    <h2 style="margin:0">Fourteen pages, one small model, no black box</h2>
+    <p class="dim">Every mechanism this series named — tokenizing, sampling, memory, a context limit, model choice, a system prompt, a guardrail, a UI — is sitting in the file above, in code you read line by line. SmolLM2-135M-Instruct will keep getting arithmetic wrong and inventing facts with total confidence; that was never the point. The point was that none of what surrounds those weaknesses was ever a mystery.</p>
+  </div>
+</section>
+
+<nav class="wrap pagenav" aria-label="Series navigation">
+  <a class="pnbtn prev" href="bc-13-upgrade-map.html"><span class="pnk">← Prev</span><span class="pnt">The upgrade decision map</span></a>
+  <a class="pnbtn next" href="index.html"><span class="pnk">Series complete →</span><span class="pnt">Back to the index</span></a>
+</nav>
+<footer class="wrap foot">Build a Local Chatbot — series complete</footer>
+
+</body>
+</html>

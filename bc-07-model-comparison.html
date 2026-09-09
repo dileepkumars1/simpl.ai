@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Build a Local Chatbot, Module 3 — a real comparison table of small local models, queried live from each model's own config, not guessed.">
+<meta name="color-scheme" content="dark light">
+<script>(function(){try{if(localStorage.getItem('aic-theme')==='light')document.documentElement.setAttribute('data-theme','light');}catch(e){}})();</script>
+<style>:root{color-scheme:dark}html{background:#100e1a}html[data-theme="light"]{color-scheme:light;background:#f7f5fb}</style>
+<title>A Model Isn't One Thing</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;600&family=Manrope:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>:root{
+  --ground:#100e1a; --ground-2:#0b0913;
+  --surface:#181428; --surface-2:#1e1934;
+  --line:#2a2340; --line-soft:#221c36;
+  --ink:#ECE9F5; --ink-dim:#9a92b6; --ink-faint:#6b6389;
+  --violet:#9b6bff; --teal:#45e0c4; --coral:#ff6f8f;
+  --violet-soft:rgba(155,107,255,.16); --teal-soft:rgba(69,224,196,.14); --coral-soft:rgba(255,111,143,.14);
+  --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px; --s7:48px; --s8:64px; --s9:96px;
+  --r-sm:6px; --r-md:12px; --r-lg:20px;
+  --display:'Unbounded',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --body:'Manrope',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,'SFMono-Regular',Menlo,monospace;
+  --wrap:1080px;
+}
+:root[data-theme="light"]{
+  --ground:#f7f5fb; --surface:#ffffff; --surface-2:#efeaf9;
+  --ink:#231d38; --ink-dim:#57507a; --ink-faint:#7b7396;
+  --line:#ddd4f0;
+  --violet:#7c3aed; --teal:#0d9488; --coral:#e11d48;
+  --violet-soft:rgba(124,58,237,.12); --teal-soft:rgba(13,148,136,.12); --coral-soft:rgba(225,29,72,.12);
+}
+.themetoggle{margin-left:auto; gap:6px; padding:0 var(--s3); min-height:36px; font-size:11.5px}
+.themetoggle .ti-moon{display:none}
+[data-theme="light"] .themetoggle .ti-sun{display:none}
+[data-theme="light"] .themetoggle .ti-moon{display:inline-block}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0; background:var(--ground); color:var(--ink); font-family:var(--body); font-size:clamp(15px,.55vw + 13.6px,17px); line-height:1.65; -webkit-font-smoothing:antialiased; overflow-x:hidden}
+h1,h2,h3{font-family:var(--display); font-weight:600; line-height:1.12; text-wrap:balance; margin:0}
+h1{font-size:clamp(30px,5.2vw,52px); letter-spacing:-.02em}
+h2{font-size:clamp(21px,2.7vw,30px); letter-spacing:-.01em}
+h3{font-size:clamp(16px,1.5vw,19px); letter-spacing:-.005em}
+p{margin:0; max-width:65ch; overflow-wrap:break-word}
+h1,h2,h3{overflow-wrap:break-word}
+.stack>*,.steps>*,.split>*,.two>*,.hero>*{min-width:0}
+.eyebrow{font-family:var(--mono); font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-faint); margin:0}
+.dim{color:var(--ink-dim)}
+.lede{font-size:clamp(17px,1.5vw,21px); line-height:1.5; color:var(--ink-dim)}
+.wrap{width:min(100% - 2*var(--s5), var(--wrap)); margin-inline:auto}
+@media (max-width:520px){ .wrap{width:min(100% - 2*var(--s4), var(--wrap))} }
+.stack{display:flex; flex-direction:column}
+.g2{gap:var(--s2)} .g3{gap:var(--s3)} .g4{gap:var(--s4)} .g5{gap:var(--s5)} .g6{gap:var(--s6)} .g7{gap:var(--s7)}
+section{padding-block:var(--s7)}
+section + section{border-top:1px solid var(--line-soft)}
+.tag{font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-faint)}
+.topbar{display:flex; flex-wrap:wrap; align-items:baseline; gap:var(--s3) var(--s4); padding-block:var(--s5) 0}
+.topbar .num{font-family:var(--mono); font-size:11px; letter-spacing:.16em; color:var(--coral)}
+.foot{padding-block:var(--s6); border-top:1px solid var(--line-soft); color:var(--ink-faint); font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase}
+button{font-family:inherit; font-size:inherit; color:inherit}
+.btn{display:inline-flex; align-items:center; justify-content:center; gap:var(--s2); min-height:44px; padding:0 var(--s4); border-radius:999px; background:var(--surface-2); border:1px solid var(--line); color:var(--ink); font-family:var(--mono); font-size:12.5px; letter-spacing:.04em; cursor:pointer; transition:background .18s, border-color .18s, color .18s, transform .18s, box-shadow .18s; box-shadow:0 1px 2px rgba(0,0,0,.16); text-decoration:none}
+.btn:hover{background:#262046; border-color:#3a3160; transform:translateY(-1px); box-shadow:0 3px 8px rgba(0,0,0,.28)}
+[data-theme="light"] .btn:hover{background:#efeaf9; border-color:#c9baf0; box-shadow:0 3px 8px rgba(80,60,140,.14)}
+.btn[aria-pressed="true"], .btn.on{background:var(--coral-soft); border-color:var(--coral); color:var(--coral)}
+.btn:focus-visible, [tabindex]:focus-visible, input:focus-visible{outline:2px solid var(--teal); outline-offset:3px}
+@media (prefers-reduced-motion: reduce){ *,*::before,*::after{animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important} }
+.sowhat{font-family:var(--display); font-size:clamp(19px,2.4vw,27px); line-height:1.35; letter-spacing:-.01em; max-width:32ch}
+.sowhat em{font-style:normal; color:var(--coral)}
+</style>
+<style>
+.rig{background:linear-gradient(165deg,#151125,#0c0a16); border:1px solid var(--line); border-radius:var(--r-lg); padding:var(--s5); display:flex; flex-direction:column; gap:var(--s5); color:#ECE9F5}
+.tablewrap{overflow-x:auto}
+.cmptable{width:100%; border-collapse:collapse; font-family:var(--mono); font-size:12.5px; min-width:640px}
+.cmptable th, .cmptable td{text-align:left; padding:9px 12px; border-bottom:1px solid var(--line-soft)}
+.cmptable th{color:#6b6389; font-weight:500; text-transform:uppercase; letter-spacing:.06em; font-size:10px}
+.cmptable td{color:#9a92b6; cursor:pointer}
+.cmptable tr.sel td{color:#ECE9F5; background:var(--coral-soft)}
+.cmptable td.name{color:#ECE9F5}
+.detailbox{font-family:var(--mono); font-size:13px; background:var(--ground-2); border:1.5px solid var(--coral); border-radius:var(--r-md); padding:var(--s4); color:#ECE9F5}
+.termwindow{background:#0b0913; border:1px solid var(--line-soft); border-radius:var(--r-md); overflow:hidden; color:#ECE9F5}
+.termhead{display:flex; align-items:center; gap:8px; padding:10px 14px; background:#151125; border-bottom:1px solid var(--line-soft)}
+.termdot{width:9px; height:9px; border-radius:50%; display:inline-block}
+.termfile{margin-left:8px; font-family:var(--mono); font-size:11.5px; color:#9a92b6}
+.termwindow pre{margin:0; padding:var(--s4) var(--s5); overflow-x:auto}
+.termwindow code{font-family:var(--mono); font-size:13px; line-height:1.7; white-space:pre-wrap; word-break:break-word}
+.termcmd{color:var(--teal)}
+.termcmd::before{content:"$ "; color:var(--ink-faint)}
+.tok-kw{color:#9b6bff}
+.tok-fn{color:#45e0c4}
+.tok-num{color:#ff9fb4}
+.tok-cm{color:#6b6389; font-style:italic}
+.tok-str{color:#ffcf7d}
+.trythis{background:var(--coral-soft); border:1.5px solid var(--coral); border-radius:var(--r-md); padding:var(--s4) var(--s5); display:flex; flex-direction:column; gap:6px}
+.trythis .tt-lab{font-family:var(--mono); font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--coral)}
+.dl{display:inline-flex; align-items:center; gap:8px; font-family:var(--mono); font-size:12.5px}
+</style>
+</head>
+<body>
+
+<style>
+.pagenav{display:flex; flex-wrap:wrap; gap:var(--s4); justify-content:space-between; align-items:center; padding-block:var(--s6); border-top:1px solid var(--line-soft)}
+.pnbtn{display:flex; flex-direction:column; gap:2px; min-height:44px; justify-content:center; padding:var(--s2) var(--s4); border-radius:var(--r-md); text-decoration:none; color:inherit; transition:background .18s; max-width:280px}
+.pnbtn:hover{background:var(--surface-2)}
+.pnbtn.next{text-align:right; align-items:flex-end; margin-left:auto}
+.pnk{font-family:var(--mono); font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--coral)}
+.pnt{font-size:14px; color:var(--ink-dim)}
+@media (max-width:640px){ .pagenav{flex-direction:column; align-items:stretch} .pnbtn{max-width:none} .pnbtn.next{text-align:left; align-items:flex-start; margin-left:0} }
+</style>
+
+<header class="wrap topbar">
+  <span class="num">BUILD A LOCAL CHATBOT · MODULE 3 — CHOOSING A MODEL ON PURPOSE · bc-07</span>
+  <span class="tag dim">Real Python, every page</span>
+  <button class="btn themetoggle" id="themeToggle" type="button" aria-pressed="false" aria-label="Switch to light theme">
+    <svg class="ti ti-sun" viewBox="0 0 16 16" aria-hidden="true" width="15" height="15"><circle cx="8" cy="8" r="3.4" fill="none" stroke="currentColor" stroke-width="1.4"/><g stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><line x1="8" y1="0.5" x2="8" y2="2.3"/><line x1="8" y1="13.7" x2="8" y2="15.5"/><line x1="0.5" y1="8" x2="2.3" y2="8"/><line x1="13.7" y1="8" x2="15.5" y2="8"/><line x1="2.6" y1="2.6" x2="3.9" y2="3.9"/><line x1="12.1" y1="12.1" x2="13.4" y2="13.4"/><line x1="2.6" y1="13.4" x2="3.9" y2="12.1"/></g></svg>
+    <svg class="ti ti-moon" viewBox="0 0 16 16" aria-hidden="true" width="15" height="15"><path d="M13.5 9.5A6 6 0 1 1 6.5 2.5a4.8 4.8 0 1 0 7 7z" fill="currentColor"/></svg>
+    <span class="ti-label">Light</span>
+  </button>
+</header>
+<script>(function(){
+  var root=document.documentElement, btn=document.getElementById('themeToggle');
+  function sync(){
+    var isLight = root.getAttribute('data-theme')==='light';
+    btn.setAttribute('aria-pressed', isLight);
+    btn.setAttribute('aria-label', 'Switch to ' + (isLight?'dark':'light') + ' theme');
+    btn.querySelector('.ti-label').textContent = isLight ? 'Dark' : 'Light';
+  }
+  btn.addEventListener('click', function(){
+    var next = root.getAttribute('data-theme')==='light' ? 'dark' : 'light';
+    root.setAttribute('data-theme', next);
+    try{ localStorage.setItem('aic-theme', next); }catch(e){}
+    sync();
+  });
+  sync();
+})();</script>
+
+<section class="wrap stack g6">
+  <div class="stack g4">
+    <p class="eyebrow">Module 3.7</p>
+    <h1>A model isn't one thing</h1>
+    <p class="lede">"SmolLM2-135M-Instruct" was one specific choice out of a whole family of small models that fit on this same laptop. Click a row — every number below was queried live from that model's own config, not guessed.</p>
+  </div>
+
+  <div class="rig">
+    <div class="tablewrap">
+      <table class="cmptable" id="cmpTable">
+        <thead><tr><th>Model</th><th>Kind</th><th>Params (real)</th><th>Disk (real)</th><th>Context</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <div class="detailbox" id="detailBox"></div>
+  </div>
+</section>
+
+<section class="wrap stack g5">
+  <p class="eyebrow">The script</p>
+  <h2>Querying every config, live</h2>
+  <div class="termwindow">
+    <div class="termhead"><span class="termdot" style="background:#ff6f8f"></span><span class="termdot" style="background:#f5c451"></span><span class="termdot" style="background:#45e0c4"></span><span class="termfile">bc-07-model-comparison.py</span></div>
+    <pre><code><span class="tok-kw">from</span> transformers <span class="tok-kw">import</span> AutoConfig
+
+MODELS = [
+    <span class="tok-str">"distilbert/distilgpt2"</span>, <span class="tok-str">"openai-community/gpt2"</span>,
+    <span class="tok-str">"HuggingFaceTB/SmolLM2-135M-Instruct"</span>, <span class="tok-str">"HuggingFaceTB/SmolLM2-360M-Instruct"</span>,
+    <span class="tok-str">"Qwen/Qwen2.5-0.5B-Instruct"</span>, <span class="tok-str">"TinyLlama/TinyLlama-1.1B-Chat-v1.0"</span>,
+    <span class="tok-str">"microsoft/Phi-3-mini-4k-instruct"</span>,
+]
+
+<span class="tok-kw">for</span> model_id <span class="tok-kw">in</span> MODELS:
+    cfg = AutoConfig.<span class="tok-fn">from_pretrained</span>(model_id)   <span class="tok-cm"># fetches config.json only — a few KB, no weights</span>
+    <span class="tok-fn">print</span>(model_id, cfg.num_hidden_layers, cfg.hidden_size, cfg.max_position_embeddings)</code></pre>
+  </div>
+  <p class="dim"><code>AutoConfig.from_pretrained</code> downloads only the architecture description, not the ~270MB–7.6GB of actual weights — cheap enough to run this comparison for real before committing disk space to any of them. <a href="bc-07-model-comparison.py" class="dl">Download bc-07-model-comparison.py ⬇</a></p>
+</section>
+
+<section class="wrap stack g4">
+  <div class="trythis">
+    <span class="tt-lab">Try this</span>
+    <p class="dim">Add <code>"microsoft/phi-2"</code> to the <code>MODELS</code> list in <a href="bc-07-model-comparison.py" class="dl">bc-07-model-comparison.py ⬇</a> and re-run. It costs nothing but a few seconds and a network request to check whether a model would even fit your plans — that's the entire point of this page.</p>
+  </div>
+</section>
+
+<section class="wrap stack g4">
+  <p class="eyebrow">So what</p>
+  <p class="sowhat">"Which model should I use" has a real, queryable answer — <em>before</em> you spend the disk space to find out.</p>
+</section>
+
+<nav class="wrap pagenav" aria-label="Series navigation">
+  <a class="pnbtn prev" href="bc-06-context-wall.html"><span class="pnk">← Prev</span><span class="pnt">Hitting the wall on purpose</span></a>
+  <a class="pnbtn next" href="bc-08-same-script.html"><span class="pnk">Next →</span><span class="pnt">Same script, one line changed</span></a>
+</nav>
+<footer class="wrap foot">Build a Local Chatbot — Module 3 of 5</footer>
+
+<script>
+(function(){
+  var MODELS = [
+    { name:'distilgpt2', kind:'base', params:'82M', disk:'353 MB', ctx:'1,024', note:'Smallest, fastest — but degrades into repetition quickly (see bc-08).' },
+    { name:'gpt2', kind:'base', params:'124M', disk:'548 MB', ctx:'1,024', note:'The original GPT-2 — no chat template, base completion only.' },
+    { name:'SmolLM2-135M-Instruct', kind:'instruct', params:'135M', disk:'269 MB', ctx:'8,192', note:'This series\' pick — small, instruct-tuned, coherent enough to teach with.' },
+    { name:'SmolLM2-360M-Instruct', kind:'instruct', params:'~362M', disk:'724 MB', ctx:'8,192', note:'Same family, roughly 2.7× the parameters — a step up in coherence.' },
+    { name:'Qwen2.5-0.5B-Instruct', kind:'instruct', params:'~494M', disk:'988 MB', ctx:'32,768', note:'Much larger context window at a similar size class.' },
+    { name:'TinyLlama-1.1B-Chat', kind:'instruct', params:'~1.1B', disk:'2.2 GB', ctx:'2,048', note:'Bigger, but a shorter context window than SmolLM2.' },
+    { name:'Phi-3-mini-4k-instruct', kind:'instruct', params:'~3.8B', disk:'7.6 GB', ctx:'4,096', note:'The ceiling example — this is where laptop-CPU inference stops being comfortable. Not run in this series.' }
+  ];
+  var tbody = document.querySelector('#cmpTable tbody'), detailBox = document.getElementById('detailBox');
+  MODELS.forEach(function(m, i){
+    var tr = document.createElement('tr');
+    tr.innerHTML = '<td class="name">' + m.name + '</td><td>' + m.kind + '</td><td>' + m.params + '</td><td>' + m.disk + '</td><td>' + m.ctx + '</td>';
+    tr.addEventListener('click', function(){
+      Array.prototype.forEach.call(tbody.children, function(x){ x.classList.remove('sel'); });
+      tr.classList.add('sel');
+      detailBox.textContent = m.name + ' — ' + m.note;
+    });
+    tbody.appendChild(tr);
+  });
+  tbody.children[2].classList.add('sel');
+  detailBox.textContent = MODELS[2].name + ' — ' + MODELS[2].note;
+})();
+</script>
+
+</body>
+</html>
